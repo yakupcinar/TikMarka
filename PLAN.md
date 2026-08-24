@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6T BİTTİ (güvenlik 1/4), 4.6U SIRADA ┐
+┌─ YOL HARİTASI ──────── şu an: 4.6U BİTTİ (güvenlik 2/4), 4.6V SIRADA ┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6605,6 +6605,59 @@ Laravel'in test istemcisi `postJson`/`getJson` çağrılarında çerezleri
 iade/yorum/API-kupon rotalarından `throttle` middleware'ini kaldırmak).
 **Doğrulandı (gerçek `curl`, canlı sunucuya karşı):** kupon ucuna 11
 istek → ilk 10'u `404`, **11.'si `429`**. **819 test.**
+
+---
+
+### 4.6U — güvenlik başlıkları  ◀ AÇIK
+
+Güvenlik taramasında ölçülen boşluk: `X-Frame-Options`,
+`Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`,
+`Strict-Transport-Security` — hiçbiri ne Laravel'de ne Caddy'de vardı.
+
+**✅ Yeni `SecurityHeaders` middleware**, `M-4.1/3`'teki kararla aynı
+gerekçeyle **uygulama katmanında** (Caddy'de `header` yönergesi hiç yok,
+koruma altyapı yapılandırmasına değil koda bağlı kalsın diye). **Gerçekten
+global** (`$middleware->append`) — dört yüzeyin (vitrin, panel, kontrol
+düzlemi, API) hepsi aynı riski taşıyor; yalnızca `web` grubuna
+eklenseydi API JSON cevapları korumasız kalırdı, kırma denemesiyle
+ölçüldü.
+
+> ⚠️ **CSP BİLEREK DAR TUTULDU — yalnızca `frame-ancestors`.** Asıl risk
+> şuydu: ödeme sayfası kendi iframe'inde iyzico'yu gösteriyor (4.5-K1) ve
+> o adres (`paymentPageUrl`) iyzico'nun API cevabından **dinamik**
+> geliyor — sabit bir alan adı olarak `frame-src` izin listesine
+> yazılamaz. Geniş bir `default-src`/`script-src` politikası yazılsaydı,
+> yanlış tahmin edilen bir domain müşterinin ödeme adımının ortasında
+> **sessizce boş bir çerçeve** görmesi demekti.
+>
+> `frame-ancestors` bu riski taşımıyor: yalnızca **bizim** sayfamızın
+> **başkasınca** çerçevelenmesini kapatıyor, bizim iyzico'yu
+> çerçevelememizi **etkilemiyor** — ikisi ayrı yön. Kırma denemesiyle
+> ayrıca ölçüldü: CSP'ye `default-src 'self'` eklenince ödeme iframe
+> testi düştü — yani risk **gerçek**, kapsamı daraltma kararı **doğru**.
+>
+> ⚠️ İki başlık birden clickjacking için (`X-Frame-Options` +
+> `frame-ancestors`): yalnızca ikincisi yazılsaydı onu desteklemeyen
+> eski bir tarayıcı hiç korunmazdı.
+>
+> ⚠️ `Referrer-Policy` özellikle 4.5R'nin **imzalı** ödeme sonuç
+> adresini koruyor — `?...&signature=…` içeren sayfadan dışarı bir
+> bağlantıya tıklanırsa varsayılan davranışta imza da üçüncü tarafa
+> giderdi; `strict-origin-when-cross-origin` yalnızca kökeni gönderiyor.
+>
+> ⚠️ `Strict-Transport-Security`'de `preload` yok (tarayıcı ön yükleme
+> listesine girmek geri alınamaz) ve `includeSubDomains` yok (ileride
+> HTTPS'siz bir alt alan adı açılırsa sessizce kırmasın diye). `M-4`
+> gereği her ortamda TEK giriş Caddy ve TLS her zaman açık — `.localhost`
+> bile `tls internal` ile şifreli, yani başlık hiçbir ortamda "HTTP'ye
+> düşme" riski taşımıyor.
+
+**Dört kırma denemesi, dördü de düştü** (middleware'i yalnızca `web`
+grubuna almak · `X-Frame-Options`'ı kaldırmak · CSP'yi genişletmek ·
+HSTS'i kaldırmak). **Doğrulandı (gerçek `curl`, canlı sunucunun dört
+yüzeyine karşı):** vitrin, panel, merkez ve ödeme iframe sayfasının
+hepsinde başlıklar doğru; ödeme sayfasının CSP'si hâlâ yalnızca
+`frame-ancestors 'self'`. **824 test.**
 
 ---
 

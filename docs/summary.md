@@ -2622,3 +2622,31 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek curl, canlı sunucu): 11 istek → ilk 10'u 404,
       11.si 429
+
+4.6U ✅ GÜVENLİK BAŞLIKLARI — 824 test
+      güvenlik taraması: X-Frame-Options · CSP · X-Content-Type-Options ·
+      Referrer-Policy · Strict-Transport-Security HİÇBİRİ yoktu
+
+      ✅ SecurityHeaders middleware, GERÇEKTEN GLOBAL (append)
+        dört yüzey de aynı riski taşıyor — yalnızca web grubuna eklenseydi
+        API JSON cevapları korumasız kalırdı (kırma denemesiyle ölçüldü)
+
+      ⚠️ CSP BİLEREK DAR — yalnızca frame-ancestors
+        ödeme sayfası kendi iframe'inde iyzico gösteriyor (4.5-K1)
+        paymentPageUrl iyzico'nun API cevabından DİNAMİK geliyor,
+        sabit domain olarak frame-src'ye yazılamaz
+        geniş default-src/script-src yazılsaydı yanlış tahmin edilen
+        domain müşteriye SESSİZCE BOŞ ÇERÇEVE gösterirdi
+        frame-ancestors bizim çerçevelenmemizi kapatıyor, BİZİM
+        İYZİCO'YU ÇERÇEVELEMEMİZİ ETKİLEMİYOR — ayrı yön
+        kırma denemesiyle ÖLÇÜLDÜ: default-src eklenince ödeme iframe
+        testi düştü — risk GERÇEK, dar tutma kararı DOĞRU
+
+      ⚠️ iki başlık birden (X-Frame-Options + frame-ancestors) — eski
+        tarayıcı desteği için
+      ⚠️ Referrer-Policy özellikle 4.5R'nin İMZALI ödeme sonuç adresini
+        koruyor (signature= parametresi üçüncü tarafa sızmasın)
+      ⚠️ HSTS'de preload YOK (geri alınamaz) · includeSubDomains YOK
+
+      DOĞRULANDI (gerçek curl, dört canlı yüzey): vitrin/panel/merkez/
+      ödeme-iframe hepsinde doğru başlıklar

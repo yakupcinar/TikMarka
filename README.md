@@ -154,7 +154,7 @@ veya dağıtım için izin gerekir.
 **Güvenlik — ucuzdan pahalıya, sırayla ele alınıyor** (kullanıcı isteği: "ucuzdan pahalıya sırayla ekle")
 
 * [x] ~~Kupon/yorum/iade uçlarında hız sınırlaması yok~~ → **4.6T'de kapandı**
-* [ ] Güvenlik başlıkları yok (`X-Frame-Options`, `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`) — panel bir başkasının sitesinde görünmez iframe'e alınabilir (clickjacking); bu risk özellikle önemli çünkü ödeme sayfası zaten bir iframe barındırıyor (4.5-K1)
+* [x] ~~Güvenlik başlıkları yok~~ → **4.6U'da kapandı**
 * [ ] Şifre sıfırlama akışı yok — müşteri/personel şifresini unutursa tek çözüm geliştiricinin elle bcrypt hash yazması
 * [ ] E-posta doğrulama yok — kayıt olan kimse adresini sahiplendiğini kanıtlamıyor (`DeliverableEmail` yalnızca biçim kontrolü)
 
@@ -219,4 +219,5 @@ veya dağıtım için izin gerekir.
 | 5 eksen birden kaydedilince seçenekler gelmiyor | Panel → ürün → 3'ten fazla işaretlenemiyor; denersen *"Bir üründe en fazla 3 eksen olabilir…"* | 4.5S |
 | Merkez marka araması kelime ortasından eşleşiyor | `localhost/yonetim/markalar` → **`ark` boş döner**, `marka` → üç marka | 4.5S |
 | Kupon/yorum/iade uçlarında hız sınırlaması yoktu | Kuponu 11 kez art arda dene → **11.'de "Too Many Requests"** | 4.6T |
+| Güvenlik başlıkları yoktu (clickjacking, MIME koklama, referrer sızıntısı) | Herhangi bir sayfada tarayıcı geliştirici konsolu → **Network** → başlıklarda `X-Frame-Options: SAMEORIGIN` görünür | 4.6U |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |

@@ -37,6 +37,7 @@ use App\Http\Middleware\RequireActiveTenant;
 use App\Http\Middleware\RequireOwner;
 use App\Http\Middleware\RequirePermission;
 use App\Http\Middleware\RequirePublishedStore;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Storefront\CartToken;
 use App\Platform\DomainUnavailableException;
 use App\Platform\InvalidTransitionException;
@@ -96,6 +97,17 @@ return Application::configure(basePath: dirname(__DIR__))
         | `X-Forwarded-For` başlıklarını uydurabilirdi. Bizde tek giriş
         | Caddy ve o Docker ağının içinde (172.x).
         */
+        /*
+        | ★ GÜVENLİK BAŞLIKLARI — GERÇEKTEN GLOBAL. (4.6U)
+        |
+        | ⚠️ `append` ile TÜM gruplara: vitrin (Blade), panel (Inertia),
+        | kontrol düzlemi (Inertia) ve API — dördü de aynı riski taşıyor
+        | (clickjacking, MIME koklama, referrer sızıntısı, HTTPS
+        | zorunluluğu). Yalnızca `web` grubuna eklenseydi API cevapları
+        | (JSON) korumasız kalırdı.
+        */
+        $middleware->append(SecurityHeaders::class);
+
         $middleware->trustProxies(at: [
             '10.0.0.0/8',
             '172.16.0.0/12',

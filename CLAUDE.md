@@ -582,6 +582,18 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   bir hedef kullanması throttle'ı atlatmıyor — bu YAN etki değil, doğru
   davranış: sayaç isteğin başarılı olup olmamasına bakmıyor.
 
+- **GENİŞ BİR CSP, DİNAMİK İFRAME ADRESİNİ SESSİZCE KIRAR.** Ödeme sayfası
+  kendi iframe'inde iyzico'yu gösteriyor (4.5-K1) ve o adres iyzico'nun API
+  cevabından **dinamik** geliyor — sabit bir alan adı olarak `frame-src`
+  izin listesine yazılamaz. `default-src`/`script-src` içeren bir
+  `Content-Security-Policy` eklenseydi (4.6U), yanlış tahmin edilen bir
+  domain müşterinin ödeme adımının ortasında **sessizce boş bir çerçeve**
+  görmesi demekti. ⚠️ `frame-ancestors` bu riski TAŞIMIYOR: yalnızca
+  BİZİM sayfamızın BAŞKASINCA çerçevelenmesini kapatıyor, bizim
+  başkasını çerçevelememizi etkilemiyor — ikisi ayrı yön. Clickjacking
+  koruması eklenecekse dinamik iframe barındıran bir projede yalnızca
+  `frame-ancestors`/`X-Frame-Options` kullan, `default-src` ekleme.
+
 ## Yapı
 
 ```
