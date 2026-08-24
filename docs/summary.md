@@ -2650,3 +2650,49 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek curl, dört canlı yüzey): vitrin/panel/merkez/
       ödeme-iframe hepsinde doğru başlıklar
+
+4.6V ✅ ŞİFRE SIFIRLAMA AKIŞI — 834 test
+      öncesinde HİÇBİR YOL YOKTU: şifresini unutan müşteri/personel
+      hesabına giremiyordu, tek çözüm elle bcrypt hash yazmaktı
+
+      ÖNCE BAĞIMLILIK: Mailpit yalnızca dev yakalayıcısı, gerçek sağlayıcı
+      HİÇ YOKTU → Gmail SMTP bağlandı, gerçek gönderimle doğrulandı
+
+      ✅ İKİ AYRI TABLO — GÜVENLİK kararı
+        Laravel jetonu YALNIZCA E-POSTAYA göre saklıyor; tek tablo
+        paylaşılsaydı aynı e-postalı müşteri, personel parolasını ele
+        geçirirdi (vitrin herkese açık, panel değil)
+
+      ⚠️⚠️ ÇERÇEVE BU KARARI DELİYORDU — SÖMÜRÜLEBİLİRLİĞİ KANITLANDI
+        Laravel 11+ çerçeve config'ini BİRLEŞTİRİYOR → `users` broker'ı
+        silinemiyor ve ÇAPRAZ BAĞLIYDI:
+          users broker tablosu  → password_reset_tokens (MÜŞTERİ)
+          users provider modeli → App\Models\User       (PERSONEL)
+        gerçek denemede müşteri jetonu PERSONEL parolasını değiştirdi
+        silinemediği için TUTARLI KILINDI (staff provider + staff tablo)
+        aynı saldırı tekrar denendi → passwords.token
+        testi AYARA değil DAVRANIŞA bakıyor
+
+      ✅ hesap varlığı SIZDIRILMIYOR (olan/olmayan aynı cevap)
+      ✅ posta MARKA adıyla ve KUYRUKTAN (2H-K3), adres yüzeye göre
+      ✅ throttle:sifre-sifirlama 5/saat — her istek BİR E-POSTA
+
+      ⚠️⚠️ GERÇEK KULLANIMDA KIRILDI — YEDİ TEST YEŞİLDİ
+        formun action'ı route('vitrin.sifre.sifirla') = GET rotası;
+        POST rotası İSİMSİZ ve başka adreste → müşteri 405 aldı
+        testler göremedi: hepsi DOĞRUDAN doğru adrese POST ediyordu
+        düzeltme: 4 POST rotası ADLANDIRILDI + testler artık sayfayı
+        render edip formun action'ını OKUYUP oraya gönderiyor
+        kırma denemesi: eski route() geri kondu → yeni test 405 ile
+        düştü, eski yedi test YEŞİL KALDI
+        ⚠️ regex method="post" ile daraltıldı — başlıktaki arama formu
+          (method="get") sayfada ÖNCE geliyor
+
+      ✅ e-posta artık form ALANI değil: gizli alanda gövdeye giriyor,
+        ekranda düz metin ("Hesap: …") — readonly kutu kaldırıldı
+
+
+      ⚠️ platform_users BİLEREK dışarıda: CreatePlatformUser komutu var
+
+      DOĞRULANDI: jeton MÜŞTERİ tablosunda, PERSONEL tablosu boş,
+      worker DONE, Mailpit total:0, posta gerçek Gmail'e ulaştı

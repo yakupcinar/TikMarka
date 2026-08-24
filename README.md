@@ -120,8 +120,9 @@ Arayüz teknolojisi henüz **seçilmedi** — backend çalışır hâle gelene k
 Tüm hakları saklıdır. Kod herkese açık olarak görüntülenebilir; kullanım, kopyalama
 veya dağıtım için izin gerekir.
 
+---
 
-## Örnek Hesaplar
+# Local Hesaplar
 
 *	https://marka-a.localhost/ · https://marka-b.localhost/ // yakupcinar@gmail.com / 12345678
 * https://marka-a.localhost/yonetim // sahip@marka-a.localhost / 12345678
@@ -133,17 +134,39 @@ veya dağıtım için izin gerekir.
 * https://tightwad-gargle-footage.ngrok-free.dev/yonetim // test@gmail.com / 12345678
 * Admin paneli localhost'da kalacak.
 
+# Iyzico Hesaplar
 * Iyzico Örnek Hesaplar: Test Kullanıcısı (isim soyisim) test@gmail.com (mail)
 * Numara / ccv / tarih
 * 5168 8800 0000 0002 / 123 / 12/29 (master)
-* 
 
 * 4111 1111 1111 1129 / 123 / 12/29 (Yetersiz Bakiye)
 * 4122 1111 1111 1118 / 123 / 12/29 (Geçersiz Kart Numarası)
+
+# Mailpit Servis / Gmail Kod
+* Gmail uygulama şifresi `.env` → `MAIL_PASSWORD` içinde.
+  ⚠️ Buraya YAZILMAZ: README takipli bir dosya, yazılan değer git
+  geçmişine kalıcı girer ve depoyu gören herkes okur.
 ---
 
 ## İyileştirme
 
+* samil.localhost domaini ekledim marka a'dan ama onla ulaşamıyorum sayfaya doğrulandı diye gösteriyor acaba kodunda eksik mi var ya da cadye izin vermek mi lazım manuel veya localhost tanımladığım için mi ikinci,
+
+* Şirket panellerinde resim ekleme var, paneli kullanan genelde jpeg veya png yükleyeceği için laravelde bunu otomatik sıkıştırılmış optimize edilmiş WebP formatına dönüştüren bir kod bloğu yazalım yoksa.
+
+* Vitrinde kullanıcı ödemeye gidince yukardan menülerden ödemeden çıkabiliyor ama bu ödemeyi iptal ettirmiyor arkada siparişlerde tutuyor en iyisi biz oraya iptal et butonu koyalım sayfada uygun bir yere ödemeyi direkt iptal etsin ama ürünü sepete geri koyalım, ayrıca hatta onu da geçtim direkt başka sayfaya giderse ödemeyi iptal edelim yukardaki panellerden bir şeye tıklasa bile hiç bir daha siparişlerde ödemeyi tamamla veya iptal etle uğraşmayalım sen ne düşünüyorsun önce etrafa bakalım e ticaretler nasıl işlemiş sonra bakarız.
+
+* Vitrin için hesabı olan kullanıcılara favorileme seçeneği koyalım ürünlere ürün içerisinde.
+
+* Vitrin sipariş ekle, ödemeye git web in web gelsin iyzico servisi doğru bilgileri gir ödeme yap tam bu sırada web in web iyzico servisinin olduğu yerde url erişilemiyor yazısı çıkıyor bunu ben nasıl iyziconun panelinden ayarlarım farklı senaryolar için (bu standart değil mi ödeme geçerli ise mesajı direkt iyzico göstermesi gerekmez mi sandboxta mı yok bu özellik).
+// Sanırsam ben ödeme bitince iyzicoya kullanıcıyı hangi adrese atacağını söylemediğim için bu oluyor o zaman şöyle yapalım ödemeniz başarılı veya başarız etc. bir adres ekleyelim sayfada duruma göre ödeme başarılı/başarısız diyecek -> başarılı ise sipariş detayına gidebilmesi için altı çizili bir yazı ekleyelim ->başarısza sepete geri git altı çizili bir yazı ekleyelim (sepet kaybolmasın ödeme başarısızsa)
+
+* Şirket paneline Müşteri diye bir sekme ekleyip o kullanıcının siparişlerini(aldığı ürünler toplam harcama vb.), favorilerini, başarız ödeme denemeleri.
+
+* Appimizin frontunu mobil-tablet için de uygun hale getirelim, html şablonu olsun blade olsun, etc. buralarda genel ve ince ayarlara gidelim plan yapalım.
+
+* Lazy Loading (Tembel Yükleme): Ana sayfada çok fazla ürün listeleneceği için aşağı kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını uçurur.
+ 
 > Açık kusurlar ve fikirler. Biten maddeler **silinmiyor** — aşağıdaki
 > "Yapıldı" bölümüne taşınıyor ki tekrar kontrol edilebilsin.
 
@@ -155,7 +178,7 @@ veya dağıtım için izin gerekir.
 
 * [x] ~~Kupon/yorum/iade uçlarında hız sınırlaması yok~~ → **4.6T'de kapandı**
 * [x] ~~Güvenlik başlıkları yok~~ → **4.6U'da kapandı**
-* [ ] Şifre sıfırlama akışı yok — müşteri/personel şifresini unutursa tek çözüm geliştiricinin elle bcrypt hash yazması
+* [x] ~~Şifre sıfırlama akışı yok~~ → **4.6V'de kapandı** (Gmail SMTP bağlandı)
 * [ ] E-posta doğrulama yok — kayıt olan kimse adresini sahiplendiğini kanıtlamıyor (`DeliverableEmail` yalnızca biçim kontrolü)
 
 **Merkez yönetim**
@@ -220,4 +243,10 @@ veya dağıtım için izin gerekir.
 | Merkez marka araması kelime ortasından eşleşiyor | `localhost/yonetim/markalar` → **`ark` boş döner**, `marka` → üç marka | 4.5S |
 | Kupon/yorum/iade uçlarında hız sınırlaması yoktu | Kuponu 11 kez art arda dene → **11.'de "Too Many Requests"** | 4.6T |
 | Güvenlik başlıkları yoktu (clickjacking, MIME koklama, referrer sızıntısı) | Herhangi bir sayfada tarayıcı geliştirici konsolu → **Network** → başlıklarda `X-Frame-Options: SAMEORIGIN` görünür | 4.6U |
+| Şifre sıfırlama akışı yoktu | Vitrin → Giriş → **"Şifremi unuttum"** · Panel → `/yonetim/giris` → **"Şifremi unuttum"** | 4.6V |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
+
+
+yeni ürün ekledim sku numarası hata verdi sku numarası 'a' idi neyden kaynaklı verdi öyle bir sku numarası gerçekten hali hazırda bir üründe var mı bi kısaca baksana sadece merak ettim ondan mı öyle oldu,
+
+Bu mimaride kaç tane db kullanıldı ve neden.

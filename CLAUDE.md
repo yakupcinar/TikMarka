@@ -594,6 +594,31 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   koruması eklenecekse dinamik iframe barındıran bir projede yalnızca
   `frame-ancestors`/`X-Frame-Options` kullan, `default-src` ekleme.
 
+- **LARAVEL 11+ ÇERÇEVE CONFIG'İNİ BİRLEŞTİRİYOR — bir varsayılanı
+  `config/`'ten SİLMEK onu YOK ETMİYOR.** 4.6V'de ölçüldü ve
+  sömürülebilirliği kanıtlandı: `auth.passwords.users` broker'ı
+  `config/auth.php`'den çıkarıldığı hâlde çalışma anında hâlâ vardı ve
+  ÇAPRAZ BAĞLIYDI — tablosu `password_reset_tokens` (müşteri), provider
+  modeli `App\Models\User` (personel). Vitrinden alınan bir müşteri
+  jetonu `Password::broker('users')` ile **personel parolasını
+  değiştirdi**. ⚠️ Silinemeyen varsayılan **tutarlı kılınmalı** (aynı
+  provider + aynı tablo), yok sayılmamalı. ⚠️ Ayrıca: bir güvenlik
+  kararını (burada "iki ayrı jeton tablosu") çerçevenin sessizce
+  delebileceğini varsay — kararı ölçen test AYARA değil DAVRANIŞA
+  bakmalı.
+- **İSİMSİZ POST ROTASI + `route()` = FORM YANLIŞ ADRESE GİDER.** 4.6V'de
+  ısırdı: sıfırlama formunun `action`'ı `route('vitrin.sifre.sifirla')`
+  yazıyordu, o **GET** rotasının adıydı; POST rotası isimsiz ve başka
+  adresteydi. Müşteri postadaki bağlantıyı açtı, şifreyi yazdı ve **405**
+  aldı. ⚠️ **Yedi testin hiçbiri göremedi**: hepsi doğrudan doğru adrese
+  POST ediyordu (`$this->post('/sifre-sifirla', …)`) — formun NEREYE
+  gittiğini kimse sormamıştı. Kural: bir formu sınayan test **sayfayı
+  render edip `action`'ı okumalı** ve tam oraya göndermeli.
+  ⚠️ Regex'i `method="post"` ile daralt — düzenin başlığındaki arama
+  formu (`method="get"`) sayfada ÖNCE geliyor ve ilk eşleşme odur; yoksa
+  test düzeltilmiş kodda da 405 verir. "Form alanları doğrulamayla hizalı
+  olmalı" tuzağının ADRES tarafı: orada eksik olan ALAN'dı, burada ADRES.
+
 ## Yapı
 
 ```

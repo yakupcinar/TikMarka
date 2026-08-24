@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Domain\Identity\EmailNormalizer;
 use App\Enums\Permission;
+use App\Mail\PasswordResetMail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -143,4 +145,30 @@ class User extends Authenticatable
 
     /** Token tabanlı kimlik (K-12) — `remember_token` kolonu da yok. */
     protected $rememberTokenName = null;
+
+    /**
+     * Şifre sıfırlama postası — MARKA ADIYLA. (4.6V)
+     *
+     * ⚠️ Laravel'in hazır `ResetPassword` bildirimi EZİLİYOR. Varsayılan
+     * bildirim platform adıyla ve çerçevenin İngilizce iskeletiyle
+     * gidiyor; müşteri onu tanımaz. Bu projede tüm postalar markanın
+     * kimliğiyle çıkıyor (2H-K3) ve kuyruğa giriyor (2H-K1).
+     *
+     * ⚠️ Adres BURADA kuruluyor çünkü rota adı yüzeye göre değişiyor:
+     * müşteri vitrindeki sayfaya, personel panele gitmeli. Tek adres
+     * yazılsaydı personel müşteri ekranına düşerdi (4C'de aynı hata
+     * `redirectGuestsTo` için yapılmıştı).
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $adres = route('panel.sifre.sifirla', [
+            'token' => $token,
+            'email' => $this->getEmailForPasswordReset(),
+        ]);
+
+        $dakika = (int) config('auth.passwords.staff.expire', 60);
+
+        Mail::to($this->getEmailForPasswordReset())
+            ->queue(new PasswordResetMail($adres, $dakika, panel: true));
+    }
 }

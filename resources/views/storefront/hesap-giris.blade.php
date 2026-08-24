@@ -17,6 +17,10 @@
                 <input type="password" name="password" required>
             </label>
 
+            {{-- ⚠️ Bağlantı FORMUN İÇİNDE, şifre alanının hemen altında:
+                 kullanıcı şifresini hatırlamadığını tam o anda fark ediyor. --}}
+            <p class="ipucu"><a href="{{ route('vitrin.sifre.unuttum') }}">Şifremi unuttum</a></p>
+
             <button class="dugme buyuk" type="submit">Giriş yap</button>
         </form>
 

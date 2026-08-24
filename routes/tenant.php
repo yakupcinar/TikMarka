@@ -18,6 +18,7 @@ use App\Http\Panel\OptionController;
 use App\Http\Panel\OrderController;
 use App\Http\Panel\OrderPageController;
 use App\Http\Panel\PanelAuthPageController;
+use App\Http\Panel\PanelPasswordResetController;
 use App\Http\Panel\PaymentSettingsController;
 use App\Http\Panel\PaymentSettingsPageController;
 use App\Http\Panel\ProductController;
@@ -47,6 +48,7 @@ use App\Http\Storefront\CouponController;
 use App\Http\Storefront\HomeController;
 use App\Http\Storefront\LegalController as VitrinLegal;
 use App\Http\Storefront\LegalPageController;
+use App\Http\Storefront\PasswordResetPageController;
 use App\Http\Storefront\PaymentController;
 use App\Http\Storefront\PaymentReturnController;
 use App\Http\Storefront\PaymentWebhookController;
@@ -641,6 +643,42 @@ Route::middleware([
     Route::get('/kayit', [AccountPageController::class, 'kayitFormu'])->name('vitrin.kayit');
     Route::post('/kayit', [AccountPageController::class, 'kayit']);
 
+    /*
+    | ŞİFRE SIFIRLAMA — MÜŞTERİ (4.6V).
+    |
+    | ⚠️ Öncesinde HİÇBİR yol yoktu: şifresini unutan müşteri hesabına bir
+    | daha giremiyordu.
+    |
+    | ⚠️ `throttle:sifre-sifirlama` ŞART. Form herkese açık ve her istek
+    | BİR E-POSTA GÖNDERİYOR: sınırsız bırakılsaydı saldırgan kurbanın
+    | gelen kutusunu doldurabilir (mail bombing), üstelik bizim Gmail
+    | günlük gönderim kotamızı da yakabilirdi.
+    |
+    | ⚠️ Jeton adreste (`{token}`) — imzalı adres DEĞİL. İkisi farklı
+    | araç: imza adresi BİZİM ürettiğimizi kanıtlar, jeton ise
+    | veritabanındaki tek kullanımlık kayda karşı doğrulanıyor ve
+    | kullanılınca siliniyor.
+    */
+    Route::get('/sifremi-unuttum', [PasswordResetPageController::class, 'istekFormu'])
+        ->name('vitrin.sifre.unuttum');
+
+    Route::post('/sifremi-unuttum', [PasswordResetPageController::class, 'istekGonder'])
+        ->middleware('throttle:sifre-sifirlama')
+        ->name('vitrin.sifre.unuttum.gonder');
+
+    Route::get('/sifre-sifirla/{token}', [PasswordResetPageController::class, 'sifirlamaFormu'])
+        ->name('vitrin.sifre.sifirla');
+
+    /*
+    | ⚠️ İSİM ŞART. İsimsiz kaldığında Blade formu `route()` ile GET
+    | rotasını üretti (`/sifre-sifirla/{token}`) ve tarayıcı POST edince
+    | 405 aldı — gerçek kullanımda yakalandı, testler görmedi çünkü
+    | doğrudan doğru adrese POST ediyorlardı.
+    */
+    Route::post('/sifre-sifirla', [PasswordResetPageController::class, 'sifirla'])
+        ->middleware('throttle:sifre-sifirlama')
+        ->name('vitrin.sifre.guncelle');
+
     Route::middleware('auth:customer-web')->group(function () {
         Route::post('/cikis', [AccountPageController::class, 'cikis'])->name('vitrin.cikis');
         Route::get('/hesabim', [AccountPageController::class, 'hesap'])->name('vitrin.hesap');
@@ -751,6 +789,31 @@ Route::middleware([
         Route::post('/giris', [PanelAuthPageController::class, 'giris'])
             ->middleware('throttle:giris')
             ->name('panel.giris.gonder');
+
+        /*
+        | ŞİFRE SIFIRLAMA — PERSONEL (4.6V).
+        |
+        | ⚠️ `guest:staff-web` grubunun İÇİNDE: girişi zaten yapmış
+        | personelin sıfırlama ekranını görmesi anlamsız, hatta
+        | kafa karıştırıcı olurdu.
+        |
+        | ⚠️ AYRI BROKER ve AYRI TABLO kullanıyor (`staff`). Vitrinle
+        | paylaşılsaydı aynı e-postalı müşteri, personel parolasını
+        | sıfırlayabilirdi.
+        */
+        Route::get('/sifremi-unuttum', [PanelPasswordResetController::class, 'istekFormu'])
+            ->name('panel.sifre.unuttum');
+
+        Route::post('/sifremi-unuttum', [PanelPasswordResetController::class, 'istekGonder'])
+            ->middleware('throttle:sifre-sifirlama')
+            ->name('panel.sifre.unuttum.gonder');
+
+        Route::get('/sifre-sifirla/{token}', [PanelPasswordResetController::class, 'sifirlamaFormu'])
+            ->name('panel.sifre.sifirla');
+
+        Route::post('/sifre-sifirla', [PanelPasswordResetController::class, 'sifirla'])
+            ->middleware('throttle:sifre-sifirlama')
+            ->name('panel.sifre.guncelle');
     });
 
     Route::middleware(['auth:staff-web', 'marka-aktif'])->group(function () {

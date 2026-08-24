@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6U BİTTİ (güvenlik 2/4), 4.6V SIRADA ┐
+┌─ YOL HARİTASI ──────── şu an: 4.6V BİTTİ (güvenlik 3/4), e-posta doğrulama SIRADA ┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6661,6 +6661,112 @@ hepsinde başlıklar doğru; ödeme sayfasının CSP'si hâlâ yalnızca
 
 ---
 
+### 4.6V — şifre sıfırlama akışı
+
+Güvenlik listesinin üçüncüsü. Öncesinde **hiçbir yol yoktu**: şifresini
+unutan müşteri ya da personel hesabına bir daha giremiyordu; tek çözüm
+geliştiricinin elle bcrypt hash yazmasıydı — bu oturumda birkaç kez
+yapmak zorunda kalmak bloğun varlık sebebi oldu.
+
+**Önce bağımlılık kuruldu.** Kullanıcı haklı olarak sordu: *"e-posta
+bağlamadan nasıl olacak?"* Ölçüldü — `Mailpit` yalnızca geliştirme
+yakalayıcısı, gerçek bir sağlayıcı (`composer.json`'da SendGrid/SES/
+Postmark) **hiç yoktu**. Gmail SMTP bağlandı ve **gerçek gönderimle**
+doğrulandı (doğrudan + kuyruktan; Mailpit `total: 0`).
+
+**✅ İki ayrı tablo — ve bu bir GÜVENLİK kararı, üslup değil.**
+
+> ⚠️ Laravel'in `DatabaseTokenRepository`'si jetonu **yalnızca
+> e-postaya** göre saklıyor. Müşteri ve personel tek tabloyu
+> paylaşsaydı aynı e-postalı iki kayıt birbirinin jetonunu ezerdi:
+> vitrinden herkesin açabildiği bir müşteri hesabı, panel personelinin
+> parolasını ele geçirmenin yolu olurdu. `password_reset_tokens`
+> (müşteri) ve `staff_password_reset_tokens` (personel) ayrıldı.
+
+**⚠️⚠️ ÇERÇEVENİN KENDİSİ BU KARARI DELİYORDU — ÖLÇÜLDÜ VE
+SÖMÜRÜLEBİLİRLİĞİ KANITLANDI.**
+
+Laravel 11+ çerçeve varsayılan config'ini uygulamanınkiyle
+**birleştiriyor**, yani `users` broker'ını `config/auth.php`'den silmek
+onu yok etmiyor. Kalan varsayılan **çapraz bağlıydı**:
+
+```
+users broker tablosu  → password_reset_tokens   (MÜŞTERİ)
+users provider modeli → App\Models\User         (PERSONEL)
+```
+
+Gerçek bir denemeyle sınandı: vitrinden alınan müşteri jetonu
+`Password::broker('users')` üzerinden **personel parolasını değiştirdi**
+(`passwords.reset` döndü, `Hash::check` doğruladı). Bugün hiçbir kod o
+broker'ı çağırmıyor — yani açık **gizliydi**, ama gerçekti.
+
+> Silinemediği için **tutarlı kılındı**: artık `staff` ile aynı provider
+> ve aynı tabloya bakıyor. Aynı saldırı tekrar denendi, `passwords.token`
+> döndü. Testi yalnızca ayara değil **davranışa** bakıyor.
+
+**✅ Hesap varlığı sızdırılmıyor.** Laravel'in hazır davranışı "bu
+e-posta kayıtlı değil" diyor; o cevap saldırgana üye listesi çıkarma
+imkânı verirdi. Olan ve olmayan adres **aynı** mesajı alıyor.
+
+**✅ Posta marka adıyla ve kuyruktan.** Laravel'in hazır `ResetPassword`
+bildirimi ezildi (2H-K3): müşteri "TıkMarka"dan değil alışveriş yaptığı
+markadan posta almalı. Adres yüzeye göre değişiyor — personel panele,
+müşteri vitrine gidiyor; tek adres yazılsaydı personel müşteri ekranına
+düşer ve jetonu orada geçersiz olurdu.
+
+**✅ `throttle:sifre-sifirlama`** (5/saat, e-posta+IP): her istek bir
+e-posta gönderiyor. Sınırsız bırakılsaydı hem kurbanın gelen kutusu
+doldurulur hem de SMTP kotası yanardı. Laravel'in broker'ındaki
+`throttle => 60` yalnızca *aynı* e-postaya art arda jetonu engelliyor.
+
+**Dört kırma denemesi, dördü de düştü** (`users`'ı çapraz bağlıya
+döndürmek · personel broker'ını müşteri tablosuna bağlamak · sızıntı
+korumasını kaldırmak · marka postası yerine varsayılan bildirimi
+kullanmak). **Doğrulandı (gerçek koşu):** vitrin formundan istek → jeton
+**müşteri** tablosuna yazıldı, **personel tablosu boş** → worker
+`PasswordResetMail ... DONE` → Mailpit `total: 0`, posta gerçek Gmail'e
+ulaştı. **834 test.**
+
+**⚠️⚠️ GERÇEK KULLANIMDA KIRILDI — TESTLER YEŞİLDİ.**
+
+Kullanıcı postadaki bağlantıya tıkladı, sayfa açıldı, yeni şifreyi yazdı
+ve **405 Method Not Allowed** aldı. Sebep formun *adresi*ydi:
+
+```
+Blade:  action="{{ route('vitrin.sifre.sifirla', ['token' => $token]) }}"
+         → GET  /sifre-sifirla/{token}     ← formun gittiği yer
+Gerçek POST rotası:  POST /sifre-sifirla   ← İSİMSİZ olduğu için erişilemiyordu
+```
+
+> ⚠️ **Yedi testin hiçbiri göremezdi**: hepsi doğrudan doğru adrese POST
+> ediyordu (`$this->post('/sifre-sifirla', …)`), yani formun **nereye**
+> gittiğini hiç sormuyorlardı. Bu, CLAUDE.md'deki *"form alanları
+> doğrulamayla hizalı olmalı — testler bunu göremez"* tuzağının **adres**
+> tarafı: orada eksik olan bir ALAN'dı, burada bir ADRES.
+
+Düzeltme iki parçalı: dört POST rotası da **adlandırıldı**
+(`vitrin.sifre.guncelle` · `vitrin.sifre.unuttum.gonder` ·
+`panel.sifre.guncelle` · `panel.sifre.unuttum.gonder`) ve testler
+**tarayıcının yaptığını** yapacak şekilde yazıldı: sayfayı render et,
+formun `action`'ını **oku**, tam oraya gönder. Kırma denemesi eski
+`route()` çağrısını geri koydu — yeni test düştü (`405`), eski yedi test
+**yeşil kaldı**, yani ölçümün kimin işi olduğu görüldü.
+
+> ⚠️ Testi yazarken ilk hâli **yanlış formu** ölçüyordu: düzenin
+> başlığında bir arama formu var (`method="get"`) ve sayfada önce o
+> geliyor. Regex `method="post"` ile daraltıldı — yoksa test, hata
+> düzeltilmiş olmasına rağmen 405 vermeye devam ediyordu.
+
+**✅ E-posta artık form ALANI değil.** Sıfırlama ekranında adres
+`readonly` bir kutudaydı: doldurulamayan bir kutu kullanıcıya "burayı
+mı düzenlemeliyim" diye sorduruyor. Artık değer **gizli alanda** POST
+gövdesine giriyor, ekranda ise düz metin — *"Hesap: …"*. Hangi hesabın
+şifresinin değiştiği görünüyor, kutu yok.
+> ⚠️ `platform_users` BİLEREK kapsam dışı: onun `CreatePlatformUser`
+> komut satırı kurtarma yolu zaten var. Müşteri ve personelin hiçbir
+> yolu yoktu.
+
+---
 ## Faz 5 — Entegrasyonlar  *(henüz açılmadı)*
 
 Kargo firmaları · e-fatura / e-arşiv

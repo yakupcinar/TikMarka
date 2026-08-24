@@ -126,6 +126,24 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('yorum', fn (Request $istek) => Limit::perHour(5)
             ->by($istek->user()?->getAuthIdentifier() ?? $istek->ip()));
 
+        /*
+        | Şifre sıfırlama (4.6V): her istek BİR E-POSTA gönderiyor.
+        |
+        | ⚠️ Sınırsız bırakılsaydı iki ayrı zarar: (1) saldırgan kurbanın
+        | gelen kutusunu doldurur (mail bombing), (2) SMTP sağlayıcısının
+        | günlük gönderim kotası yanar ve GERÇEK postalar da gitmez.
+        |
+        | ⚠️ `giris` gibi e-posta + IP birlikte: yalnız IP olsaydı ortak
+        | ağdaki kullanıcılar birbirini kilitlerdi, yalnız e-posta olsaydı
+        | saldırgan farklı adreslerle sınırsız posta tetiklerdi.
+        |
+        | ⚠️ Laravel'in broker'ında ayrıca `throttle => 60` var ama o
+        | YALNIZCA aynı e-postaya art arda jeton üretmeyi engelliyor;
+        | farklı e-postalarla yapılan toplu denemeyi görmüyor.
+        */
+        RateLimiter::for('sifre-sifirlama', fn (Request $istek) => Limit::perHour(5)
+            ->by(EmailNormalizer::normallestir((string) $istek->input('email')).'|'.$istek->ip()));
+
         // İade: aynı gerekçe — müşteri kimliği zaten zorunlu (1A.5:
         // sipariş sahiplik üzerinden çözülüyor). Bir siparişte birden çok
         // satır için ayrı talep açılabildiğinden sınır kuponunkinden gevşek.

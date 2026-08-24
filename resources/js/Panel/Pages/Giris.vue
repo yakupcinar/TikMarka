@@ -4,7 +4,7 @@
  |
  | ⚠️ Düzeni KULLANMIYOR: menü ve çıkış düğmesi henüz anlamsız.
  */
-import { useForm, Head } from '@inertiajs/vue3'
+import { useForm, Head, Link } from '@inertiajs/vue3'
 
 const form = useForm({ email: '', password: '' })
 
@@ -58,6 +58,12 @@ function gonder() {
         class="w-full rounded-lg bg-orange-600 text-white py-2 font-semibold disabled:opacity-60"
         :disabled="form.processing"
       >{{ form.processing ? 'Giriş yapılıyor…' : 'Giriş yap' }}</button>
+
+      <!-- ⚠️ Şifresini unutan personelin ÖNCEDEN hiçbir yolu yoktu:
+           tek çözüm geliştiricinin elle bcrypt hash yazmasıydı. -->
+      <p class="mt-4 text-sm text-center">
+        <Link href="/yonetim/sifremi-unuttum" class="text-stone-600 hover:text-orange-600">Şifremi unuttum</Link>
+      </p>
     </form>
   </div>
 </template>

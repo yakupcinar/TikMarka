@@ -19,7 +19,12 @@ return [
 
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'customer'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        /*
+        | ⚠️ Varsayılan broker `customers`: vitrin tarafı. Panel kendi
+        | broker'ını AÇIKÇA seçiyor (`Password::broker('staff')`) —
+        | varsayılana güvenmek 4.5I'deki guard hatasının aynısı olurdu.
+        */
+        'passwords' => env('AUTH_PASSWORD_BROKER', 'customers'),
     ],
 
     /*
@@ -206,10 +211,79 @@ return [
     |
     */
 
+    /*
+    | ŞİFRE SIFIRLAMA BROKER'LARI (4.6V).
+    |
+    | ⚠️ `users` BROKER'I BURADAN SİLİNDİ AMA YİNE DE VAR — ölçüldü.
+    | Laravel 11+ ÇERÇEVE VARSAYILAN config'ini uygulamanınkiyle
+    | BİRLEŞTİRİYOR (`vendor/laravel/framework/config/auth.php`), yani bu
+    | dosyadan çıkarmak onu yok etmiyor:
+    |
+    |     dosyadan okunan → customers, staff
+    |     çalışma anında  → users, customers, staff
+    |
+    | Kalan `users` broker'ı BOZUK: var olmayan bir `users` provider'ına
+    | işaret ediyor. `Password::broker('users')` çağrılırsa çalışma anında
+    | patlar. Korunma iki katmanlı: (1) varsayılan broker aşağıda
+    | `customers` yapıldı, (2) panel kendi broker'ını AÇIKÇA seçiyor.
+    | `SifreSifirlamaTest` bunu ölçüyor.
+    |
+    | ⚠️ İKİ AYRI TABLO ve bu bir GÜVENLİK kararı. Laravel jetonu yalnızca
+    | E-POSTAYA göre saklıyor; müşteri ve personel aynı tabloyu
+    | paylaşsaydı aynı e-postaya sahip iki kayıt birbirinin jetonunu
+    | ezerdi ve müşteri jetonu personel parolasını değiştirebilirdi.
+    | Gerekçenin tamamı migration dosyasında.
+    |
+    | ⚠️ `platform_users` BİLEREK YOK: onun komut satırı kurtarma yolu
+    | zaten var (`CreatePlatformUser`). Müşteri ve personelin hiçbir yolu
+    | yoktu — bu bloğun sebebi o.
+    */
     'passwords' => [
+        'customers' => [
+            'provider' => 'customers',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'staff' => [
+            'provider' => 'staff',
+            'table' => 'staff_password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        /*
+        | ★ `users` — SİLİNEMEYEN ÇERÇEVE VARSAYILANI, ZARARSIZ HÂLE
+        | GETİRİLDİ. Buradaki tanım bir kolaylık değil, KAPATILMIŞ BİR
+        | AÇIK.
+        |
+        | ⚠️ ÖLÇÜLDÜ VE SÖMÜRÜLEBİLİRLİĞİ KANITLANDI. Laravel 11+ çerçeve
+        | config'ini birleştirdiği için `users` broker'ı bu dosyadan
+        | silinse bile çalışma anında var oluyordu ve ÇAPRAZ BAĞLIYDI:
+        |
+        |     users broker tablosu  → password_reset_tokens   (MÜŞTERİ)
+        |     users provider modeli → App\Models\User         (PERSONEL)
+        |
+        | Yani vitrinden herkesin alabildiği bir MÜŞTERİ jetonu,
+        | `Password::broker('users')` üzerinden PERSONEL parolasını
+        | değiştiriyordu. Gerçek bir denemeyle doğrulandı: sonuç
+        | `passwords.reset` döndü ve personel parolası ele geçirildi.
+        |
+        | ⚠️ Bugün hiçbir kod `broker('users')` çağırmıyor — yani açık
+        | GİZLİ (latent). Ama silinemediği için tek savunma onu tutarlı
+        | kılmak: artık `staff` ile aynı provider ve aynı tabloya
+        | bakıyor. Çapraz bağ yok; en kötü ihtimalle personel jetonu
+        | personel parolasını sıfırlar, ki doğru davranış budur.
+        |
+        | ⚠️ İki ayrı tablo kararının (migration'daki gerekçe) çerçeve
+        | tarafından SESSİZCE delinebildiğinin örneği. Yeni bir broker
+        | eklenirken bu dosyadaki her girdinin provider/table çiftinin
+        | AYNI kullanıcı türüne baktığı doğrulanmalı.
+        */
         'users' => [
-            'provider' => 'users',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'provider' => 'staff',
+            'table' => 'staff_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],
