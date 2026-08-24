@@ -7,6 +7,12 @@
 .env.backup
 .env.production
 /auth.json
+# ⚠️ Hesap/şifre notları. İKİ YAZIM DA gerekli: git'in yoksayma
+#   eşleşmesi core.ignorecase'e bağlı ve macOS'ta true, Linux'ta
+#   false. Yalnızca 'PASSWORD.md' yazılıydı — macOS'ta tutuyordu,
+#   ölçüldü ki Linux'ta (CI/sunucu) 'password.md' commit'e girerdi.
+PASSWORD.md
+password.md
 
 # Laravel çalışma zamanı
 # ⚠ Kiracı klasörleri: her markanın yüklediği dosyalar buraya düşüyor

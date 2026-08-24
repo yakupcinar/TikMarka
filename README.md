@@ -120,34 +120,6 @@ Arayüz teknolojisi henüz **seçilmedi** — backend çalışır hâle gelene k
 Tüm hakları saklıdır. Kod herkese açık olarak görüntülenebilir; kullanım, kopyalama
 veya dağıtım için izin gerekir.
 
----
-
-# Local Hesaplar
-
-*	https://marka-a.localhost/ · https://marka-b.localhost/ // yakupcinar@gmail.com / 12345678
-* https://marka-a.localhost/yonetim // sahip@marka-a.localhost / 12345678
-* https://localhost/yonetim // yakup@tikmarka.test / 123
-
-# Server Hesaplar
-
-* https://tightwad-gargle-footage.ngrok-free.dev // test@gmail.com / 12345678
-* https://tightwad-gargle-footage.ngrok-free.dev/yonetim // test@gmail.com / 12345678
-* Admin paneli localhost'da kalacak.
-
-# Iyzico Hesaplar
-* Iyzico Örnek Hesaplar: Test Kullanıcısı (isim soyisim) test@gmail.com (mail)
-* Numara / ccv / tarih
-* 5168 8800 0000 0002 / 123 / 12/29 (master)
-
-* 4111 1111 1111 1129 / 123 / 12/29 (Yetersiz Bakiye)
-* 4122 1111 1111 1118 / 123 / 12/29 (Geçersiz Kart Numarası)
-
-# Mailpit Servis / Gmail Kod
-* Gmail uygulama şifresi `.env` → `MAIL_PASSWORD` içinde.
-  ⚠️ Buraya YAZILMAZ: README takipli bir dosya, yazılan değer git
-  geçmişine kalıcı girer ve depoyu gören herkes okur.
----
-
 ## İyileştirme
 
 * samil.localhost domaini ekledim marka a'dan ama onla ulaşamıyorum sayfaya doğrulandı diye gösteriyor acaba kodunda eksik mi var ya da cadye izin vermek mi lazım manuel veya localhost tanımladığım için mi ikinci,
