@@ -124,7 +124,7 @@ veya dağıtım için izin gerekir.
 ## Örnek Hesaplar
 
 *	https://marka-a.localhost/ · https://marka-b.localhost/ // yakupcinar@gmail.com / 12345678
-* https://marka-a.localhost/yonetim // sahip@marka-a.localhost / 123
+* https://marka-a.localhost/yonetim // sahip@marka-a.localhost / 12345678
 * https://localhost/yonetim // yakup@tikmarka.test / 123
 
 # Server Hesaplar
@@ -151,8 +151,12 @@ veya dağıtım için izin gerekir.
 
 ### Açık kusurlar
 
-*Şu an açık kusur yok — bildirdiklerinin hepsi "Yapıldı" tablosunda.
-Yenisini buraya yazabilirsin.
+**Güvenlik — ucuzdan pahalıya, sırayla ele alınıyor** (kullanıcı isteği: "ucuzdan pahalıya sırayla ekle")
+
+* [x] ~~Kupon/yorum/iade uçlarında hız sınırlaması yok~~ → **4.6T'de kapandı**
+* [ ] Güvenlik başlıkları yok (`X-Frame-Options`, `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options`) — panel bir başkasının sitesinde görünmez iframe'e alınabilir (clickjacking); bu risk özellikle önemli çünkü ödeme sayfası zaten bir iframe barındırıyor (4.5-K1)
+* [ ] Şifre sıfırlama akışı yok — müşteri/personel şifresini unutursa tek çözüm geliştiricinin elle bcrypt hash yazması
+* [ ] E-posta doğrulama yok — kayıt olan kimse adresini sahiplendiğini kanıtlamıyor (`DeliverableEmail` yalnızca biçim kontrolü)
 
 **Merkez yönetim**
 
@@ -214,4 +218,5 @@ Yenisini buraya yazabilirsin.
 | Eksen kaydetmeden varyant tablosuna yazılabiliyor | Panel → ürün → eksen kaydedilmeden **SKU/fiyat/stok kutuları kapalı** | 4.5S |
 | 5 eksen birden kaydedilince seçenekler gelmiyor | Panel → ürün → 3'ten fazla işaretlenemiyor; denersen *"Bir üründe en fazla 3 eksen olabilir…"* | 4.5S |
 | Merkez marka araması kelime ortasından eşleşiyor | `localhost/yonetim/markalar` → **`ark` boş döner**, `marka` → üç marka | 4.5S |
+| Kupon/yorum/iade uçlarında hız sınırlaması yoktu | Kuponu 11 kez art arda dene → **11.'de "Too Many Requests"** | 4.6T |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |

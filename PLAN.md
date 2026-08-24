@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6A + 4.6S BİTTİ, 4.6B SIRADA ┐
+┌─ YOL HARİTASI ──────── şu an: 4.6T BİTTİ (güvenlik 1/4), 4.6U SIRADA ┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6552,6 +6552,59 @@ Gerekçe: A/B/C her ziyaretçinin **doğrudan** karşılaştığı yüzeyler ve
 ikisi borç kapatıyor. E, B'nin kategori sorgusunu kullanıyor. D ve F
 eklemeli; F kendi içinde bir kusur düzeltmesi ve **KVKK genişletmesi**
 taşıdığı için tek başına ele alınmalı.
+
+---
+
+### 4.6T — hiz sinirlayicilari: kupon, yorum, iade  ◀ AÇIK
+
+Kullanıcının güvenlik taraması isteği üzerine ölçülen üç boşluk: `giris`
+ve `kayit` uçları `throttle` ile korunuyordu (M-4.1/3), ama sonradan
+eklenen üç uç bu deseni **miras almamıştı**.
+
+| Uç | Risk | Önce |
+|---|---|---|
+| `sepet/kupon` · `api/cart/coupon` | kod tahmin — misafire de açık | **sınırsız** |
+| `products/{slug}/reviews` | yorum/link spam — kimlik zorunlu ama hız değil | **sınırsız** |
+| `hesabim/siparis/{id}/iade` · `orders/{id}/returns` | aynı siparişe saniyede onlarca istek | **sınırsız** |
+
+**✅ Üç yeni `RateLimiter::for` tanımı** (`AppServiceProvider`), mevcut
+`giris`/`kayit` deseniyle aynı üslupta:
+
+```
+kupon → dakikada 10, IP anahtarlı     (misafire açık, kimlik garantisi yok)
+yorum → saatte 5, MÜŞTERİ anahtarlı   (yalnızca satın alan yazabiliyor — kimlik zaten garanti)
+iade  → saatte 10, MÜŞTERİ anahtarlı  (sahiplik zaten 1A.5 ile doğrulanıyor)
+```
+
+> ⚠️ Kupon **IP** anahtarlı, yorum/iade **müşteri kimliği** anahtarlı —
+> aynı `giris`'teki "yalnız IP olsaydı ortak ağ birbirini kilitler, yalnız
+> kimlik olsaydı IP değiştirerek atlatılır" gerekçesinin devamı: kupon
+> misafire de açık olduğu için kimlik garantisi yok, IP tek güvenilir
+> anahtar; yorum ve iade zaten kimlik zorunlu tuttuğu için müşteri
+> anahtarı IP'den daha doğru — aynı NAT arkasındaki başka müşteriyi
+> etkilemiyor.
+>
+> ⚠️ Kupon uçlarının **ikisine de** (`sepet/kupon` sayfa katmanı,
+> `api/cart/coupon`) aynı `throttle:kupon` takıldı — testle ölçüldü: tek
+> uca takılsaydı saldırgan diğerinden devam ederdi.
+>
+> ⚠️ **Throttle, iş mantığından ÖNCE çalışıyor.** Gerçek sunucuda
+> ölçüldü: sepeti olmayan bir istemcinin 10 denemesi `404` dönüyor
+> (kupon uygulanacak sepet yok) ama **11. istek yine 429** — yani sayaç
+> isteğin SONUCUNA değil VARLIĞINA bakıyor. Bir saldırganın her denemede
+> farklı/geçersiz bir hedef kullanması korumayı atlatmıyor.
+
+**⚠️ Test yazarken kod tabanının kendi çerez kuralına yeniden çarpıldı:**
+Laravel'in test istemcisi `postJson`/`getJson` çağrılarında çerezleri
+**varsayılan göndermiyor** (`withCredentials()` çağrılmadığı sürece) —
+`getJson`'ın çerezi düşürmesiyle (4A) aynı aile. API kupon testinde
+`withCredentials()` + elle taşınan çerez olmadan sepet hep "bulunamadı"
+(404) dönüyordu.
+
+**Dört kırma denemesi, dördü de düştü** (kupon limitini gevşetmek ·
+iade/yorum/API-kupon rotalarından `throttle` middleware'ini kaldırmak).
+**Doğrulandı (gerçek `curl`, canlı sunucuya karşı):** kupon ucuna 11
+istek → ilk 10'u `404`, **11.'si `429`**. **819 test.**
 
 ---
 

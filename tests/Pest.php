@@ -703,3 +703,39 @@ function izinliPersonel(array $izinler, string $eposta = 'personel@marka-a.test'
 
     return $personel->refresh();
 }
+
+/**
+ * Yorum yazmaya hazır durum: müşteri ürünü almış ve TESLİM ALMIŞ. (2E)
+ *
+ * ⚠️ `tests/Pest.php`'de çünkü İKİ dosya kullanıyor
+ * (`ReviewTest`, `HizSinirlariTest`).
+ *
+ * @return array{musteri: Customer, urun: Product, siparis: Order, marka: array<string, mixed>}
+ */
+function teslimAlmisMusteri(string $alanAdi): array
+{
+    $marka = markaKur($alanAdi);
+    magazayiHazirla();
+
+    $musteri = Customer::factory()->create(['email' => 'alici@ornek.test']);
+
+    $hazir = odemeAsamasiSiparisiMusteriyle($alanAdi, $musteri);
+    $siparis = $hazir['siparis'];
+
+    app(CheckoutService::class)->odemeBasarili($siparis);
+
+    /*
+    | ⚠️ Yalnızca "ödendi" YETMİYOR — paket teslim edilmeli. Bu satır
+    | kaldırılınca yorum yazma reddedilmeli; test bunu ayrıca ölçüyor.
+    */
+    $satir = $siparis->refresh()->items->firstOrFail();
+
+    $paket = app(FulfillmentService::class)->olustur($siparis, [$satir->id => 1]);
+
+    app(FulfillmentService::class)->kargoyaVer($paket);
+    app(FulfillmentService::class)->teslimEdildi($paket->refresh());
+
+    $urun = Product::firstOrFail();
+
+    return ['musteri' => $musteri, 'urun' => $urun, 'siparis' => $siparis->refresh(), 'marka' => $marka];
+}

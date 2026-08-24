@@ -198,7 +198,12 @@ Route::middleware([
             | ⚠️ Kota sipariş oluşurken harcanıyor; yoksa kuponu deneyip
             | vazgeçen her müşteri kampanyadan bir kullanım yerdi.
             */
-            Route::post('/cart/coupon', [CouponController::class, 'store']);
+            /*
+            | ★ THROTTLE 4.6T'DE EKLENDİ. Kupon kodu tahmin etmeye
+            | çalışan bir betiğin en ucuz durdurma noktası; misafir
+            | sepeti de kapsadığı için IP anahtarlı.
+            */
+            Route::post('/cart/coupon', [CouponController::class, 'store'])->middleware('throttle:kupon');
             Route::delete('/cart/coupon', [CouponController::class, 'destroy']);
 
             /*
@@ -254,7 +259,7 @@ Route::middleware([
             | sorusunu cevaplıyor: müşteri reddedilince şaşırmasın.
             */
             Route::get('/orders/{siparis}/returns', [VitrinIade::class, 'show']);
-            Route::post('/orders/{siparis}/returns', [VitrinIade::class, 'store']);
+            Route::post('/orders/{siparis}/returns', [VitrinIade::class, 'store'])->middleware('throttle:iade');
         });
 
         // Hız sınırları AppServiceProvider'da tanımlı.
@@ -272,7 +277,7 @@ Route::middleware([
             | YORUM YAZMA (2E-K1). Satın alma kanıtı [PurchaseProof]'ta —
             | burada değil: kontrol HTTP dışından da atlanmamalı.
             */
-            Route::post('/products/{slug}/reviews', [StorefrontReviewController::class, 'store']);
+            Route::post('/products/{slug}/reviews', [StorefrontReviewController::class, 'store'])->middleware('throttle:yorum');
 
             /*
             | ADRES DEFTERİ.
@@ -611,7 +616,7 @@ Route::middleware([
     Route::post('/sepet/ekle', [CartPageController::class, 'ekle'])->name('vitrin.sepet.ekle');
     Route::post('/sepet/guncelle', [CartPageController::class, 'guncelle'])->name('vitrin.sepet.guncelle');
     Route::post('/sepet/sil', [CartPageController::class, 'sil'])->name('vitrin.sepet.sil');
-    Route::post('/sepet/kupon', [CartPageController::class, 'kupon'])->name('vitrin.sepet.kupon');
+    Route::post('/sepet/kupon', [CartPageController::class, 'kupon'])->middleware('throttle:kupon')->name('vitrin.sepet.kupon');
 
     /*
     | ÖDEME SAYFASI
@@ -646,7 +651,7 @@ Route::middleware([
         | yoktu; panelde de açılamıyordu (4.5L'de eklendi) — yani iade
         | pratikte ULAŞILAMAZ bir özellikti.
         */
-        Route::post('/hesabim/siparis/{siparis:uuid}/iade', [AccountPageController::class, 'iadeAc'])->name('vitrin.hesap.iade');
+        Route::post('/hesabim/siparis/{siparis:uuid}/iade', [AccountPageController::class, 'iadeAc'])->middleware('throttle:iade')->name('vitrin.hesap.iade');
 
         /*
         | ⚠️ Müşteri iptali (4.5J): ödeme adımından geri çıkan müşterinin

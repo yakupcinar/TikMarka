@@ -569,6 +569,19 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **tesadüfen** çalışıyordu; gruplar bölününce form 403 yerine **404**
   vermeye başladı. `whereUuid` ile sıraya bağımlılık kaldırıldı.
 
+- **`postJson`/`getJson` ÇEREZLERİ VARSAYILAN GÖNDERMEZ.** Laravel'in test
+  istemcisinde `prepareCookiesForJsonRequest()` yalnızca `withCredentials()`
+  çağrıldıysa çerez taşıyor — `getJson`'ın çerezi düşürmesiyle (4A) aynı
+  aile, farklı sebep. 4.6T'de API kupon testinde ısırdı: `postJson` ile
+  gönderilen istek çerezsiz gittiği için sepet hep "bulunamadı" (404)
+  dönüyordu. Çözüm: `->withCredentials()->withUnencryptedCookie(...)`.
+- **HIZ SINIRLAYICI İŞ MANTIĞINDAN ÖNCE ÇALIŞIR — sonuca değil isteğin
+  VARLIĞINA bakar.** 4.6T'de ölçüldü: kupon ucuna sepeti olmayan bir
+  istemciden 10 istek atıldığında hepsi 404 dönüyor (uygulanacak sepet
+  yok) ama 11. istek yine 429. Saldırganın her denemede farklı/geçersiz
+  bir hedef kullanması throttle'ı atlatmıyor — bu YAN etki değil, doğru
+  davranış: sayaç isteğin başarılı olup olmamasına bakmıyor.
+
 ## Yapı
 
 ```

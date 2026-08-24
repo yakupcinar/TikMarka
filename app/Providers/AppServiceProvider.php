@@ -106,5 +106,30 @@ class AppServiceProvider extends ServiceProvider
 
         // Kayıt: IP başına saatlik. Sahte hesap üretimini yavaşlatır.
         RateLimiter::for('kayit', fn (Request $istek) => Limit::perHour(10)->by($istek->ip()));
+
+        /*
+        | ★ 4.6T — daha önce hiç sınırlanmamış üç uç. Ölçüldü: kupon,
+        | yorum ve iade uçlarında throttle YOKTU; giriş/kayıttan sonra
+        | eklenen özellikler bu deseni miras almamıştı.
+        */
+
+        // Kupon: MİSAFİRE de açık uç, kimlik garantisi yok — IP tek
+        // güvenilir anahtar. Kod tahmin etmeye çalışan bir betiği
+        // pratikte kullanılamaz hâle getirmesi yeterli; gerçek müşterinin
+        // birkaç kodu art arda denemesini engellemeyecek kadar geniş.
+        RateLimiter::for('kupon', fn (Request $istek) => Limit::perMinute(10)->by($istek->ip()));
+
+        // Yorum: yalnızca SATIN ALAN müşteri yazabiliyor (NotPurchasedException,
+        // 2E) — yani kimlik zaten garanti. Müşteri anahtarı, misafir olamayan
+        // bu uçta IP'den daha doğru: aynı NAT arkasındaki başka müşteriyi
+        // etkilemiyor.
+        RateLimiter::for('yorum', fn (Request $istek) => Limit::perHour(5)
+            ->by($istek->user()?->getAuthIdentifier() ?? $istek->ip()));
+
+        // İade: aynı gerekçe — müşteri kimliği zaten zorunlu (1A.5:
+        // sipariş sahiplik üzerinden çözülüyor). Bir siparişte birden çok
+        // satır için ayrı talep açılabildiğinden sınır kuponunkinden gevşek.
+        RateLimiter::for('iade', fn (Request $istek) => Limit::perHour(10)
+            ->by($istek->user()?->getAuthIdentifier() ?? $istek->ip()));
     }
 }

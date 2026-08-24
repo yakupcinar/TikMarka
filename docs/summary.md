@@ -2596,3 +2596,29 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek panel oturumu)
         12 sayfa 200 · /urunler/yeni 403 · beş yazma ucu 403
+
+4.6T ✅ HIZ SINIRLAYICILARI: KUPON · YORUM · İADE — 819 test
+      güvenlik taraması: giris/kayit throttle'lıydı, sonradan eklenen
+      üç uç bu deseni MİRAS ALMAMIŞTI
+
+      kupon (sepet/kupon · api/cart/coupon) → kod tahmin, misafire açık
+      yorum (products/{slug}/reviews)       → spam, kimlik zorunlu ama hız değil
+      iade  (hesabim/.../iade · api returns) → aynı siparişe saniyede onlarca istek
+
+      ✅ ÜÇ YENİ RateLimiter::for — giris/kayit deseniyle aynı üslupta
+        kupon → 10/dakika, IP anahtarlı (kimlik garantisi yok)
+        yorum → 5/saat, MÜŞTERİ anahtarlı (satın alan zaten garantili)
+        iade  → 10/saat, MÜŞTERİ anahtarlı (sahiplik 1A.5 ile doğrulanıyor)
+
+      ⚠️ kupon uçlarının İKİSİNE DE aynı throttle — tek uca takılsaydı
+        saldırgan diğerinden devam ederdi
+      ⚠️ THROTTLE İŞ MANTIĞINDAN ÖNCE ÇALIŞIYOR — gerçek sunucuda ölçüldü:
+        sepeti olmayan istemcinin 10 denemesi 404 ama 11.si YİNE 429
+        (sayaç sonuca değil VARLIĞA bakıyor)
+
+      ⚠️ test yazarken postJson/getJson ÇEREZLERİ VARSAYILAN GÖNDERMİYOR
+        (withCredentials() gerekiyor) — getJson'ın çerezi düşürmesiyle
+        (4A) aynı aile
+
+      DOĞRULANDI (gerçek curl, canlı sunucu): 11 istek → ilk 10'u 404,
+      11.si 429

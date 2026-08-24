@@ -1,7 +1,6 @@
 <?php
 
 use App\Domain\Order\CheckoutService;
-use App\Domain\Order\FulfillmentService;
 use App\Domain\Review\DuplicateReviewException;
 use App\Domain\Review\NotPurchasedException;
 use App\Domain\Review\RatingCounter;
@@ -9,7 +8,6 @@ use App\Domain\Review\ReviewService;
 use App\Domain\Settings\StorePublication;
 use App\Enums\ReviewStatus;
 use App\Models\Customer;
-use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Review;
@@ -25,39 +23,6 @@ use Illuminate\Support\Facades\DB;
 |   2  onaysız yorum vitrinde YOK           (2E-K2)
 |   3  ortalama sayacı DENETLENİYOR         (2E-K3)
 */
-
-/**
- * Yorum yazmaya hazır durum: müşteri ürünü almış ve TESLİM ALMIŞ.
- *
- * @return array{musteri: Customer, urun: Product, siparis: Order, marka: array<string, mixed>}
- */
-function teslimAlmisMusteri(string $alanAdi): array
-{
-    $marka = markaKur($alanAdi);
-    magazayiHazirla();
-
-    $musteri = Customer::factory()->create(['email' => 'alici@ornek.test']);
-
-    $hazir = odemeAsamasiSiparisiMusteriyle($alanAdi, $musteri);
-    $siparis = $hazir['siparis'];
-
-    app(CheckoutService::class)->odemeBasarili($siparis);
-
-    /*
-    | ⚠️ Yalnızca "ödendi" YETMİYOR — paket teslim edilmeli. Bu satır
-    | kaldırılınca yorum yazma reddedilmeli; test bunu ayrıca ölçüyor.
-    */
-    $satir = $siparis->refresh()->items->firstOrFail();
-
-    $paket = app(FulfillmentService::class)->olustur($siparis, [$satir->id => 1]);
-
-    app(FulfillmentService::class)->kargoyaVer($paket);
-    app(FulfillmentService::class)->teslimEdildi($paket->refresh());
-
-    $urun = Product::firstOrFail();
-
-    return ['musteri' => $musteri, 'urun' => $urun, 'siparis' => $siparis->refresh(), 'marka' => $marka];
-}
 
 it('★ TESLİM ALAN yazabiliyor, ALMAYAN yazamıyor', function () {
     $d = teslimAlmisMusteri('yor-a.test');
