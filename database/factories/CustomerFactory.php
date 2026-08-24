@@ -23,7 +23,25 @@ class CustomerFactory extends Factory
             'password' => 'sifre1234',
             'phone' => fake()->numerify('05#########'),
             'accepts_marketing' => false,
+
+            /*
+            | ⚠️ VARSAYILAN DOĞRULANMIŞ (4.6W). Fabrika "sıradan, yerleşik
+            | müşteri" üretiyor; doğrulama yorum yazmanın önkoşulu olduğu
+            | için varsayılan doğrulanmamış bırakılsaydı yorumla ilgisi
+            | olmayan 14 test doğrulama adımını taklit etmek zorunda
+            | kalırdı — ve o taklit, ölçtükleri şeyi bulanıklaştırırdı.
+            |
+            | Doğrulanmamış müşteriyi ölçen testler `dogrulanmamis()`
+            | durumunu AÇIKÇA istiyor; böylece niyet okunuyor.
+            */
+            'email_verified_at' => now(),
         ];
+    }
+
+    /** Doğrulanmamış müşteri — e-posta doğrulama akışı testleri için. (4.6W) */
+    public function dogrulanmamis(): static
+    {
+        return $this->state(fn () => ['email_verified_at' => null]);
     }
 
     /**

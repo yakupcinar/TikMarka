@@ -135,7 +135,7 @@ veya dağıtım için izin gerekir.
 
 * Şirket paneline Müşteri diye bir sekme ekleyip o kullanıcının siparişlerini(aldığı ürünler toplam harcama vb.), favorilerini, başarız ödeme denemeleri.
 
-* Appimizin frontunu mobil-tablet için de uygun hale getirelim, html şablonu olsun blade olsun, etc. buralarda genel ve ince ayarlara gidelim plan yapalım.
+* Appimizin frontunu mobil-tablet için de uygun hale getirelim, html şablonu olsun blade olsun, etc. buralarda genel ve ince ayarlara gidelim plan yapalım ayrıca dark mode ekleyelim sağ üst bir yere.
 
 * Lazy Loading (Tembel Yükleme): Ana sayfada çok fazla ürün listeleneceği için aşağı kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını uçurur.
  
@@ -151,7 +151,15 @@ veya dağıtım için izin gerekir.
 * [x] ~~Kupon/yorum/iade uçlarında hız sınırlaması yok~~ → **4.6T'de kapandı**
 * [x] ~~Güvenlik başlıkları yok~~ → **4.6U'da kapandı**
 * [x] ~~Şifre sıfırlama akışı yok~~ → **4.6V'de kapandı** (Gmail SMTP bağlandı)
-* [ ] E-posta doğrulama yok — kayıt olan kimse adresini sahiplendiğini kanıtlamıyor (`DeliverableEmail` yalnızca biçim kontrolü)
+* [x] ~~E-posta doğrulama yok~~ → **4.6W'de kapandı** — güvenlik listesi tamam
+
+> ⚠️ Doğrulama **yumuşak kapı**: ödeme engellenmiyor, yorum yazma
+> engelleniyor. Gerekçe ölçüldü — `/odeme` kimlik istemiyor (misafir
+> ödemesi açık), yani ödemeye kapı koymak hesap açanı cezalandırır ve
+> saldırganı durdurmaz.
+>
+> ⚠️ Personel kapsam dışı: oradaki gerçek ihtiyaç doğrulama değil
+> **davet akışı** (personel kendi şifresini kurar) — ayrı blok.
 
 **Merkez yönetim**
 
@@ -216,6 +224,7 @@ veya dağıtım için izin gerekir.
 | Kupon/yorum/iade uçlarında hız sınırlaması yoktu | Kuponu 11 kez art arda dene → **11.'de "Too Many Requests"** | 4.6T |
 | Güvenlik başlıkları yoktu (clickjacking, MIME koklama, referrer sızıntısı) | Herhangi bir sayfada tarayıcı geliştirici konsolu → **Network** → başlıklarda `X-Frame-Options: SAMEORIGIN` görünür | 4.6U |
 | Şifre sıfırlama akışı yoktu | Vitrin → Giriş → **"Şifremi unuttum"** · Panel → `/yonetim/giris` → **"Şifremi unuttum"** | 4.6V |
+| E-posta doğrulama yoktu | Kayıt sonrası posta gelir · **Hesabım** sayfasında şerit + "yeniden gönder" · doğrulamadan **yorum yazılamaz**, alışveriş etkilenmez | 4.6W |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

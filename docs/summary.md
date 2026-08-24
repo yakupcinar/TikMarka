@@ -2696,3 +2696,53 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI: jeton MÜŞTERİ tablosunda, PERSONEL tablosu boş,
       worker DONE, Mailpit total:0, posta gerçek Gmail'e ulaştı
+
+4.6W ✅ E-POSTA DOĞRULAMA — 846 test · GÜVENLİK LİSTESİ 4/4 TAMAM
+      kolon Faz 1'den beri VARDI ama hiçbir şey yazmıyor/okumuyordu
+
+      ✅ YUMUŞAK KAPI — KARAR, eksiklik değil
+        ölçüldü: /odeme kimlik İSTEMİYOR (misafir ödemesi açık)
+        sert kapı → hesap açan alışveriş yapamaz, açmayan yapar;
+        saldırgan zaten çıkış yapıp misafir olarak alır
+        yani satışı kırar, kimseyi durdurmaz → kararı bir test koruyor
+        kapı YORUM YAZMADA: marka adına yayımlanan metin, misafir zaten
+        yazamıyor → orada kapı gerçekten kapalı
+
+      ✅ adres İMZALI + SÜRELİ, GİRİŞ İSTEMİYOR
+        auth konsaydı telefondan tıklayan müşteride çalışmazdı
+        imza uuid + E-POSTA HASH'i kapsıyor → adres değişince eski
+        bağlantı ÖLÜR (yoksa "adresi değiştir, eski linke tıkla")
+
+      ⚠️ İMZA MARKAYA BAĞLI OLMALI — APP_KEY tüm markalarda AYNI
+        alan adı imza dışında kalsaydı A'nın linki B'de geçerli olurdu
+        ölçüldü: testte VE gerçek curl'de B'de 403
+
+      ⚠️ BİLDİRİM İSTEK BAĞLAMINDA tetiklenmeli — testte yakalandı
+        imzalı adres MUTLAK, kökü o anki istekten geliyor; istek yoksa
+        APP_URL'e (localhost = MERKEZ) düşüyor → link 404
+        yardımcı gerçek HTTP akışına çevrildi; adresin marka alan adını
+        taşıdığı ayrıca ölçülüyor
+
+      ✅ yeniden gönderme adresi OTURUMDAN — istekten alınsaydı uç
+        herkese açık POSTA GÖNDERME ARACI olurdu · throttle 3/saat
+      ✅ ikinci tıklama HATA DEĞİL (ön-yükleme, geri tuşu)
+
+      ⚠️ GERİYE DÖNÜK DOLDURMA YAPILMADI — bilerek
+        eski hesapların adresi teslim edilebilir mi BİLİNMİYOR;
+        "doğrulanmış" yazmak kanıt uydurmak olurdu
+        test FABRİKASI ise varsayılan doğrulanmış (yorumla ilgisi
+        olmayan 14 test taklit yapmak zorunda kalmasın)
+
+      ⚠️ ÇAPRAZ MARKA TESTİ ÖNCE YANLIŞ ŞEYİ ÖLÇÜYORDU
+        403 yerine 302: test istemcisi çerez taşıyor, EnsureSessionTenant
+        isteği İMZADAN ÖNCE kesiyordu → oturum temizlendi
+
+      ⚠️ PERSONEL KAPSAM DIŞI: oradaki gerçek ihtiyaç DAVET akışı
+
+      6 kırma denemesi, 6'sı da düştü; her birinde YALNIZCA o iddiayı
+      ölçen test kırıldı
+
+      DOĞRULANDI (gerçek curl): kayıt → doğrulanmamış doğuyor · şerit ve
+      form adresi doğru · kuyruktaki gerçek postadan çıkan adres MARKANIN
+      alan adını taşıyor · çerezsiz tıklama doğruluyor · bozuk imza 403 ·
+      B markasında 403

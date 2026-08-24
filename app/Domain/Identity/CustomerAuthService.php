@@ -38,6 +38,22 @@ class CustomerAuthService
         // "bilinmiyor" sanır.
         $musteri->refresh();
 
+        /*
+        | Doğrulama postası (4.6W). Controller'a DEĞİL buraya yazıldı:
+        | kayıt iki yerden yapılıyor (vitrin sayfası + `api/register`) ve
+        | kural HTTP dışından da atlanabilmemeli — projedeki "iş kuralı
+        | controller'a yazılmaz" kuralı.
+        |
+        | ⚠️ Fabrika/tohumlayıcı ile açılan müşteri buradan GEÇMİYOR,
+        | yani test verisi posta tetiklemiyor. Bu bilinçli: doğrulama
+        | GERÇEK bir kayıt eyleminin sonucudur.
+        |
+        | ⚠️ Postanın gitmemesi kaydı BOZMAZ — hesap açıldı, doğrulama
+        | yumuşak bir kapı. Kuyruğa atılıyor (BrandMail), yani SMTP
+        | yavaşlığı kayıt formunu bekletmiyor.
+        */
+        $musteri->sendEmailVerificationNotification();
+
         return [
             'customer' => $musteri,
             'token' => $this->tokenUret($musteri),

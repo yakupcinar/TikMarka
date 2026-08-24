@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use App\Domain\Identity\EmailNormalizer;
+use App\Mail\EmailVerificationMail;
 use App\Mail\PasswordResetMail;
 use Database\Factories\CustomerFactory;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -21,7 +25,7 @@ use Laravel\Sanctum\HasApiTokens;
  * Bu model marka şemasında yaşar; hangi markanınki olduğu sorusu burada
  * hiç sorulmaz — `search_path` zaten kapsamı belirlemiş oluyor (M-2.1).
  */
-class Customer extends Authenticatable
+class Customer extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens;
 
@@ -29,6 +33,13 @@ class Customer extends Authenticatable
     use HasFactory;
 
     use HasUuids;
+
+    /*
+    | ⚠️ Trait'in `sendEmailVerificationNotification()`'ı AŞAĞIDA eziliyor;
+    | geri kalanı (hasVerifiedEmail / markEmailAsVerified) olduğu gibi
+    | kullanılıyor.
+    */
+    use MustVerifyEmailTrait;
     use SoftDeletes;
 
     protected $fillable = [
@@ -128,6 +139,44 @@ class Customer extends Authenticatable
      * yazılsaydı personel müşteri ekranına düşerdi (4C'de aynı hata
      * `redirectGuestsTo` için yapılmıştı).
      */
+    /**
+     * Doğrulama bağlantısını MARKA kimliğiyle gönderir. (4.6W)
+     *
+     * Laravel'in hazır `VerifyEmail` bildirimi ezildi — 2H-K3'teki
+     * gerekçenin aynısı: müşteri "TıkMarka"dan değil alışveriş yaptığı
+     * markadan posta almalı.
+     *
+     * ⚠️ Adres İMZALI ve SÜRELİ. İmzasız olsaydı uuid'i bilen (ya da
+     * deneyen) biri başkasının adresini "doğrulanmış" işaretleyebilirdi;
+     * o zaman doğrulama hiçbir şey kanıtlamazdı.
+     *
+     * ⚠️ İmzaya e-postanın HASH'i giriyor: müşteri adresini değiştirirse
+     * eski postadaki bağlantı ÖLÜR. Yoksa "adresi değiştir, eski
+     * bağlantıya tıkla" ile doğrulanmamış bir adres doğrulanmış olurdu.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $dakika = (int) config('auth.verification.expire', 60);
+
+        /*
+        | ⚠️ İmza MUTLAK adres üzerinden kuruluyor (alan adı dâhil).
+        | APP_KEY bütün markalarda AYNI olduğu için alan adı imzanın
+        | dışında kalsaydı A markasında üretilen bağlantı B markasında da
+        | geçerli olurdu. Ölçülüyor: `EpostaDogrulamaTest`.
+        */
+        $adres = URL::temporarySignedRoute(
+            'vitrin.eposta.dogrula',
+            now()->addMinutes($dakika),
+            [
+                'musteri' => $this->uuid,
+                'hash' => sha1((string) $this->getEmailForVerification()),
+            ],
+        );
+
+        Mail::to($this->getEmailForVerification())
+            ->queue(new EmailVerificationMail($adres, $dakika));
+    }
+
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
         $adres = route('vitrin.sifre.sifirla', [

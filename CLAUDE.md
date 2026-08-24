@@ -619,6 +619,38 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   test düzeltilmiş kodda da 405 verir. "Form alanları doğrulamayla hizalı
   olmalı" tuzağının ADRES tarafı: orada eksik olan ALAN'dı, burada ADRES.
 
+- **İMZALI ADRES ÜRETEN KOD İSTEK BAĞLAMINDA ÇALIŞMAK ZORUNDA.**
+  `URL::temporarySignedRoute()` MUTLAK adres üretiyor ve kökünü o anki
+  istekten alıyor; istek yokken `APP_URL`'e düşüyor — bu projede
+  `http://localhost`, yani **merkez** alan adı. 4.6W'de ısırdı: doğrulama
+  bağlantısı markanın vitrinine değil merkeze işaret ediyordu ve uç orada
+  tanımlı olmadığı için **404** dönüyordu. ⚠️ Bedeli sessiz: posta gider,
+  müşteri tıklar, sayfayı bulamaz. Bildirimi kuyruk işinden, artisan
+  komutundan ya da `tenants:run` ile tetikleyen kod aynı tuzağa düşer.
+  Ölçen test adresi **modelden değil gerçek HTTP akışından** almalı ve
+  markanın alan adını taşıdığını ayrıca sınamalı.
+  ⚠️ Aynı bağımlılık `sendPasswordResetNotification`'da da var (`route()`).
+- **ÇAPRAZ MARKA TESTİNDE OTURUM TEMİZLENMEZSE YANLIŞ ŞEY ÖLÇÜLÜR.**
+  Test istemcisi çerez takip ediyor; A'da açılan oturum B'ye taşınıyor ve
+  `EnsureSessionTenant` isteği **asıl kontrolden önce** kesiyor. 4.6W'de
+  imzanın markaya bağlılığını ölçen test 403 yerine 302 aldı — koruma
+  çalışıyordu ama ölçülen koruma 4.5D'de zaten ölçülen BAŞKASIYDI.
+  `flushSession()` ile gerçek senaryoya (postadan tıklayan, o markada
+  oturumu olmayan kişi) dön.
+- **`test()` KULLANAN YARDIMCI `tests/Pest.php`'DE OLMAK ZORUNDA.**
+  Statik analiz Pest'in bağlamasını göremiyor ve `phpstan.neon`'daki
+  istisna YALNIZCA o dosya için tanımlı; başka bir test dosyasına
+  yazılırsa Larastan *"call to an undefined method"* veriyor. Yardımcıyı
+  iki dosya kullanmıyor olsa bile kural burada teknik olarak zorunlu.
+- **`vendor/bin/pint` OTOMATİK CONFIG KEŞFİNDE TAKILABİLİYOR.** Belirti
+  `file_get_contents(): Read of 8220 bytes failed with errno=35 Resource
+  deadlock avoided` ve **yanıltıcı**: `pint.json` 28 bayt, yani hata
+  gösterdiği dosya hakkında yanlış fikir veriyor. Dosyayı silip yeniden
+  yazmak (bilinen errno=35 çözümü) BURADA İŞE YARAMIYOR. Çalışan biçim
+  yolu açıkça vermek:
+  `php vendor/laravel/pint/builds/pint --config /var/www/html/pint.json`
+
+
 ## Yapı
 
 ```

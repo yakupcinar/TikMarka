@@ -45,6 +45,7 @@ use App\Http\Storefront\CheckoutPageController;
 use App\Http\Storefront\CollectionController as StorefrontCollectionController;
 use App\Http\Storefront\CollectionPageController as StorefrontKoleksiyonSayfa;
 use App\Http\Storefront\CouponController;
+use App\Http\Storefront\EmailVerificationPageController;
 use App\Http\Storefront\HomeController;
 use App\Http\Storefront\LegalController as VitrinLegal;
 use App\Http\Storefront\LegalPageController;
@@ -678,6 +679,34 @@ Route::middleware([
     Route::post('/sifre-sifirla', [PasswordResetPageController::class, 'sifirla'])
         ->middleware('throttle:sifre-sifirlama')
         ->name('vitrin.sifre.guncelle');
+
+    /*
+    |--------------------------------------------------------------------------
+    | E-POSTA DOĞRULAMA (4.6W)
+    |--------------------------------------------------------------------------
+    |
+    | ⚠️ Doğrulama ucu `auth` İSTEMİYOR — bilerek. Müşteri bağlantıya
+    | çoğu zaman telefonundan, oturum açmadığı bir tarayıcıdan tıklıyor;
+    | `auth` konsaydı bağlantı orada çalışmazdı. Güvenliği oturum değil
+    | `signed` sağlıyor.
+    |
+    | ⚠️ Sınırlayıcı imzaya rağmen var: imza kırılamaz ama uç yine de
+    | veritabanına gidiyor.
+    */
+    Route::get('/e-posta-dogrula/{musteri}/{hash}', [EmailVerificationPageController::class, 'dogrula'])
+        ->middleware(['signed', 'throttle:60,1'])
+        ->name('vitrin.eposta.dogrula');
+
+    Route::middleware('auth:customer-web')->group(function () {
+        /*
+        | ⚠️ İSİM ŞART — 4.6V'de bu tam olarak unutuldu ve müşteri 405
+        | aldı. Ekrandaki formun `action`'ı bu adı kullanıyor ve testi
+        | sayfayı render edip `action`'ı OKUYARAK ölçüyor.
+        */
+        Route::post('/e-posta-dogrula/gonder', [EmailVerificationPageController::class, 'yenidenGonder'])
+            ->middleware('throttle:eposta-dogrulama')
+            ->name('vitrin.eposta.gonder');
+    });
 
     Route::middleware('auth:customer-web')->group(function () {
         Route::post('/cikis', [AccountPageController::class, 'cikis'])->name('vitrin.cikis');

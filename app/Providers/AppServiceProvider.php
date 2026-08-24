@@ -144,6 +144,19 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('sifre-sifirlama', fn (Request $istek) => Limit::perHour(5)
             ->by(EmailNormalizer::normallestir((string) $istek->input('email')).'|'.$istek->ip()));
 
+        /*
+        | Doğrulama postasını yeniden gönderme (4.6W): şifre sıfırlamayla
+        | AYNI aile — her istek bir e-posta.
+        |
+        | ⚠️ Anahtar burada e-posta DEĞİL müşteri kimliği: uç
+        | `auth:customer-web` arkasında, yani adres istekten değil
+        | oturumdan geliyor ve saldırgan başkasının adresini yazamıyor.
+        | Sınır sıfırlamadan DAR (3/saat) çünkü meşru kullanımda bir kez
+        | basılır; ikinci-üçüncü basış "posta gelmedi" sabırsızlığıdır.
+        */
+        RateLimiter::for('eposta-dogrulama', fn (Request $istek) => Limit::perHour(3)
+            ->by((string) ($istek->user()?->getAuthIdentifier() ?? $istek->ip())));
+
         // İade: aynı gerekçe — müşteri kimliği zaten zorunlu (1A.5:
         // sipariş sahiplik üzerinden çözülüyor). Bir siparişte birden çok
         // satır için ayrı talep açılabildiğinden sınır kuponunkinden gevşek.

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6V BİTTİ (güvenlik 3/4), e-posta doğrulama SIRADA ┐
+┌─ YOL HARİTASI ──────── şu an: 4.6W BİTTİ — güvenlik listesi 4/4 TAMAM ─────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6766,6 +6766,88 @@ gövdesine giriyor, ekranda ise düz metin — *"Hesap: …"*. Hangi hesabın
 > komut satırı kurtarma yolu zaten var. Müşteri ve personelin hiçbir
 > yolu yoktu.
 
+### 4.6W — e-posta doğrulama
+
+Güvenlik listesinin dördüncüsü ve sonuncusu. Kolon (`customers.email_verified_at`)
+Faz 1'den beri VARDI ama **hiçbir şey onu yazmıyor, hiçbir şey okumuyordu** —
+"alan var ≠ özellik var"ın bir örneği daha.
+
+**✅ YUMUŞAK KAPI — ve bu bir KARAR, eksiklik değil.**
+
+> ⚠️ Belirleyici ölçüm: `/odeme` kimlik İSTEMİYOR, misafir ödemesi açık.
+> Doğrulanmamış kayıtlı müşterinin ödemesi engellenseydi hesap açmayan
+> rahat alışveriş yapar, **hesap açan yapamazdı** — üstelik saldırgan
+> çıkış yapıp misafir olarak alırdı. Yani sert kapı **satışı kırar,
+> kimseyi durdurmaz**. Kararı bir test koruyor: biri "güvenlik" diye
+> ödemeye kapı koyarsa o test düşer ve gerekçeyi okur.
+
+Kapı **yorum yazmada**: yorum marka adına yayımlanan, herkese görünen bir
+metin ve misafir zaten yazamıyor — yani orada kapı gerçekten kapalı.
+
+**✅ Adres İMZALI ve SÜRELİ, giriş İSTEMİYOR.**
+
+> ⚠️ `auth` konsaydı bağlantı, müşterinin telefonundan (oturum açmadığı
+> tarayıcıdan) tıkladığında çalışmazdı. Güvenliği oturum değil imza
+> sağlıyor. İmza müşteri uuid'sini **ve e-postanın hash'ini** kapsıyor:
+> müşteri adresini değiştirirse eski postadaki bağlantı ölür, yoksa
+> "adresi değiştir, eski bağlantıya tıkla" ile doğrulanmamış bir adres
+> doğrulanmış olurdu.
+
+**⚠️ İMZA MARKAYA BAĞLI OLMAK ZORUNDA.** `APP_KEY` bütün markalarda aynı;
+alan adı imzanın dışında kalsaydı A'da üretilen bağlantı B'de de geçerli
+olurdu. Ölçüldü — hem testte hem gerçek `curl` ile (B'de **403**).
+
+**⚠️ BİLDİRİM İSTEK BAĞLAMINDA TETİKLENMEK ZORUNDA — ve bu testte
+yakalandı.** İmzalı adres mutlak; kökünü o anki istekten alıyor. İstek
+yokken Laravel `APP_URL`'e (`http://localhost` — **merkez** alan adı)
+düşüyor ve bağlantı markanın vitrinine değil merkeze işaret ediyor.
+İlk yazdığım test yardımcısı bildirimi doğrudan çağırıyordu ve **404**
+aldı. Bugün iki çağıran da istek bağlamında (kayıt formu · yeniden
+gönderme ucu); bir gün kuyruk işinden ya da `tenants:run` ile
+tetiklenirse bağlantı **sessizce ölür**. Yardımcı gerçek HTTP akışına
+çevrildi ve adresin markanın alan adını taşıdığı ayrıca ölçülüyor.
+
+**✅ Yeniden gönderme adresi OTURUMDAN, istekten değil.** İstekten
+alınsaydı bu uç herkese açık bir **posta gönderme aracı** olurdu:
+saldırgan istediği adrese, marka adıyla, sınırsız posta tetiklerdi.
+`throttle:eposta-dogrulama` 3/saat.
+
+**✅ İkinci tıklama hata değil.** Postadaki bağlantı birden çok kez
+açılabiliyor (istemci ön-yüklemesi, geri tuşu); "zaten doğrulanmış" bir
+hata gibi gösterilseydi müşteri bir sorun olduğunu sanırdı.
+
+**⚠️ GERİYE DÖNÜK DOLDURMA YAPILMADI — bilerek.** Bu bloktan önce
+açılmış hesapların adreslerinin teslim edilebilir olduğuna dair elimizde
+**kanıt yok**; "doğrulanmış" yazmak o kanıtı uydurmak olurdu. Kurtarma
+yolu hesap sayfasındaki "yeniden gönder" düğmesi. ⚠️ Test *fabrikası*
+ise varsayılan doğrulanmış üretiyor: fabrika "sıradan, yerleşik müşteri"
+demek ve aksi hâlde yorumla ilgisi olmayan 14 test doğrulama adımını
+taklit etmek zorunda kalırdı.
+
+**⚠️ ÇAPRAZ MARKA TESTİ ÖNCE YANLIŞ ŞEYİ ÖLÇÜYORDU.** 403 yerine 302
+alıyordu: test istemcisi çerez takip ediyor, A'da açılmış oturum B'ye
+taşınıyor ve `EnsureSessionTenant` isteği **imza kontrolünden önce**
+kesiyordu — yani test, imzayı değil 4.5D'de zaten ölçülen başka bir
+korumayı ölçüyormuş. Oturum temizlenince gerçek senaryoya (postadan
+tıklayan, B'de oturumu olmayan kişi) döndü.
+
+**⚠️ PERSONEL KAPSAM DIŞI — bilerek.** Personeli marka sahibi panelden
+elle ekliyor ve şifresini kendi belirliyor; oradaki gerçek ihtiyaç
+"doğrulama" değil **davet akışı** (personel kendi şifresini kurar). Yarım
+yapmak yerine ayrı bir bloğa bırakıldı.
+
+**Altı kırma denemesi, altısı da düştü** (`signed`'ı kaldır · hash
+kontrolünü kaldır · yorum kapısını kaldır · yeniden gönderme adresini
+istekten al · şerit formunu GET rotasına yönlendir · sınırlayıcıyı
+kaldır). Her denemede **yalnızca** o iddiayı ölçen test kırıldı.
+
+DOĞRULANDI (gerçek curl): kayıt → müşteri doğrulanmamış doğuyor · hesap
+sayfasında şerit ve formun adresi doğru · kuyruktaki gerçek postadan
+çıkan adres **markanın** alan adını taşıyor · çerezsiz tıklama doğruluyor
+· imzası bozulmuş adres **403** · aynı bağlantı B markasında **403**.
+**846 test.**
+
+---
 ---
 ## Faz 5 — Entegrasyonlar  *(henüz açılmadı)*
 

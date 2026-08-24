@@ -35,7 +35,7 @@ class ReviewService
      *
      * @param  array<string, mixed>  $veri
      *
-     * @throws NotPurchasedException|DuplicateReviewException
+     * @throws NotPurchasedException|DuplicateReviewException|UnverifiedEmailException
      */
     public function yaz(Customer $musteri, Product $urun, array $veri): Review
     {
@@ -50,6 +50,30 @@ class ReviewService
         | düşüren markanın müşteri yorumları silinmemeli.
         */
         $this->kota->ozelligiDogrula('reviews');
+
+        /*
+        | ★ E-POSTA DOĞRULAMA KAPISI (4.6W).
+        |
+        | Yorum, marka adına YAYIMLANAN bir metin — ürün sayfasında
+        | herkese görünüyor. Doğrulanmamış adresle yazılan yorumun
+        | arkasında ulaşılabilir bir kişi olduğu bilinmiyor; itiraz,
+        | düzeltme ya da kötüye kullanım durumunda kimseye erişilemez.
+        |
+        | ⚠️ Ödeme BİLEREK bu kapının dışında (bkz.
+        | `EmailVerificationPageController`): misafir ödemesi açık olduğu
+        | için oraya kapı koymak satışı kırar, saldırganı durdurmaz.
+        | Yorumda durum tersi — misafir zaten yorum yazamıyor, yani kapı
+        | gerçekten kapalı.
+        |
+        | ⚠️ GERİYE DÖNÜK ETKİSİ VAR: bu blok öncesinde açılmış hesapların
+        | hiçbiri doğrulanmış değil ve otomatik doldurma YAPILMADI —
+        | adresin teslim edilebilir olduğuna dair elimizde kanıt yok,
+        | "doğrulanmış" yazmak o kanıtı uydurmak olurdu. Kurtarma yolu
+        | hesap sayfasındaki "yeniden gönder" düğmesi.
+        */
+        if (! $musteri->hasVerifiedEmail()) {
+            throw new UnverifiedEmailException('Yorum yazabilmek için e-posta adresinizi doğrulamanız gerekiyor.');
+        }
 
         // Satın alma kanıtı — yoksa hiçbir kayıt oluşmuyor.
         $satir = $this->kanit->bul($musteri, $urun);

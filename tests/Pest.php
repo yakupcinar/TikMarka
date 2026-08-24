@@ -19,6 +19,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\ProductStatus;
 use App\Enums\SettingGroup;
 use App\Enums\TenantStatus;
+use App\Mail\EmailVerificationMail;
 use App\Models\Customer;
 use App\Models\Option;
 use App\Models\Order;
@@ -32,6 +33,7 @@ use App\Platform\TenantProvisioning;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
@@ -545,7 +547,15 @@ function yorumaHazir(string $alanAdi = 'marka-a.test'): array
         'name' => 'Ayse Yilmaz',
         'email' => 'yorumcu@example.com',
         'password' => 'sifre1234',
+
+        /*
+        | ⚠️ DOĞRULANMIŞ (4.6W): yardımcının adı "yoruma hazır" ve yorum
+        | yazmanın önkoşullarından biri artık doğrulanmış e-posta.
+        | `$fillable` dışında olduğu için `forceFill` gerekiyor.
+        */
     ]);
+
+    $musteri->forceFill(['email_verified_at' => now()])->save();
 
     /** @var int<0, max> $musteriId */
     $musteriId = $musteri->id;
@@ -738,4 +748,54 @@ function teslimAlmisMusteri(string $alanAdi): array
     $urun = Product::firstOrFail();
 
     return ['musteri' => $musteri, 'urun' => $urun, 'siparis' => $siparis->refresh(), 'marka' => $marka];
+}
+
+/*
+| ⚠️ BU YARDIMCI `tests/Pest.php`'DE OLMAK ZORUNDA: `test()` bağlamasını
+| statik analiz göremiyor ve `phpstan.neon`'daki istisna YALNIZCA bu
+| dosya için tanımlı (`panelTokeni`/`musteriTokeni` ile aynı sebep).
+*/
+/**
+ * Doğrulama adresini GERÇEK AKIŞTAN alır — gerçek bir HTTP isteğinden.
+ *
+ * ⚠️ ÖNCE `sendEmailVerificationNotification()` DOĞRUDAN çağrılıyordu ve
+ * üretilen adres 404 veriyordu. Sebep gerçek ve öğreticiydi: imzalı adres
+ * MUTLAK, kökünü de o an ki istekten alıyor. İstek yokken Laravel
+ * `APP_URL`'e (`http://localhost` — MERKEZ alan adı) düşüyor ve bağlantı
+ * markanın vitrinine değil merkeze işaret ediyor.
+ *
+ * ⚠️ Yani bu bildirim İSTEK BAĞLAMINDA tetiklenmek ZORUNDA. Bugün iki
+ * çağıran da öyle (kayıt formu · yeniden gönderme ucu). Bir gün kuyruk
+ * işinden ya da `tenants:run` ile tetiklenirse bağlantı SESSİZCE ölür —
+ * posta gider, müşteri tıklar, 404 görür.
+ *
+ * ⚠️ Adresi testin kendisi `URL::temporarySignedRoute()` ile üretseydi
+ * tam da bu hatayı göremezdi: kendi kurduğu imzayı ölçerdi (1D.6).
+ */
+function dogrulamaAdresi(Customer $musteri, string $alanAdi = 'marka-a.test'): string
+{
+    test()->post("http://{$alanAdi}/giris", [
+        'email' => $musteri->email, 'password' => 'sifre12345',
+    ])->assertRedirect();
+
+    Mail::fake();
+
+    test()->post("http://{$alanAdi}/e-posta-dogrula/gonder")->assertRedirect();
+
+    $adres = '';
+
+    Mail::assertQueued(EmailVerificationMail::class, function ($posta) use (&$adres) {
+        $adres = $posta->adres;
+
+        return true;
+    });
+
+    /*
+    | ⚠️ Adresin MARKANIN alan adını taşıdığı burada ölçülüyor. Merkeze
+    | (`localhost`) düşerse bağlantı ölür ve bu HATA VERMEZ — posta gider,
+    | müşteri 404 görür.
+    */
+    expect($adres)->toContain("http://{$alanAdi}/e-posta-dogrula/");
+
+    return $adres;
 }

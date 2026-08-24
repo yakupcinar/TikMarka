@@ -37,6 +37,31 @@
             </form>
         </div>
 
+        {{--
+          E-POSTA DOĞRULAMA ŞERİDİ (4.6W)
+
+          ⚠️ Metin ödemeden BAHSETMİYOR ve bu bilinçli: doğrulama yumuşak
+          bir kapı, alışveriş engellenmiyor. "Doğrulayın yoksa..." gibi
+          bir uyarı müşteriye yanlış bilgi verir ve sepetini bıraktırırdı.
+
+          ⚠️ Formun `action`'ı ADLI rotayı kullanıyor. 4.6V'de isimsiz
+          POST rotası yüzünden müşteri 405 almıştı; testi bu sayfayı
+          render edip `action`'ı OKUYARAK ölçüyor.
+        --}}
+        @if (! $musteri->hasVerifiedEmail())
+            <div class="bildirim kotu dogrulama-serit">
+                <p style="margin:0 0 8px">
+                    <strong>E-posta adresiniz doğrulanmadı.</strong>
+                    Doğrulayana kadar ürün yorumu yazamazsınız. Alışverişiniz etkilenmez.
+                </p>
+
+                <form method="post" action="{{ route('vitrin.eposta.gonder') }}">
+                    @csrf
+                    <button type="submit">Doğrulama bağlantısını yeniden gönder</button>
+                </form>
+            </div>
+        @endif
+
         <p><a href="{{ route('vitrin.adresler') }}">Adres defterim</a></p>
 
         <h2>Siparişlerim</h2>

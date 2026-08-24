@@ -27,6 +27,7 @@ use App\Domain\Returns\ReturnNotRefundableException;
 use App\Domain\Returns\ReturnWindowClosedException;
 use App\Domain\Review\DuplicateReviewException;
 use App\Domain\Review\NotPurchasedException;
+use App\Domain\Review\UnverifiedEmailException;
 use App\Domain\Settings\SettingLockedException;
 use App\Domain\Settings\StoreNotReadyException;
 use App\Domain\Stock\InsufficientStockException;
@@ -612,6 +613,21 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (NotPurchasedException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
+        });
+
+        /*
+        | Doğrulanmamış e-posta ile yorum → 403. (4.6W)
+        |
+        | ⚠️ `resolution` alanı ŞART: `NotPurchasedException` ile aynı
+        | kodu döndürüyor ama müşterinin yapması gereken şey farklı.
+        | Ayrım yazılmasaydı ekran "satın almadınız" derdi ve müşteri
+        | doğrulama adımını hiç göremezdi.
+        */
+        $exceptions->render(function (UnverifiedEmailException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'resolution' => 'Hesabım sayfasından doğrulama bağlantısını yeniden gönderebilirsiniz.',
+            ], 403);
         });
 
         /*
