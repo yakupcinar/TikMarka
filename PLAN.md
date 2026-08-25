@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6W BİTTİ — güvenlik listesi 4/4 TAMAM ─────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6X BİTTİ — iyileştirme listesi başladı ───────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6846,6 +6846,69 @@ sayfasında şerit ve formun adresi doğru · kuyruktaki gerçek postadan
 çıkan adres **markanın** alan adını taşıyor · çerezsiz tıklama doğruluyor
 · imzası bozulmuş adres **403** · aynı bağlantı B markasında **403**.
 **846 test.**
+
+---
+### 4.6X — varyant benzersizliği: silinen SKU serbest kalıyor
+
+Gerçek kullanımda bulundu: marka bir varyant açtı, sildi, aynı SKU ile
+yenisini açmak isteyince ham `UniqueConstraintViolationException` gördü.
+Ölçünce **üç ayrı boşluk** çıktı — ve üçü de aynı kök sebepten.
+
+```
+1. sku ve (product_id, options) kısıtları deleted_at'e BAKMIYORDU
+2. ekle()  SKU'yu HİÇ kontrol etmiyordu
+3. guncelle() İKİSİNİ DE kontrol etmiyordu
+```
+
+**⚠️ 4.5L'İN DERSİ YARIM UYGULANMIŞ.** Orada "veritabanı kısıtı tek başına
+arayüz değildir" denmiş ve `DuplicateVariantException` yazılmıştı. Ama
+kontrol **yalnızca ekleme yoluna** ve **yalnızca canlı satırlara** kondu;
+kısıt ise silinmişleri de sayıyordu. Yani Domain ile veritabanı **aynı
+kuralı farklı anlıyordu** ve hata Domain'i atlayıp veritabanından geliyordu
+— tam olarak 4.5L'de kapatılmak istenen belirti.
+
+**✅ Kısıtlar KISMİ indekse çevrildi** (`WHERE deleted_at IS NULL`).
+
+> Yön projenin kendi kuralından geliyor: *"bir kaydı KAPATAN yol silinmişi
+> de görmeli; AÇAN yol görmemeli"*. Varyant açmak bir açan yoldur.
+
+**Serbest bırakmak güvenli mi — ölçüldü, evet:**
+
+* Sipariş satırları SKU'yu **metin olarak kopyalıyor** (sipariş bir
+  fotoğraftır, 1D); geçmiş bu değişiklikten etkilenmiyor.
+* Kod tabanında SKU ile kayıt arayan **tek bir yer yok** (`where('sku'…)`
+  sıfır sonuç) — iki satırın (biri silinmiş) aynı SKU'yu taşıması hiçbir
+  sorguyu yanıltmıyor.
+* Varyantı geri alan (`restore()`) bir yol da yok.
+
+⚠️ Kısıt **gevşemiyor, daralıyor**: canlı satırlar arasında benzersizlik
+aynen duruyor. Bu yüzden mevcut verinin hiçbiri yeni indeksi ihlal edemez.
+⚠️ `down()` başarısız olabilir ve bu doğru — kısmi indeks yürürlükteyken
+silinmişle aynı SKU'lu canlı satır oluşmuş olabilir; sessizce veri
+düşürmektense migration'ın patlaması yeğdir.
+
+**✅ `DuplicateSkuException`** — `CatalogRuleException`'dan türüyor ve
+`alanHatalari()` ile `sku` anahtarı döndürüyor, yani panel uyarıyı **ilgili
+kutunun altında** gösteriyor. Anahtar yanlış olsaydı marka hatayı hiç
+görmezdi.
+
+**⚠️ SKU KAPSAMI ÜRÜN DEĞİL MARKA GENELİ.** Veritabanı kısıtı `sku` tek
+başına; kontrol yalnızca ürün içinde arasaydı Domain geçer, veritabanı yine
+patlardı — kural iki yerde farklı olurdu. Ölçen test var.
+
+**Dört kırma denemesi, dördü de düştü** (`ekle`'deki çağrıyı kaldır ·
+kapsamı ürünle sınırla · `guncelle`'deki iki kontrolü kaldır · kısmi
+indeksin `WHERE` koşulunu kaldır). Her denemede **yalnızca** o iddiayı
+ölçen testler kırıldı.
+
+⚠️ Testlerin biri Domain'i değil **paneli** ölçüyor: istisnanın ekranda
+neye dönüştüğünü Domain testi göremez ve 4.5L'de tam bu yüzden ham
+`duplicate key value violates unique constraint` görünmüştü.
+
+DOĞRULANDI (gerçek panel, curl): silinmiş `a` SKU'su yeni bir üründe
+**kullanılabildi** (biri silinmiş biri canlı iki satır) · aynı SKU tekrar
+denenince ekranda **"Bu stok kodu (SKU) başka bir varyantta kullanılıyor:
+a"** — ham 500 değil. **855 test.**
 
 ---
 ---

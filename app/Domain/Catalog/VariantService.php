@@ -35,6 +35,7 @@ class VariantService
     {
         $this->secenekleriDogrula($urun, $secenekler);
         $this->benzersizligiDogrula($urun, $secenekler);
+        $this->skuDogrula($veri['sku'] ?? null);
         $this->sinirDogrula($urun, 1);
 
         /*
@@ -71,8 +72,18 @@ class VariantService
             $urun = $varyant->product()->firstOrFail();
 
             $this->secenekleriDogrula($urun, $secenekler);
+
+            /*
+            | ⚠️ GÜNCELLEMEDE DE ŞART — ölçüldü, burada HİÇBİR kontrol
+            | yoktu. Bir varyantın seçeneklerini var olan bir birleşime
+            | çevirmek ham veritabanı hatası veriyordu; ekleme yolundaki
+            | koruma buraya hiç taşınmamıştı.
+            */
+            $this->benzersizligiDogrula($urun, $secenekler, $varyant);
             $varyant->options = $secenekler;
         }
+
+        $this->skuDogrula($veri['sku'] ?? null, $varyant);
 
         $varyant->fill($veri);
         $varyant->save();
@@ -206,14 +217,53 @@ class VariantService
      *
      * @throws DuplicateVariantException
      */
-    private function benzersizligiDogrula(Product $urun, array $secenekler): void
+    /**
+     * @param  array<string, string>  $secenekler
+     * @param  ProductVariant|null  $haric  güncellenen varyant kendisiyle çakışmasın
+     *
+     * @throws DuplicateVariantException
+     */
+    private function benzersizligiDogrula(Product $urun, array $secenekler, ?ProductVariant $haric = null): void
     {
+        /*
+        | ⚠️ `variants()` YUMUŞAK SİLİNMİŞLERİ GÖRMÜYOR ve bu DOĞRU:
+        | 4.6X'te veritabanı kısıtı da kısmi indekse çevrildi
+        | (`WHERE deleted_at IS NULL`). Öncesinde ikisi UYUŞMUYORDU —
+        | Domain "boş" diyordu, veritabanı "dolu" diyordu ve marka ham
+        | hata görüyordu.
+        */
         $var = $urun->variants()
+            ->when($haric !== null, fn ($q) => $q->whereKeyNot($haric?->getKey()))
             ->get()
             ->contains(fn (ProductVariant $v) => ($v->options ?? []) === $secenekler);
 
         if ($var) {
             throw new DuplicateVariantException($secenekler);
+        }
+    }
+
+    /**
+     * SKU marka genelinde benzersiz — CANLI varyantlar arasında.
+     *
+     * ⚠️ Kapsam ÜRÜN DEĞİL MARKA: veritabanı kısıtı `sku` tek başına.
+     * Yalnızca ürün içinde arasaydık kontrol geçer, veritabanı yine
+     * patlardı — yani kural iki yerde farklı olurdu.
+     *
+     * @throws DuplicateSkuException
+     */
+    private function skuDogrula(?string $sku, ?ProductVariant $haric = null): void
+    {
+        if ($sku === null || $sku === '') {
+            return;
+        }
+
+        $var = ProductVariant::query()
+            ->where('sku', $sku)
+            ->when($haric !== null, fn ($q) => $q->whereKeyNot($haric?->getKey()))
+            ->exists();
+
+        if ($var) {
+            throw new DuplicateSkuException($sku);
         }
     }
 

@@ -642,13 +642,37 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   istisna YALNIZCA o dosya için tanımlı; başka bir test dosyasına
   yazılırsa Larastan *"call to an undefined method"* veriyor. Yardımcıyı
   iki dosya kullanmıyor olsa bile kural burada teknik olarak zorunlu.
-- **`vendor/bin/pint` OTOMATİK CONFIG KEŞFİNDE TAKILABİLİYOR.** Belirti
-  `file_get_contents(): Read of 8220 bytes failed with errno=35 Resource
-  deadlock avoided` ve **yanıltıcı**: `pint.json` 28 bayt, yani hata
-  gösterdiği dosya hakkında yanlış fikir veriyor. Dosyayı silip yeniden
-  yazmak (bilinen errno=35 çözümü) BURADA İŞE YARAMIYOR. Çalışan biçim
-  yolu açıkça vermek:
-  `php vendor/laravel/pint/builds/pint --config /var/www/html/pint.json`
+- **`pint.json` BOZULUNCA pint çöküyor — belirti dosya boyutu hakkında
+  YALAN söylüyor.** `file_get_contents(): Read of 8220 bytes failed with
+  errno=35 Resource deadlock avoided` diyor ama `pint.json` **28 bayt**.
+  Ölçüldü: konteyner içinden `filesize()` 28 döndürüyor,
+  `file_get_contents()` ise **0 baytlık** metin veriyor — hata da vermiyor.
+  Yani dosya "var ve okunuyor" görünüyor, içeriği boş geliyor.
+  Çözüm errno=35 ailesinin standardı: **sil ve yeniden yaz** (inode
+  değişsin) — `cp pint.json /tmp/p && rm pint.json && cp /tmp/p pint.json`.
+  ⚠️ `--config` ile mutlak yol vermek ÇÖZÜM DEĞİL: bir kez işe yaradı
+  sanıldı, çünkü aynı komutta dosya zaten yeniden yazılmıştı. Üç biçim
+  (config'li, config'siz, phar'ı /tmp'ye kopyalayarak) ayrı ayrı denendi,
+  **üçü de** bozuk dosyayla düştü.
+
+
+- **YUMUŞAK SİLİNEN KAYIT BENZERSİZ ALANI İŞGAL ETMEYE DEVAM EDER.**
+  `unique` kısıtı `deleted_at`'e bakmaz; silinen satır SKU'yu (ya da hangi
+  alansa) **sonsuza kadar** tutar. 4.6X'te ısırdı: marka varyantı silip
+  aynı SKU ile yenisini açmak isteyince ham
+  `UniqueConstraintViolationException` gördü. ⚠️ Daha sinsisi: Domain
+  kontrolü silinmişi GÖRMÜYOR (doğru), kısıt GÖRÜYOR (yanlış) — ikisi
+  aynı kuralı farklı anlayınca hata Domain'i **atlayıp** veritabanından
+  geliyor ve yakalanamıyor. Kural: yumuşak silme varsa benzersiz indeks
+  de **kısmi** olmalı (`WHERE deleted_at IS NULL`). Serbest bırakmadan
+  önce üçünü ölç: o alanla **kayıt aranıyor mu**, geçmiş kayıtlar değeri
+  **kopyalıyor mu**, `restore()` yolu **var mı**.
+- **BİR KURALI TEK YOLA YAZMAK YETMEZ — AİLENİN TAMAMINA YAZ.** 4.5L'de
+  `(product_id, options)` için Domain kontrolü yazıldı ama YALNIZCA
+  `ekle()`'ye; `guncelle()` boş kaldı ve aynı ham hata oradan çıkmaya
+  devam etti. 4.6X'te ikisi de kapatıldı. "Tarayıcıya HTML, API'ye JSON"
+  tuzağıyla aynı aile: **bir uçta düzeltmek, ailenin düzeldiği anlamına
+  gelmiyor.**
 
 
 ## Yapı

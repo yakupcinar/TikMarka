@@ -122,7 +122,24 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
-* samil.localhost domaini ekledim marka a'dan ama onla ulaşamıyorum sayfaya doğrulandı diye gösteriyor acaba kodunda eksik mi var ya da cadye izin vermek mi lazım manuel veya localhost tanımladığım için mi ikinci,
+* "Mevcut projemizdeki çalışan tüm fonksiyonları, state yönetimini ve component bağlantılarını aynen korumanı istiyorum. Hiçbir işlevsel kodu silme veya değiştirme.
+
+Şu anki arayüz bana çok standart ve sıradan geliyor. Senden bir "Kıdemli UI/UX Tasarımcısı" gibi düşünmeni ve projemizi modern bir SaaS uygulaması estetiğine kavuşturmanı istiyorum.
+
+Projenin teknik altyapısına göre en verimli ve temiz çözümü seçmeyi tamamen sana bırakıyorum: Projede Tailwind mi, CSS Variables (Değişkenleri) mı yoksa düz CSS mi kullanmak daha mantıklıysa seçimi sen yap ve o dilde devam et.
+
+Senden ricam, token bütçemizi korumak için tüm kodu baştan yazmak yerine sadece arayüzü elitleştirecek şu estetik dokunuşları TEK SEFERDE (toplu olarak) yapman:
+
+1. Sayfa Düzeni (Layout) ve Boşluklar: Elemanların nefes alması için whitespace (beyaz boşluk) dengesini kur, padding ve margin değerlerini modern web trendlerine uygun şekilde optimize et. İçerikleri bento-grid veya temiz katmanlı yapılarla hizala.
+
+2. Renk Paleti ve Tipografi: Gözü yormayan, soft-contrast (yumuşak kontrastlı) modern bir renk paleti (Primary, Secondary, Background, Surface) belirle. Font boyutları ve ağırlıkları arasındaki hiyerarşiyi netleştir.
+
+3. Modern Detaylar: Buton, input ve kart tasarımlarında sert köşeler yerine modern yumuşatılmış köşeler (border-radius) kullan. Elemanlara derinlik katmak için yumuşak, katmanlı gölgeler (soft shadows) ekle. Etkileşimi artırmak için hover efektleri (smooth transitions) tanımla.
+
+ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istediğin bir skill var mı bunu çalıştırırken daha iyi sonuç almamıza yarayacak"
+
+
+* samil.localhost domaini ekledim marka a'dan ama onla ulaşamıyorum sayfaya doğrulandı diye gösteriyor acaba kodunda eksik mi var ya da cadye dış servisine izin vermek mi lazım manuel ya da localhost tanımladığım için mi ikinci,
 
 * Şirket panellerinde resim ekleme var, paneli kullanan genelde jpeg veya png yükleyeceği için laravelde bunu otomatik sıkıştırılmış optimize edilmiş WebP formatına dönüştüren bir kod bloğu yazalım yoksa.
 
@@ -138,11 +155,15 @@ veya dağıtım için izin gerekir.
 * Appimizin frontunu mobil-tablet için de uygun hale getirelim, html şablonu olsun blade olsun, etc. buralarda genel ve ince ayarlara gidelim plan yapalım ayrıca dark mode ekleyelim sağ üst bir yere.
 
 * Lazy Loading (Tembel Yükleme): Ana sayfada çok fazla ürün listeleneceği için aşağı kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını uçurur.
- 
+
+* Ana sayfadaki ürünler direkt her kullanıcı önüne konmuş bir algoritma mantığı yapalım sizin ilginizi çekebilecekler, popüler ürünler(en çok tıklanan ürünler), yeni gelen ürünler, etc. yani ana sayfa yapalım e ticaret applerinde yaptıkları gibi.
+
+
+
 > Açık kusurlar ve fikirler. Biten maddeler **silinmiyor** — aşağıdaki
 > "Yapıldı" bölümüne taşınıyor ki tekrar kontrol edilebilsin.
 
-* Ana sayfadaki ürünler direkt her kullanıcı önüne konmuş bir algoritma yapıp 
+
 
 ### Açık kusurlar
 
@@ -225,6 +246,7 @@ veya dağıtım için izin gerekir.
 | Güvenlik başlıkları yoktu (clickjacking, MIME koklama, referrer sızıntısı) | Herhangi bir sayfada tarayıcı geliştirici konsolu → **Network** → başlıklarda `X-Frame-Options: SAMEORIGIN` görünür | 4.6U |
 | Şifre sıfırlama akışı yoktu | Vitrin → Giriş → **"Şifremi unuttum"** · Panel → `/yonetim/giris` → **"Şifremi unuttum"** | 4.6V |
 | E-posta doğrulama yoktu | Kayıt sonrası posta gelir · **Hesabım** sayfasında şerit + "yeniden gönder" · doğrulamadan **yorum yazılamaz**, alışveriş etkilenmez | 4.6W |
+| Silinen varyantın SKU'su tekrar kullanılamıyordu (ham veritabanı hatası) | Panel → ürün → varyant sil → **aynı SKU ile yeniden ekle** (artık kabul ediliyor) · canlı iki varyanta aynı SKU verirsen SKU kutusunun altında Türkçe uyarı | 4.6X |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

@@ -2746,3 +2746,41 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       form adresi doğru · kuyruktaki gerçek postadan çıkan adres MARKANIN
       alan adını taşıyor · çerezsiz tıklama doğruluyor · bozuk imza 403 ·
       B markasında 403
+
+4.6X ✅ VARYANT BENZERSİZLİĞİ — 855 test · gerçek kullanımda bulundu
+      marka varyantı sildi, aynı SKU ile yenisini açamadı → ham
+      UniqueConstraintViolationException
+
+      ÖLÇÜLDÜ — ÜÇ boşluk, tek kök sebep:
+        1. sku ve (product_id, options) kısıtları deleted_at'e BAKMIYOR
+        2. ekle() SKU'yu HİÇ kontrol etmiyor
+        3. guncelle() İKİSİNİ DE kontrol etmiyor
+
+      ⚠️ 4.5L'İN DERSİ YARIM UYGULANMIŞ
+        orada "kısıt tek başına arayüz değildir" denmişti ama kontrol
+        YALNIZCA ekleme yoluna + YALNIZCA canlı satırlara kondu;
+        kısıt silinmişleri de sayıyordu → Domain ve DB AYNI KURALI
+        FARKLI anlıyordu, hata Domain'i atlayıp DB'den geliyordu
+
+      ✅ kısıtlar KISMİ indekse çevrildi (WHERE deleted_at IS NULL)
+        yön projenin kendi kuralından: "KAPATAN yol silinmişi görmeli,
+        AÇAN yol görmemeli" — varyant açmak AÇAN yoldur
+
+      serbest bırakmak güvenli mi → ölçüldü, EVET:
+        · sipariş satırları SKU'yu METİN kopyalıyor (sipariş fotoğraftır)
+        · SKU ile kayıt arayan TEK BİR yer yok (where('sku') sıfır sonuç)
+        · restore() yolu da yok
+        ⚠️ kısıt GEVŞEMİYOR DARALIYOR → mevcut veri ihlal edemez
+
+      ✅ DuplicateSkuException → alanHatalari()['sku'] → panel uyarıyı
+        İLGİLİ KUTUNUN ALTINDA gösteriyor (yanlış anahtar = görünmez)
+      ⚠️ SKU KAPSAMI ÜRÜN DEĞİL MARKA GENELİ — ürünle sınırlansaydı
+        Domain geçer DB patlardı, kural iki yerde farklı olurdu
+
+      4 kırma denemesi, 4'ü de düştü
+      ⚠️ testlerden biri Domain'i değil PANELİ ölçüyor: istisnanın
+        ekranda neye dönüştüğünü Domain testi göremez (4.5L bu yüzden)
+
+      DOĞRULANDI (gerçek panel, curl): silinmiş 'a' SKU'su yeni üründe
+      KULLANILDI · aynı SKU tekrar → "Bu stok kodu (SKU) başka bir
+      varyantta kullanılıyor: a" (ham 500 DEĞİL)
