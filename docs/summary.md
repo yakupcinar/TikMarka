@@ -3093,3 +3093,33 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       tema açığın HER belirtecini karşılıyor, kural gövdesinde sabit renk
       yok · düğme ve FOUC betiği sayfada · iki düzen de taşıyor
       ⚠️ TARAYICIDA GÖRSEL DOĞRULAMA YAPILAMADI (yerel sertifika)
+
+4.6E ✅ BENZER ÜRÜNLER + ÇOK SATANLAR — 931 test
+      İKİ AYRI SORU → iki ayrı bölüm: "buna benzer ne var" ve "en çok ne
+      satılıyor". Birleştirilseydi müşteri "benzer" başlığı altında
+      alakasız ama çok satan bir ürün görürdü.
+
+      ✅ BENZERLER ÜÇ KADEMELİ (kategori alt ağacı → marka → en yeniler)
+        ⚠️ kademeler BİRBİRİNİ TAMAMLIYOR, biri ötekini elemiyor
+        tek kademeli olsaydı kategorisiz sayfada bölüm BOŞ kalırdı
+        ⚠️ son kademe "en yeniler", RASTGELE DEĞİL: rastgele olsaydı
+          müşteri az önce gördüğü ürünü bir daha bulamazdı
+
+      ⚠️ BAŞLIK "BEĞENİLENLER" DEĞİL "ÇOK SATANLAR"
+        beğeni olayları 4.6F'de gelecek; şimdi öyle demek elimizde
+        OLMAYAN bir sayıyı varmış gibi sunmak olurdu
+      ⚠️ satış sayımı ÖDENMİŞ siparişten: pending sayılsaydı listeyi
+        üretmenin yolu ödeme sayfasına gidip VAZGEÇMEK olurdu
+        partially_refunded sayılıyor, refunded sayılmıyor
+      ⚠️ SIRA ELLE KORUNUYOR: whereIn kendi sırasını (id) uygular,
+        korunmasaydı "çok satanlar" başlığı YALAN olurdu
+
+      ✅ sayfadaki ürün çok satanlardan çıkarılıyor
+      ✅ öneri yoksa BAŞLIK da yok
+
+      5 kırma denemesi, 5'i de düştü
+
+      DOĞRULANDI (gerçek curl): benzerler 8 ürün, önce aynı alt
+      kategorideki tişörtler sonra üst kategoriden pantolon/kemer ·
+      çok satanlar sırası GERÇEK SATIŞLA BİREBİR · en çok satan ürün
+      kendi sayfasında listede YOK

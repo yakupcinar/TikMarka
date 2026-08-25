@@ -3,6 +3,7 @@
 namespace App\Http\Storefront;
 
 use App\Domain\Catalog\ProductQuery;
+use App\Domain\Catalog\SimilarProductQuery;
 use App\Domain\Catalog\VariantSelector;
 use App\Domain\Favorite\FavoriteService;
 use App\Domain\Review\ReviewService;
@@ -26,6 +27,7 @@ class ProductPageController extends Controller
         private readonly VariantSelector $secici,
         private readonly ReviewService $yorumlar,
         private readonly FavoriteService $favoriler,
+        private readonly SimilarProductQuery $oneriler,
     ) {}
 
     public function __invoke(Request $istek, string $slug): View
@@ -95,6 +97,19 @@ class ProductPageController extends Controller
             | dönüyor ve ekran kırıntıyı hiç çizmiyor.
             */
             'kategoriZinciri' => $urun->category?->zincir() ?? collect(),
+
+            /*
+            | ★ ÖNERİLER (4.6E) — iki AYRI soru, iki ayrı bölüm.
+            |
+            | ⚠️ Birleştirilseydi ekran hangisini gösterdiğini söyleyemez
+            | ve müşteri "benzer" başlığı altında alakasız ama çok satan
+            | bir ürün görürdü.
+            |
+            | ⚠️ "Çok satanlar"dan bu ürün ÇIKARILIYOR: müşteri zaten
+            | onun sayfasında, listede kendini görmek yer israfı.
+            */
+            'benzerler' => $this->oneriler->benzerler($urun),
+            'cokSatanlar' => $this->oneriler->cokSatanlar(haric: $urun),
 
             'yorumlar' => $this->yorumlar->vitrindeGorunenler($urun)->limit(20)->get(),
 

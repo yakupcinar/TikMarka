@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AB BİTTİ — iyileştirme listesi 10/13 ───────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6E BİTTİ — iyileştirme listesi 11/13 ────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7486,6 +7486,63 @@ taşıyor.
 > ⚠️ **Tarayıcıda görsel doğrulama YAPILAMADI**: araç yerel sertifikalı
 > adrese ulaşamıyor (4.6A'da da aynısı kaydedilmişti). Görünümün kendisi
 > kullanıcı tarafından denenmeli. **922 test.**
+
+---
+### 4.6E — benzer ürünler ve çok satanlar
+
+Ürün sayfasının altına iki bölüm. **İki AYRI soru** olduğu için iki ayrı
+bölüm: *"buna benzer ne var"* ve *"en çok ne satılıyor"*. Birleştirilseydi
+ekran hangisini gösterdiğini söyleyemez, müşteri "benzer" başlığı altında
+alakasız ama çok satan bir ürün görürdü.
+
+**✅ BENZERLER ÜÇ KADEMELİ** — plan böyle söylüyordu ve gerekçesi tutuyor:
+
+```
+1. aynı kategori ALT AĞACINDAN   (4.6B'deki kategoriyeGore)
+2. yetmezse aynı MARKA
+3. yetmezse EN YENİLER
+```
+
+> ⚠️ Kademeler **birbirini tamamlıyor, biri ötekini elemiyor**. Tek
+> kademeli olsaydı kategorisi olmayan ya da kategorisinde tek ürün bulunan
+> sayfada bölüm **boş kalırdı** — ve boş bir "Benzer ürünler" başlığı
+> mağazayı bozuk gösterir.
+>
+> ⚠️ Son kademe "en yeniler", **rastgele değil**: rastgele olsaydı aynı
+> sayfa her yenilendiğinde başka ürünler gösterir, müşteri az önce
+> gördüğü ürünü bir daha bulamazdı.
+
+**⚠️ BÖLÜMÜN ADI "BEĞENİLENLER" DEĞİL "ÇOK SATANLAR".** Beğeni sayacı
+için gereken olaylar 4.6F'de yazılacak; o blok bitmeden "beğeni" demek
+**elimizde olmayan bir sayıyı varmış gibi sunmak** olurdu. Elimizdeki
+gerçek sinyal satış — başlık da onu söylüyor. Bir kırma denemesi başlığı
+"Beğenilenler" yaptı ve test düştü.
+
+**⚠️ SATIŞ SAYIMI ÖDENMİŞ SİPARİŞTEN.** `pending` sayılsaydı ödemesi hiç
+tamamlanmayan sepetler "çok satan" üretirdi — ve o listeyi üretmenin yolu
+**ödeme sayfasına kadar gidip vazgeçmek** olurdu.
+⚠️ `partially_refunded` sayılıyor (bir kısmı satılmış), `refunded`
+sayılmıyor (satış geri alınmış).
+
+**⚠️ SIRA ELLE KORUNUYOR.** `whereIn` kendi sırasını (id) uyguluyor;
+korunmasaydı "çok satanlar" başlığı **yalan** olurdu. Bu yüzden sorgudan
+iki katı id alınıp sonra sıralanıyor — satılan ürünlerin bir kısmı artık
+vitrinde olmayabilir (taslak, arşiv, silinmiş).
+
+**✅ Sayfadaki ürün çok satanlardan çıkarılıyor:** müşteri zaten onun
+sayfasında, listede kendini görmek yer israfı.
+
+**✅ Öneri yoksa BAŞLIK da yok.** Yeni mağazada bu durum normal.
+
+**Beş kırma denemesi, beşi de düştü** (`forStorefront()`'u kaldır ·
+bekleyen siparişi de say · satış sırasını koruma · kademeleri kaldır ·
+başlığı "Beğenilenler" yap).
+
+DOĞRULANDI (gerçek curl, geliştirme markası): "Benzer ürünler" 8 ürün —
+önce aynı alt kategorideki tişörtler, sonra üst kategorideki pantolon ve
+kemer · "Çok satanlar" 4 ürün ve sırası **gerçek satış verisiyle birebir**
+(Macbook 4 → Deri Cüzdan 3 → Oversize 2 → Kot Pantolon 1); en çok satan
+Basic Tişört (13) listede **yok**, çünkü sayfa onun. **931 test.**
 
 ---
 ---

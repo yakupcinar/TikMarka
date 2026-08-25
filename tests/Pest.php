@@ -822,3 +822,26 @@ function favoriGirisi(string $eposta = 'favori@ornek.test'): void
     test()->post('http://marka-a.test/giris', ['email' => $eposta, 'password' => 'sifre12345'])
         ->assertRedirect();
 }
+
+/**
+ * Bir üründen SATIŞ üretir — ödenmiş siparişle.
+ *
+ * ⚠️ `test()` kullanmıyor ama `tests/Pest.php`'de çünkü çok satanlar
+ * ölçümü birden çok testte gerekiyor ve tek dosyada kalırsa öteki dosya
+ * TEK BAŞINA koşturulunca "tanımsız fonksiyon" verir.
+ */
+function satisYap(Product $urun, int $adet): void
+{
+    $varyant = $urun->variants()->firstOrFail();
+
+    $sepet = app(CartService::class)->misafirSepetiOlustur();
+    app(CartService::class)->ekle($sepet, $varyant, $adet);
+
+    $sozlesme = app(LegalDocumentService::class)
+        ->guncelSurum(LegalDocumentType::DistanceSales);
+
+    $siparis = app(CheckoutService::class)
+        ->baslat($sepet, odemeVerisi((int) $sozlesme?->id));
+
+    app(CheckoutService::class)->odemeBasarili($siparis);
+}

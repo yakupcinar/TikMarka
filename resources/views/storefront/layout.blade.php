@@ -371,6 +371,11 @@
             :root:not([data-tema="acik"]) .tema-dugme .ay { display: none; }
         }
 
+        /* ── Öneriler (4.6E) ─────────────────────────────────────── */
+        .oneri { margin-top: 40px; border-top: 1px solid var(--kenar); padding-top: 12px; }
+        .oneri h2 { margin-bottom: 0; }
+        .oneri .izgara { padding-top: 16px; }
+
         /* ── Kategori gezinme (4.6B) ─────────────────────────────── */
         .kirinti { font-size: 13px; color: var(--soluk); margin: 0 0 12px; display: flex; gap: 6px; flex-wrap: wrap; }
         .kirinti a { color: var(--metin-2); }

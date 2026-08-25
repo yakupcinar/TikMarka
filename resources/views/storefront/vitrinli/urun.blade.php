@@ -86,6 +86,8 @@
 
     @include('storefront.partials.favori-dugmesi')
 
+    @include('storefront.partials.oneriler')
+
     @include('storefront.partials.yorumlar')
 
     @include('storefront.partials.varyant-betigi')
