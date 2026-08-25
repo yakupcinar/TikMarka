@@ -34,11 +34,20 @@ function gercekGorsel(int $genislik, int $yukseklik, string $tur = 'jpeg', bool 
         imagefill($g, 0, 0, (int) imagecolorallocatealpha($g, 0, 0, 0, 127));
     }
 
-    // ⚠️ Düz renk KULLANILMIYOR: tek renkli tuval her biçimde birkaç yüz
-    // bayta iniyor ve "WebP daha küçük mü" sorusu anlamsızlaşıyor.
+    /*
+    | ⚠️ Düz renk KULLANILMIYOR: tek renkli tuval her biçimde birkaç yüz
+    | bayta iniyor ve "WebP daha küçük mü" sorusu anlamsızlaşıyor.
+    |
+    | ⚠️ SAYDAM tuvalde çizim SAĞ YARIYA sınırlı ve sebebi ölçümle
+    | bulundu: küçük bir tuvalde rastgele elipsler sol üst köşeyi de
+    | kapatıyordu, test o pikseli okuyup "saydamlık kaybolmuş" diyordu —
+    | oysa kaybolan yoktu, ÖRTÜLMÜŞTÜ. Sol yarı garanti saydam kalıyor.
+    */
+    $solSinir = $saydam ? intdiv($genislik, 2) : 0;
+
     for ($i = 0; $i < 200; $i++) {
         imagefilledellipse(
-            $g, random_int(0, $genislik), random_int(0, $yukseklik),
+            $g, random_int($solSinir, $genislik), random_int(0, $yukseklik),
             random_int(10, 120), random_int(10, 120),
             (int) imagecolorallocate($g, random_int(0, 255), random_int(0, 255), random_int(0, 255))
         );
@@ -156,6 +165,36 @@ it('★★★ SAYDAMLIK korunuyor — PNG siyah zeminle kaydedilmiyor', function
     imagedestroy($cikti);
 
     // 127 = tamamen saydam. Saydamlık kaybolsaydı 0 (opak) olurdu.
+    expect($alfa)->toBeGreaterThan(100);
+});
+
+it('★★★ KUCULTULMEYEN gorselde de SAYDAMLIK korunuyor', function () {
+    markaKur('opt-i.test');
+    $urun = app(ProductService::class)->olustur(['title' => 'Tişört']);
+
+    /*
+    | ⚠️ BU TESTİ CI YAZDIRDI. Saydamlık testi yalnızca BÜYÜK (küçültülen)
+    | görseli ölçüyordu; 2048'in altındaki görsel hiç küçültülmüyor ve
+    | `kucult()` kaynağı olduğu gibi döndürüyor. O yolda hedef tuval hiç
+    | oluşmadığı için alfa ayarı da hiç uygulanmıyordu — saydamlık HER GD
+    | SÜRÜMÜNDE kayboluyordu ve hiçbir test görmüyordu.
+    */
+    $gorsel = app(ProductImageService::class)->yukle($urun, gercekGorsel(300, 200, 'png', saydam: true));
+
+    $boyut = getimagesize(Storage::disk('public')->path($gorsel->path));
+
+    // Küçültülmediğini de ölçüyoruz — yoksa test yanlış yolu sınardı.
+    expect($boyut === false ? 0 : $boyut[0])->toBe(300);
+
+    $cikti = imagecreatefromwebp(Storage::disk('public')->path($gorsel->path));
+
+    expect($cikti)->toBeInstanceOf(GdImage::class);
+
+    /** @var GdImage $cikti */
+    $alfa = (imagecolorat($cikti, 5, 5) & 0x7F000000) >> 24;
+
+    imagedestroy($cikti);
+
     expect($alfa)->toBeGreaterThan(100);
 });
 

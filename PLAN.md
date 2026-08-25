@@ -7169,6 +7169,28 @@ DOĞRULANDI (gerçek panel, curl): blok öncesi 4,83 MB reddediliyordu ve
 ekranda `validation.uploaded` yazıyordu · blok sonrası aynı dosya kabul
 edildi, diskte 0,34 MB WebP olarak duruyor. **883 test.**
 
+**⚠️⚠️ CI KIRMIZI DÖNDÜ VE GERÇEK BİR KUSUR BULDU — yerel yeşildi.**
+
+Saydamlık testi CI'da düştü (`0 is greater than 100` — alfa opak). Sebep:
+alfa ayarı yalnızca HEDEF tuvalde vardı, KAYNAKTA yoktu.
+`imagecopyresampled` kaynağın alfasını harmanlayarak kopyalıyor; kaynakta
+harmanlama kapatılmazsa saydam pikseller opak çıkıyor. Yerelin libgd
+sürümü tolere etti, CI'ınki etmedi.
+
+⚠️ **Daha kötüsü, CI'ın görmediği ikinci bir yol vardı:** 2048'in
+altındaki görsel hiç küçültülmüyor ve `kucult()` kaynağı olduğu gibi
+döndürüyor — o yolda hedef tuval hiç oluşmuyor, yani saydamlık **her GD
+sürümünde** kaybolurdu. Saydamlık testi yalnızca büyük görseli ölçtüğü
+için bunu kimse görmüyordu. Ayrı bir test eklendi.
+
+⚠️ Düzeltmenin kırma denemesi **yerelde hiçbir şeyi düşürmüyor**: yerel GD
+bu ayara duyarsız. Burada otorite CI — ve bu, "yerel lint yeşil ≠ CI
+yeşil" kuralının GD sürümü biçiminde tekrarı.
+
+⚠️ Test verisi de bir kez yanılttı: küçük saydam tuvalde rastgele
+elipsler ölçülen pikseli örtüyordu ve test "saydamlık kayboldu" diyordu —
+oysa kaybolan yoktu, ÖRTÜLMÜŞTÜ. Çizim sağ yarıya sınırlandı.
+
 ---
 ### 4.6C — vitrinde yorumlar
 

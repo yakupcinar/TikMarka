@@ -728,6 +728,12 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   açmış olursun ve koruma hiçbir işe yaramaz.
   ⚠️ `imagecreatetruecolor` OPAK SİYAH tuval üretiyor: `imagealphablending(false)`
   + `imagesavealpha(true)` konmazsa saydam PNG'ler siyah zeminle kaydedilir.
+  ⚠️ AYAR HEM KAYNAKTA HEM HEDEFTE olmalı. Yalnızca hedefte olması CI'ı
+  kırdı, yerel yeşildi: `imagecopyresampled` kaynağın alfasını
+  HARMANLAYARAK kopyalıyor ve libgd sürümleri bu konuda farklı davranıyor.
+  Ayrıca yeniden boyutlandırma YAPILMAYAN yolda hedef tuval hiç
+  oluşmuyor — ayar açılışta (kaynakta) yapılmazsa o yolda saydamlık her
+  sürümde kaybolur. "Yerel yeşil ≠ CI yeşil" kuralının GD biçimi.
 
 
 - **"YAPABİLİR MİYİM" SORUSUNU EKRAN CEVAPLAMAZ, DOMAIN CEVAPLAR.** Vitrin

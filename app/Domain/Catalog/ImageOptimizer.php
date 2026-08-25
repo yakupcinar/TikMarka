@@ -123,6 +123,29 @@ class ImageOptimizer
             throw new UnsupportedImageTypeException($tur, ProductImageService::IZINLI_TURLER);
         }
 
+        /*
+        | ⚠️ ALFA AYARI KAYNAKTA DA ŞART — CI bunu yakaladı, yerel GD
+        | affetmişti.
+        |
+        | İlk hâlinde yalnızca HEDEF tuvalde `imagealphablending(false)` +
+        | `imagesavealpha(true)` vardı. İki ayrı bedeli oldu:
+        |
+        |   1. `imagecopyresampled` kaynağın alfasını hedefe KARIŞTIRARAK
+        |      kopyalıyor; kaynakta harmanlama kapatılmazsa saydam
+        |      pikseller opak çıkıyor. Yerelin libgd sürümü tolere etti,
+        |      CI'ınki etmedi — testler yerelde YEŞİL, CI'da KIRMIZI.
+        |
+        |   2. Daha kötüsü: 2048'in ALTINDAKİ görsel hiç küçültülmüyor ve
+        |      `kucult()` kaynağı olduğu gibi döndürüyor. O yolda hedef
+        |      tuval hiç oluşmadığı için saydamlık HER GD SÜRÜMÜNDE
+        |      kayboluyordu — ve testler bunu görmüyordu, çünkü saydamlık
+        |      testi yalnızca büyük (küçültülen) görseli ölçüyordu.
+        |
+        | Ayar açılışta yapılınca iki yol da kapanıyor.
+        */
+        imagealphablending($gorsel, false);
+        imagesavealpha($gorsel, true);
+
         return $gorsel;
     }
 
