@@ -122,6 +122,8 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
+* Yeni ürün açtım adı "a" 2 varyant verdim depolaması farklı fiyatları 50 100 olacak şekilde ana sayfaya baktım ürünün fiyatı 50 diye gözüküyor bence bu mantıklı sonuçta ürünün en düşük depolu hali öyle; sonra ürüne tıkladım ve içindeki deposu büyük olana tıkladım fiyat hala 50 gösterdi ama fiyatı 100 tl bu fiyat tıkladığım varyanta göre fiyatı alsın standart ana sayfada en ucuz varyantı göstersin ama ürü
+
 * Mailime bu düştü ama neden bu düştü anlamadım işlemleri mi sanki zaten maili doğru kaydettiğim hesaptan yapıyorum bu şaşırttı şimdi: "Address not found Your message wasn't delivered to vazgec@marka-a.localhost because the domain marka-a.localhost couldn't be found. Check for typos or unnecessary spaces and try again"
 
 * Şirket Panelinde aşağıdan sayfa atlamak pagination next yazıyor sadece sayılar 1 2 3 ... istiyorum.
@@ -160,7 +162,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 
 * ~~Ödeme dönüş ekranında duruma göre bağlantı yok~~ → **4.6Y'de kapandı**
 
-* Şirket paneline Müşteri diye bir sekme ekleyip o kullanıcının siparişlerini(aldığı ürünler toplam harcama vb.), favorilerini, başarız ödeme denemeleri.
+* ~~Panelde Müşteri sekmesi~~ → **4.6AC'de kapandı** (`customer.view` izni Faz 1'den beri tanımlıydı ama hiçbir rota kullanmıyordu — o da düzeldi)
 
 * ~~Mobil-tablet uyumu ve dark mode~~ → **4.6AB'de kapandı (VİTRİN)**
 
@@ -276,6 +278,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Varyant seçicisi yalnızca bir düzendeydi (`vitrinli` markalar düz liste görüyordu) | Ürün sayfası → **eksen kutucukları** her iki düzende de | 4.6A.1 |
 | Vitrin koyu tema ve mobil uyumu yoktu | Üst barın sağında **☾/☀ düğmesi** · sistem tercihi de okunuyor · telefon/tablet kırılma noktaları | 4.6AB |
 | Ürün sayfasının altında öneri yoktu | **Benzer ürünler** (kategori → marka → en yeniler) ve **Çok satanlar** (ödenmiş siparişlerden) | 4.6E |
+| Panelde müşteri sekmesi yoktu (`customer.view` izni ölüydü) | Panel → **Müşteriler** → müşteri → siparişler, favoriler, başarısız ödemeler · salt okunur | 4.6AC |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

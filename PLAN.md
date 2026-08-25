@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6E BİTTİ — iyileştirme listesi 11/13 ────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AC BİTTİ — iyileştirme listesi 12/13 ───────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7543,6 +7543,77 @@ DOĞRULANDI (gerçek curl, geliştirme markası): "Benzer ürünler" 8 ürün �
 kemer · "Çok satanlar" 4 ürün ve sırası **gerçek satış verisiyle birebir**
 (Macbook 4 → Deri Cüzdan 3 → Oversize 2 → Kot Pantolon 1); en çok satan
 Basic Tişört (13) listede **yok**, çünkü sayfa onun. **931 test.**
+
+---
+### 4.6AC — panelde müşteri sekmesi
+
+Kullanıcı isteği: *"Şirket paneline Müşteri diye bir sekme ekleyip o
+kullanıcının siparişlerini, favorilerini, başarısız ödeme denemelerini"*.
+
+**⚠️ İZİN ZATEN VARDI VE ÖLÜYDÜ.** `customer.view` Faz 1'den beri
+tanımlıydı, **üç role** verilmişti (Yönetici · Sipariş & Destek · Salt
+Okunur) ve Türkçe etiketi bile yazılıydı — ama **hiçbir rota onu
+kullanmıyordu**. 4.6S'de `product.view` için ölçülen kusurun aynısı: izin
+tanımlı olmak, korunuyor olmak değildir. Bunu ölçen bir test eklendi
+(izinsiz personel 403, `customer.view`'li personel 200).
+
+**✅ SEKME SALT OKUNUR.** Yazma ucu yok ve bunu ölçen yapısal bir test
+var: müşteri verisini panelden değiştirmek KVKK tarafında ayrı bir
+sorumluluk (anonimleştirme 2G, kendi akışıyla) ve buraya bir yazma ucu
+sızarsa o akış atlanabilir hâle gelir.
+
+**⚠️ PAROLA HASH'İ SORGUYA HİÇ GİRMİYOR.** `CustomerInsight::KOLONLAR`
+listesi dar tutuluyor.
+
+> ⚠️ **KIRMA DENEMESİ İLK SEFERDE TUTMADI ve sebebi öğretici:**
+> `->select(...)` kaldırıldığında ekran YİNE temiz kalıyordu — çünkü onu
+> koruyan şey modelin `$hidden` listesiydi, kolon daraltması değil. Yani
+> testim ölçtüğünü sandığım şeyi ölçmüyordu. Kolonun **yüklenen
+> özniteliklerde bulunmadığı** ayrıca ölçüldü.
+>
+> ⚠️ İkinci bir ölçüm hatası da orada çıktı: `->not->toContain('password',
+> 'remember_token')` çok argümanlı yazılmıştı ve argümanlardan biri
+> eksik olduğu anda geçiyor. `remember_token` zaten hiç yüklenmediği için
+> iddia, `password` varken bile **yeşil kalıyordu**. İddialar tek tek
+> ayrıldı.
+
+**⚠️ RET GEREKÇESİ GÖSTERİLMİYOR.** Banka "limit yetersiz" ya da "fraud
+şüphesi" diyebiliyor; bu müşterinin **kartına** dair bir bilgi ve markanın
+personeline açılması gerekmiyor — vitrinde de aynı sebeple gizleniyor
+(4.5R). Panelde görünen şey denemenin **varlığı** ve zamanı.
+
+**⚠️ SİLİNMİŞ ÜRÜNÜN FAVORİSİ PANELDE GÖRÜNÜYOR — vitrinin TERSİ.**
+Vitrinde gizleniyor (4.6D) çünkü orada soru *"müşteriye ne gösterelim"*;
+panelde soru *"bu müşteri hakkında ne biliyoruz"* ve gizlemek markayı
+yanıltırdı. Aynı ayrım `Anonymizer`/`DataExporter` arasında da vardı.
+
+**⚠️ HARCAMA ÖDENMİŞ SİPARİŞTEN.** `pending` sayılsaydı ödemesi hiç
+tamamlanmayan sepetler müşteriyi "iyi müşteri" gibi gösterirdi.
+⚠️ Bu kırma denemesi de ilk seferde tutmadı: test müşterisinin bekleyen
+siparişi yoktu, yani iddia hiç sınanmıyordu. Teste bekleyen sipariş
+eklendi.
+⚠️ Toplamdan **iade edilen kısım düşülmüyor** ve bu bir sınır — ekranda
+da öyle yazıyor. Yazılmasaydı marka bu sayıyı net ciro sanardı.
+
+**⚠️ CANLI DOĞRULAMA BİR TUTARSIZLIK BULDU.** Özet *"10 sipariş"*
+diyordu ama altındaki liste **14 satır** gösteriyordu: özet yalnızca
+ödenmişi sayıyor, liste bekleyen ve iptal olanları da gösteriyor. Fark
+doğru ama ekranda söylenmiyordu — marka bunu çelişki sanardı. Etiket
+*"tamamlanan sipariş"* oldu ve listenin altına açıklama eklendi.
+
+**✅ `Customer::orders()` ilişkisi eklendi.** Faz 1'den beri yoktu;
+sorgular `customer_id`'yi elle yazıyordu. `withCount('orders')` çalışma
+anında patladı — **statik analiz göremedi çünkü ilişki adı bir metin**.
+
+**Beş kırma denemesi, beşi de düştü** (kolon listesini kaldır · izin
+middleware'ini kaldır · bekleyen siparişi say · silinmiş ürünün favorisini
+gizle · aramayı kelime ortasından eşleştir). İkisi ilk seferde tutmadı ve
+eksik ölçümü yazdıran şey denemenin kendisi oldu.
+
+DOĞRULANDI (gerçek panel, curl): liste beş müşteriyi sipariş sayısı ve
+harcamasıyla gösteriyor · ayrıntıda özet (10 sipariş · 42.528,70 TL · 1
+favori · 0 başarısız), 14 sipariş satırı, ürün adları sipariş satırından ·
+`password` izi **yok** · ret gerekçesi alanı **yok**. **940 test.**
 
 ---
 ---

@@ -31,6 +31,7 @@ const menu = [
   { ad: 'Katalog ayarları', yol: '/yonetim/katalog', izin: ['product.view', 'product.write'] },
   { ad: 'Siparişler', yol: '/yonetim/siparisler', izin: ['order.view'] },
   { ad: 'İadeler', yol: '/yonetim/iadeler', izin: ['order.view'] },
+  { ad: 'Müşteriler', yol: '/yonetim/musteriler', izin: ['customer.view'] },
   { ad: 'Yorumlar', yol: '/yonetim/yorumlar', izin: ['product.view', 'product.write'] },
   { ad: 'Mağaza', yol: '/yonetim/magaza', izin: ['settings.view', 'settings.write'] },
   { ad: 'Ödeme', yol: '/yonetim/odeme-ayarlari', izin: ['settings.view', 'settings.write'] },

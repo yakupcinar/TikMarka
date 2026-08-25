@@ -3123,3 +3123,41 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       kategorideki tişörtler sonra üst kategoriden pantolon/kemer ·
       çok satanlar sırası GERÇEK SATIŞLA BİREBİR · en çok satan ürün
       kendi sayfasında listede YOK
+
+4.6AC ✅ PANELDE MÜŞTERİ SEKMESİ — 940 test
+      ⚠️ İZİN ZATEN VARDI VE ÖLÜYDÜ: customer.view Faz 1'den beri
+        tanımlı, ÜÇ ROLE verilmiş, Türkçe etiketi bile var — ama
+        HİÇBİR ROTA kullanmıyordu (4.6S'deki product.view kusurunun
+        aynısı). İzin tanımlı olmak, KORUNUYOR OLMAK DEĞİLDİR.
+
+      ✅ SEKME SALT OKUNUR (yazma ucu yok, yapısal test var)
+        müşteri verisini değiştirmek KVKK'da ayrı sorumluluk (2G)
+      ⚠️ PAROLA HASH'İ SORGUYA HİÇ GİRMİYOR (KOLONLAR listesi dar)
+        ⚠️ KIRMA DENEMESİ İLK SEFERDE TUTMADI: select kaldırılınca ekran
+          yine temiz kalıyordu — koruyan şey $hidden'dı, kolon daraltması
+          değil → yüklenen ÖZNİTELİKLER ayrıca ölçüldü
+        ⚠️ ikinci ölçüm hatası: ->not->toContain('password','remember_token')
+          çok argümanlı yazılmıştı ve biri eksikken GEÇİYOR → password
+          varken bile yeşil kalıyordu; iddialar tek tek ayrıldı
+
+      ⚠️ RET GEREKÇESİ GÖSTERİLMİYOR: banka "limit yetersiz"/"fraud"
+        diyebiliyor, bu müşterinin KARTINA dair bilgi (4.5R ile aynı)
+      ⚠️ SİLİNMİŞ ÜRÜNÜN FAVORİSİ PANELDE GÖRÜNÜYOR — vitrinin TERSİ
+        vitrinde soru "ne gösterelim", panelde "ne biliyoruz"
+      ⚠️ harcama ÖDENMİŞ siparişten; iade düşülmüyor ve ekranda YAZIYOR
+        ⚠️ bu kırma denemesi de ilk seferde tutmadı (test müşterisinin
+          bekleyen siparişi yoktu) → teste bekleyen sipariş eklendi
+
+      ⚠️ CANLI DOĞRULAMA TUTARSIZLIK BULDU: özet "10 sipariş" diyor ama
+        liste 14 satır — fark doğru ama EKRANDA SÖYLENMİYORDU
+        → etiket "tamamlanan sipariş" oldu + listeye açıklama
+
+      ✅ Customer::orders() ilişkisi eklendi (Faz 1'den beri yoktu)
+        withCount('orders') ÇALIŞMA ANINDA patladı — statik analiz
+        göremedi çünkü İLİŞKİ ADI BİR METİN
+
+      5 kırma denemesi, 5'i de düştü (ikisi ilk seferde tutmadı)
+
+      DOĞRULANDI (gerçek panel): liste sipariş/harcama ile · ayrıntıda
+      özet + 14 sipariş + favori + başarısız ödeme · password izi YOK ·
+      ret gerekçesi alanı YOK

@@ -16,6 +16,7 @@ use App\Http\Panel\LegalController;
 use App\Http\Panel\LegalPageController as PanelLegalSayfa;
 use App\Http\Panel\OptionController;
 use App\Http\Panel\OrderController;
+use App\Http\Panel\CustomerPageController;
 use App\Http\Panel\OrderPageController;
 use App\Http\Panel\PanelAuthPageController;
 use App\Http\Panel\PanelPasswordResetController;
@@ -1121,6 +1122,24 @@ Route::middleware([
         | ⚠️ Tek izne indirgemek en kolay yoldu ve depo personeline para
         | iadesi yetkisi vermek demekti.
         */
+        /*
+        | MÜŞTERİ SEKMESİ (4.6AC)
+        |
+        | ⚠️ `customer.view` izni Faz 1'den beri TANIMLIYDI ve üç role
+        | verilmişti ama HİÇBİR ROTA onu kullanmıyordu — izin ölüydü.
+        | 4.6S'de `product.view` için ölçülen kusurun aynısı.
+        |
+        | ⚠️ SALT OKUNUR: yazma ucu YOK. Müşteri verisini değiştirmek
+        | KVKK tarafında ayrı bir sorumluluk (2G) ve buraya sızmamalı.
+        |
+        | ⚠️ Rota anahtarı `uuid`: `Customer::getRouteKeyName()` öyle
+        | söylüyor ve `id` gönderilseydi 404 gelirdi (4.5C'de ısırdı).
+        */
+        Route::middleware('izin:customer.view')->group(function () {
+            Route::get('/musteriler', [CustomerPageController::class, 'index'])->name('panel.musteriler');
+            Route::get('/musteriler/{musteri:uuid}', [CustomerPageController::class, 'show'])->name('panel.musteri');
+        });
+
         Route::middleware('izin:order.view')->group(function () {
             Route::get('/siparisler', [OrderPageController::class, 'index'])->name('panel.siparisler');
             Route::get('/siparisler/{siparis:uuid}', [OrderPageController::class, 'show'])->name('panel.siparis');

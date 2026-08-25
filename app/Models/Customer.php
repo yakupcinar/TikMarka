@@ -121,6 +121,34 @@ class Customer extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Müşterinin siparişleri. (4.6AC)
+     *
+     * ⚠️ Faz 1'den beri YOKTU ve eksikliği sessizdi: sipariş tarafında
+     * `customer_id` vardı, sorgular onu elle yazıyordu. Panelde müşteri
+     * özeti gerekince `withCount('orders')` çalışma anında patladı —
+     * statik analiz göremedi çünkü ilişki adı bir METİN.
+     *
+     * ⚠️ MİSAFİR SİPARİŞİ BU İLİŞKİDE YOK: `customer_id` boş (M-1). Bu
+     * doğru — misafir siparişi kimseye ait değil.
+     *
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Müşterinin favorileri. (4.6AC)
+     *
+     * @return HasMany<Favorite, $this>
+     */
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
      * Oturum çerezine dayalı "beni hatırla" kullanılmıyor — kimlik doğrulama
      * token tabanlı olacak (K-12). Tabloda `remember_token` kolonu da yok.
      */

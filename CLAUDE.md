@@ -793,6 +793,21 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   kodu hiçbir şey boyamıyor, testi boşuna kırar.
 
 
+- **`->not->toContain(a, b)` ÇOK ARGÜMANLI YAZILDIĞINDA YANILTIYOR.**
+  Argümanlardan biri eksik olduğu anda iddia geçiyor; ötekinin varlığını
+  hiç ölçmüyor. 4.6AC'de ısırdı: `->not->toContain('password',
+  'remember_token')` yazılmıştı ve `remember_token` zaten hiç
+  yüklenmediği için iddia **`password` varken bile yeşil kalıyordu**.
+  Olumsuz iddiaları **tek tek** yaz.
+- **KIRMA DENEMESİ TUTMUYORSA TESTİ SUÇLA, KODU DEĞİL.** Denemenin hiçbir
+  testi düşürmemesi "kod fazladan korunuyor" demek değil; genellikle
+  "iddia başka bir şeyi ölçüyor" demek. 4.6AC'de iki kez oldu: kolon
+  daraltmasını kaldırmak ekranı bozmadı (koruyan şey `$hidden`'dı) ve
+  `pending`'i satış saymak hiçbir şeyi bozmadı (test müşterisinin bekleyen
+  siparişi yoktu). Her ikisinde de eksik ölçümü yazdıran şey denemenin
+  kendisi oldu.
+
+
 ## Yapı
 
 ```
