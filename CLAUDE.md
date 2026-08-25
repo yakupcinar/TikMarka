@@ -808,6 +808,23 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   kendisi oldu.
 
 
+- **PANEL TESTİ VITE MANİFESTİNE BAĞLIYDI — belirti YALNIZCA CI'DA.**
+  Panelin kök görünümü `@vite(...)` çağırıyor; `public/build/manifest.json`
+  yoksa sayfa **500** dönüyor. Yerelde derleme çıktısı duruyor, CI'da ise
+  `public/build` gitignore'da ve derleme adımı **testlerden SONRA**
+  koşuyor. Yani panel testi yazan kişi yerelde yeşil, CI'da kırmızı
+  alıyordu — 4.6AC'de sekiz testin sekizi böyle düştü.
+  ⚠️ Önce her panel testi `withoutVite()`'i **elle** yazıyordu; artık
+  `tests/Pest.php`'de `beforeEach` ile bütün `Tenancy` süiti için açık,
+  yani unutulamıyor. Bozuk Vue bileşenini gizlemiyor: CI'daki ayrı "Panel
+  derlemesi" adımı onu yakalıyor.
+- **PINT ÇIKTISINI BORULARKEN HATAYI GİZLEME.** `pint | tail -2` yazmak
+  `pint.json` bozulduğunda (bilinen errno=35) **boş çıktı** veriyor ve
+  "geçti" gibi görünüyor. 4.6AC'de biçimlenmemiş dosyalar böyle commit
+  edildi ve CI kırmızı döndü. Çıkışı da kontrol et ya da `--test` ile
+  koş; boş çıktı **başarı değil, hata belirtisidir**.
+
+
 ## Yapı
 
 ```

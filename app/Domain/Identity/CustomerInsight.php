@@ -8,6 +8,7 @@ use App\Models\Favorite;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -48,9 +49,9 @@ class CustomerInsight
      * ⚠️ Sayımlar TEK SORGUDA: müşteri başına ayrı sorgu açılsaydı 200
      * müşterilik listede 400 ek sorgu olurdu (N+1).
      *
-     * @return \Illuminate\Pagination\LengthAwarePaginator<int, Customer>
+     * @return LengthAwarePaginator<int, Customer>
      */
-    public function liste(string $arama = '', int $sayfa = 25): \Illuminate\Pagination\LengthAwarePaginator
+    public function liste(string $arama = '', int $sayfa = 25): LengthAwarePaginator
     {
         $sorgu = Customer::query()
             ->select(self::KOLONLAR)

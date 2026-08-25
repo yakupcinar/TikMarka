@@ -68,6 +68,35 @@ pest()->extend(TestCase::class)
 */
 pest()->extend(TestCase::class)->in('Tenancy');
 
+/*
+| ⚠️ VITE HER TESTTE KAPALI — ve bu bir TUZAĞI kalıcı olarak kapatıyor.
+|
+| Panel Inertia ve kök görünümü `@vite(...)` çağırıyor. Derlenmiş varlık
+| yoksa (`public/build/manifest.json`) Laravel istisna fırlatıyor ve panel
+| sayfası 500 dönüyor.
+|
+| ⚠️ BU YALNIZCA CI'DA GÖRÜNÜYORDU: yerelde `npm run build` çıktısı
+| duruyor, CI'da ise derleme adımı testlerden SONRA koşuyor
+| (`.github/workflows/ci.yml`) ve `public/build` gitignore'da. Yani panel
+| testi `withoutVite()` yazmayı unutan kişi yerelde yeşil, CI'da kırmızı
+| alıyor — 4.6AC'de tam bu yaşandı, sekizinin sekizi düştü.
+|
+| ⚠️ Önce her panel testi bunu ELLE yazıyordu; unutulması an meselesiydi.
+| Buraya alınınca unutulamıyor. Vitrin testleri etkilenmiyor: vitrin
+| `@vite` kullanmıyor (stil satır içi, 4-K1).
+|
+| ⚠️ Bu, bozuk bir Vue bileşenini GİZLEMİYOR: CI'daki ayrı "Panel
+| derlemesi" adımı onu yakalıyor.
+*/
+uses()->beforeEach(function () {
+    /*
+    | ⚠️ `test()` kullanılıyor, `$this` DEĞİL: statik analiz Pest'in
+    | closure bağlamasını göremiyor ve `$this` "tanımsız değişken"
+    | diyor. Aynı sebeple bu dosyadaki yardımcılar da `test()` kullanıyor.
+    */
+    test()->withoutVite();
+})->in('Tenancy');
+
 uses()->afterEach(function () {
     tenancy()->end();
 

@@ -122,6 +122,10 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
+* Vitrinde bir ürünü sepete aldım sonra Panelde ürünü sildim şimdi vitrin sepetinde variant uuid alanı zorunludur diye bir hata aldım, ürün üstü silik bir şekilde isimsiz duruyordu, Bu yaşanabilecek bir durum gerçekte bunu çözmemiz lazım, ama anlamadığım şey şu biz soft delete atmıyor muyuz silerken ne yapıyoruz ne yapmamız doğru araştır e ticaretleri karar verelim.
+
+* Yeni ürün açtım adı "a" 2 varyant verdim depolaması farklı fiyatları 50 100 olacak şekilde ana sayfaya baktım ürünün fiyatı 50 diye gözüküyor bence bu mantıklı sonuçta ürünün en düşük depolu hali öyle; sonra ürüne tıkladım ve içindeki deposu büyük olana tıkladım fiyat hala 50 gösterdi ama fiyatı 100 tl bu fiyat tıkladığım varyanta göre fiyatı alsın standart ana sayfada en ucuz varyantı göstersin.
+
 * Yeni ürün açtım adı "a" 2 varyant verdim depolaması farklı fiyatları 50 100 olacak şekilde ana sayfaya baktım ürünün fiyatı 50 diye gözüküyor bence bu mantıklı sonuçta ürünün en düşük depolu hali öyle; sonra ürüne tıkladım ve içindeki deposu büyük olana tıkladım fiyat hala 50 gösterdi ama fiyatı 100 tl bu fiyat tıkladığım varyanta göre fiyatı alsın standart ana sayfada en ucuz varyantı göstersin ama ürü
 
 * Mailime bu düştü ama neden bu düştü anlamadım işlemleri mi sanki zaten maili doğru kaydettiğim hesaptan yapıyorum bu şaşırttı şimdi: "Address not found Your message wasn't delivered to vazgec@marka-a.localhost because the domain marka-a.localhost couldn't be found. Check for typos or unnecessary spaces and try again"

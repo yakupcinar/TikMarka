@@ -1,13 +1,15 @@
 <?php
 
 use App\Domain\Favorite\FavoriteService;
-use App\Domain\Order\CheckoutService;
+use App\Domain\Identity\CustomerInsight;
 use App\Domain\Privacy\Anonymizer;
 use App\Domain\Settings\StorePublication;
+use App\Enums\PaymentAttemptStatus;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\Route;
 
 /*
 | PANELDE MÜŞTERİ SEKMESİ (4.6AC)
@@ -114,7 +116,7 @@ it('★★★ PAROLA HASH I PANELE HIC ULASMIYOR — kolon sorguya bile girmiyor
     | GİRMEDİĞİ ayrıca ölçülüyor — 4F'de marka dökümüne bcrypt hash'leri
     | tam bu ikinci savunma olmadığı için girmişti.
     */
-    $yuklenen = app(App\Domain\Identity\CustomerInsight::class)->liste()->getCollection()->first();
+    $yuklenen = app(CustomerInsight::class)->liste()->getCollection()->first();
 
     expect($yuklenen)->not->toBeNull();
 
@@ -179,7 +181,7 @@ it('★★★ BASARISIZ ODEME gorunuyor ama RET GEREKCESI GORUNMUYOR', function 
     $siparis->save();
 
     $odeme = Payment::where('order_id', $siparis->id)->firstOrFail();
-    $odeme->status = App\Enums\PaymentAttemptStatus::Failed;
+    $odeme->status = PaymentAttemptStatus::Failed;
     $odeme->save();
 
     $veri = inertiaVerisi((string) $this->actingAs($sahip, 'staff-web')
@@ -226,7 +228,7 @@ it('★★★ SEKMEDE YAZMA UCU YOK — salt okunur', function () {
     */
     markaKur('marka-a.test');
 
-    $yazanlar = collect(Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
+    $yazanlar = collect(Route::getRoutes()->getRoutes())
         ->filter(fn ($r) => str_contains((string) $r->uri(), 'yonetim/musteriler'))
         ->reject(fn ($r) => $r->methods() === ['GET', 'HEAD']);
 

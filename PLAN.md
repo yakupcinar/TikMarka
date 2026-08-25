@@ -7615,6 +7615,27 @@ harcamasıyla gösteriyor · ayrıntıda özet (10 sipariş · 42.528,70 TL · 1
 favori · 0 başarısız), 14 sipariş satırı, ürün adları sipariş satırından ·
 `password` izi **yok** · ret gerekçesi alanı **yok**. **940 test.**
 
+**⚠️⚠️ CI KIRMIZI DÖNDÜ — İKİ AYRI SEBEPLE, ikisi de yerelde görünmüyordu.**
+
+**1. Panel testleri Vite manifestine bağlıydı.** Panelin kök görünümü
+`@vite(...)` çağırıyor; `public/build/manifest.json` yoksa sayfa **500**
+dönüyor. Yerelde derleme çıktısı duruyor, CI'da `public/build`
+gitignore'da ve derleme adımı **testlerden sonra** koşuyor. Sekiz testin
+sekizi düştü; düşmeyen tek test HTTP isteği atmayan yapısal testti.
+
+> ⚠️ Her panel testi `withoutVite()`'i **elle** yazıyordu ve unutulması an
+> meselesiydi. `tests/Pest.php`'de `beforeEach` ile bütün `Tenancy` süiti
+> için açıldı — artık unutulamıyor. Bozuk Vue bileşenini gizlemiyor:
+> CI'daki ayrı derleme adımı onu yakalıyor.
+>
+> ⚠️ Yerelde yeniden üretildi: `public/build` taşınınca aynı sekiz test
+> düştü, `beforeEach` eklendikten sonra manifest yokken de geçti.
+
+**2. Pint hiç koşmamıştı ve ben "geçti" sanmıştım.** `pint.json` bilinen
+`errno=35` hatasıyla bozulmuştu; komut **boş çıktı** verdi ve ben onu
+`tail -2` ile borulayıp geçtiğini varsaydım. Biçimlenmemiş üç dosya böyle
+commit edildi. Ders: **boş çıktı başarı değil, hata belirtisidir.**
+
 ---
 ---
 ## Faz 5 — Entegrasyonlar  *(henüz açılmadı)*
