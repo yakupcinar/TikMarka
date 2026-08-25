@@ -40,6 +40,7 @@ use App\Http\Storefront\AuthController as VitrinAuth;
 use App\Http\Storefront\CartController;
 use App\Http\Storefront\CartPageController;
 use App\Http\Storefront\CatalogController;
+use App\Http\Storefront\CategoryPageController;
 use App\Http\Storefront\CheckoutController as VitrinCheckout;
 use App\Http\Storefront\CheckoutPageController;
 use App\Http\Storefront\CollectionController as StorefrontCollectionController;
@@ -639,6 +640,16 @@ Route::middleware([
     | ⚠️ Uçları vardı (`/api/collections`) ama SAYFASI YOKTU: marka
     | koleksiyon kuruyor, müşteri hiçbir yerden göremiyordu.
     */
+    /*
+    | KATEGORİ GEZİNME (4.6B)
+    |
+    | ⚠️ Adres `/k/{slug}` — 1B'de kararlaştırıldı ve kategori YOLU
+    | İÇERMİYOR: kategori ağaçta taşınınca adres kırılmasın diye. Slug
+    | mağaza genelinde benzersiz olduğu için bu yeterli.
+    */
+    Route::get('/kategoriler', [CategoryPageController::class, 'index'])->name('vitrin.kategoriler');
+    Route::get('/k/{slug}', [CategoryPageController::class, 'show'])->name('vitrin.kategori');
+
     Route::get('/koleksiyonlar', [StorefrontKoleksiyonSayfa::class, 'index'])->name('vitrin.koleksiyonlar');
     Route::get('/koleksiyon/{slug}', [StorefrontKoleksiyonSayfa::class, 'show'])->name('vitrin.koleksiyon');
 

@@ -22,26 +22,7 @@
         --}}
         <p class="bos">Bu koleksiyonda şu anda ürün yok.</p>
     @else
-        <div class="izgara">
-            @foreach ($urunler as $urun)
-                <a class="kart" href="{{ route('vitrin.urun', $urun->slug) }}">
-                    @if ($urun->images->first())
-                        <img src="{{ $urun->images->first()->url() }}" alt="{{ $urun->title }}">
-                    @else
-                        <div class="yok">Görsel yok</div>
-                    @endif
-
-                    <div class="govde">
-                        <span class="ad">{{ $urun->title }}</span>
-                        @if ($urun->variants->isNotEmpty())
-                            <span class="fiyat">
-                                {{ number_format((float) $urun->variants->min('price'), 2, ',', '.') }} TL
-                            </span>
-                        @endif
-                    </div>
-                </a>
-            @endforeach
-        </div>
+        @include('storefront.partials.urun-izgarasi')
     @endif
 
 @endsection

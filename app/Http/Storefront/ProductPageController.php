@@ -87,6 +87,15 @@ class ProductPageController extends Controller
             | parametresi eklemek demek ve o adres SEO'da ürünün kendisiyle
             | yarışırdı. Daha fazlası gerekirse ayrı bir iş.
             */
+            /*
+            | ★ KATEGORİ ZİNCİRİ (4.6B). Ürün sayfası artık çıkmaz sokak
+            | değil: müşteri buradan kategoriye çıkabiliyor.
+            |
+            | ⚠️ Ürünün kategorisi olmayabilir — o durumda boş koleksiyon
+            | dönüyor ve ekran kırıntıyı hiç çizmiyor.
+            */
+            'kategoriZinciri' => $urun->category?->zincir() ?? collect(),
+
             'yorumlar' => $this->yorumlar->vitrindeGorunenler($urun)->limit(20)->get(),
 
             /*

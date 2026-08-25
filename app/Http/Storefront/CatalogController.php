@@ -234,9 +234,12 @@ class CatalogController extends Controller
             return [];
         }
 
-        $atalar = Category::whereIn('id', $urun->category->ataIdleri())->orderBy('path')->get();
-
-        $kirinti = $atalar->push($urun->category)
+        /*
+        | ⚠️ Zincir MODELDEN (4.6B): vitrin kategori sayfası da aynı yolu
+        | gösteriyor. Burada ayrı bir kopya kalsaydı iki yüzey zamanla
+        | ayrışırdı.
+        */
+        $kirinti = $urun->category->zincir()
             ->map(fn (Category $k) => ['name' => $k->name, 'slug' => $k->slug])
             ->values()
             ->all();

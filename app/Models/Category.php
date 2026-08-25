@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +70,27 @@ class Category extends Model
     public function scopeAltAgac($sorgu, self $kategori)
     {
         return $sorgu->where('path', 'like', $kategori->path.'%');
+    }
+
+    /**
+     * Kök kategoriden buraya kadar olan zincir — kendisi DÂHİL.
+     *
+     * ★ EKMEK KIRINTISI FORMÜLÜ TEK YERDE. API cevabı (2C) ve vitrin
+     * kategori sayfası (4.6B) aynı zinciri gösteriyor; ayrı ayrı
+     * yazılsaydı biri değişip öteki kalır ve aynı kategori iki yüzeyde
+     * farklı yol gösterirdi.
+     *
+     * ⚠️ `path` zaten zinciri taşıdığı için ata sorgusu TEK: `orderBy('path')`
+     * kökten yaprağa sıralıyor.
+     *
+     * @return Collection<int, self>
+     */
+    public function zincir(): Collection
+    {
+        /** @var Collection<int, self> $atalar */
+        $atalar = self::query()->whereIn('id', $this->ataIdleri())->orderBy('path')->get();
+
+        return $atalar->push($this);
     }
 
     /**

@@ -2999,3 +2999,32 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek curl): misafir → düğme yok · müşteri → formun
       kendi adresine POST → aria-pressed="true" · liste ürünü gösteriyor
+
+4.6B ✅ VİTRİNDE KATEGORİ GEZİNME — 914 test
+      marka ağaç kuruyordu (1B) ve ürünleri bağlıyordu ama müşteri
+      kategoriye HİÇBİR YERDEN ulaşamıyordu; kırıntı API'de vardı,
+      tıklanacak sayfa yoktu (4.5H'de bilerek null bırakılmıştı)
+
+      ✅ ÜST KATEGORİ ALT AĞACI GÖSTERİYOR — en kritik iddia
+        "Giyim"de doğrudan ürün olmayabilir; alt ağaç sayılmasaydı üst
+        kategoriye tıklayan müşteri BOŞ SAYFA görürdü
+        CANLI: /k/elektronik-teknoloji kendi ürünü 0, sayfada 11 ürün
+
+      ✅ alt kategoriler de listeleniyor — yoksa yaprak olmayan
+        kategoriler ÇIKMAZ SOKAK olurdu
+      ✅ boş kategori LİSTEDE yok ama ADRESİ çalışıyor (iki ayrı soru:
+        listede göstermek yanıltır, 404 yapmak eski bağlantıyı öldürür)
+      ⚠️ ÜRÜNÜ OLAN KATEGORİNİN ATASI DA LİSTEDE — yoksa ağacın GÖVDESİ
+        kaybolur; atalar path'ten okunuyor, ek sorgu yok
+
+      ✅ ekmek kırıntısı formülü MODELE taşındı (API'de zaten vardı)
+        ürün sayfasına da eklendi → orası artık çıkmaz sokak değil
+      ⚠️ adres /k/{slug} — 1B'de kararlaştırılmıştı, kategori YOLU
+        İÇERMİYOR (taşınınca adres kırılmasın)
+      ✅ menüdeki bağlantı KOŞULLU: "var" = ÜRÜNÜ OLAN kategori
+      ✅ ürün ızgarası ORTAK PARÇA (koleksiyon sayfası da kullanıyor)
+
+      5 kırma denemesi, 5'i de düştü
+
+      DOĞRULANDI (gerçek curl): /kategoriler 7 kategori · üst kategori 11
+      ürün + 2 alt kategori · yol "Kategoriler / Giyim / Tişört"

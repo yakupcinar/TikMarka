@@ -217,6 +217,17 @@
         .kupon-form input { padding: 8px 12px; border: 1px solid #d6d3d1; border-radius: 8px; font: inherit; }
         .ipucu { color: #78716c; font-size: 13px; }
 
+        /* ── Kategori gezinme (4.6B) ─────────────────────────────── */
+        .kirinti { font-size: 13px; color: #78716c; margin: 0 0 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .kirinti a { color: #57534e; }
+        .kategori-agaci { list-style: none; padding: 0; margin: 16px 0 0; }
+        .kategori-agaci li { padding: 7px 0; border-bottom: 1px solid #f5f5f4; }
+        .alt-kategoriler { list-style: none; padding: 0; margin: 0 0 20px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .alt-kategoriler a {
+            display: inline-block; padding: 6px 12px; border: 1px solid #d6d3d1;
+            border-radius: 999px; text-decoration: none; font-size: 14px;
+        }
+
         /* ── Favoriler (4.6D) ────────────────────────────────────── */
         .favori-form { margin: 12px 0; }
         .favori { padding: 8px 14px; border: 1px solid #d6d3d1; border-radius: 6px; background: #fff; cursor: pointer; font: inherit; }
@@ -329,6 +340,13 @@
                 {{ $tema['ad'] }}
             @endif
         </a>
+
+        {{-- ⚠️ Kategori YOKSA bağlantı da yok — koleksiyonlarla aynı
+             gerekçe (4.6B). "Var" demek ÜRÜNÜ OLAN kategori demek: boş
+             ağaca götüren menü maddesi müşteriyi yanıltırdı. --}}
+        @if (($kategoriVar ?? false))
+            <a class="sepet" href="{{ route('vitrin.kategoriler') }}">Kategoriler</a>
+        @endif
 
         {{-- ⚠️ Koleksiyon YOKSA bağlantı da yok: boş sayfaya götüren bir
              menü maddesi müşteriyi yanıltırdı. --}}

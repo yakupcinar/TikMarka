@@ -210,7 +210,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 
 | Eksik | Blok |
 |---|---|
-| Vitrinde **kategori gezinme sayfası yok** (4.5H kapsam testinde bilerek `null`) | **4.6B** |
+| ~~Vitrinde **kategori gezinme sayfası yok**~~ → **4.6B'de kapandı** | **4.6B** |
 | ~~**Yorumlar vitrinde hiç görünmüyor**~~ → **4.6C'de kapandı** | **4.6C** |
 
 > ⚠️ Ayrıca ölçüldü: `ProductViewed` olayı **yalnızca API'den** yazılıyor,
@@ -265,6 +265,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Görseller olduğu gibi saklanıyordu | Yüklenen her görsel **WebP**'ye çevriliyor, en uzun kenar 2048'e iniyor — ölçüldü: 4,83 MB → 0,34 MB | 4.6AA |
 | Yorumlar vitrinde hiç görünmüyordu (uçlar ve moderasyon vardı) | Vitrin → ürün sayfası → **Yorumlar** bölümü · satın alıp teslim almış müşteri form görüyor, göremiyorsa **sebebi yazıyor** | 4.6C |
 | Vitrinde favorileme yoktu | Ürün sayfası → **♡ Favorilere ekle** · Hesabım → **Favorilerim** · KVKK: anonimleştirmede siliniyor, veri dökümünde listeleniyor | 4.6D |
+| Kategoriye vitrinden ulaşılamıyordu | Üst menü → **Kategoriler** · `/k/{slug}` · üst kategori **alt ağacın ürünlerini** gösteriyor · ürün sayfasında kategori yolu | 4.6B |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

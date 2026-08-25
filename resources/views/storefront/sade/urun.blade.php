@@ -14,6 +14,8 @@
 
 @section('icerik')
 
+    @include('storefront.partials.kategori-kirintisi')
+
     <div class="urun">
         <div>
             @if ($urun->images->first())

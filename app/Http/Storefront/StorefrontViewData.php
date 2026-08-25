@@ -2,6 +2,7 @@
 
 namespace App\Http\Storefront;
 
+use App\Domain\Catalog\ProductQuery;
 use App\Domain\Settings\StoreTimezone;
 use App\Domain\Settings\ThemeSettings;
 use App\Models\ProductCollection;
@@ -27,6 +28,7 @@ class StorefrontViewData
         private readonly ThemeSettings $tema,
         private readonly CartResolver $coz,
         private readonly StoreTimezone $saatDilimi,
+        private readonly ProductQuery $urunler,
     ) {}
 
     public function compose(View $gorunum): void
@@ -61,6 +63,20 @@ class StorefrontViewData
             | "kaç tane" değil — PostgreSQL ilkinde ilk satırda duruyor.
             */
             'koleksiyonVar' => ProductCollection::where('is_active', true)->exists(),
+
+            /*
+            | ⚠️ "Kategoriler" bağlantısı da KOŞULLU (4.6B), aynı gerekçe.
+            |
+            | ⚠️ "Var" demek ÜRÜNÜ OLAN kategori demek — kategori kaydı
+            | olup ürünü olmayan mağazada menü boş bir ağaca götürürdü.
+            | Soru ürün tarafından soruluyor: yayındaki bir üründe
+            | `category_id` dolu mu.
+            |
+            | ⚠️ `exists()` — `count()` değil: soru "var mı".
+            */
+            'kategoriVar' => $this->urunler->forStorefront()
+                ->whereNotNull('category_id')
+                ->exists(),
 
             /*
             | GÖSTERİM SAAT DİLİMİ (4.5M).

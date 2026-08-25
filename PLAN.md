@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6D BİTTİ — iyileştirme listesi 7/13 ──────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6B BİTTİ — iyileştirme listesi 8/13 ──────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7301,6 +7301,63 @@ bu kez düştü.
 DOĞRULANDI (gerçek curl): misafir → düğme yok, "giriş yapın" var · giriş
 yapmış müşteri → formun kendi adresine POST → `aria-pressed="true"` ve
 "Favorilerimde" · `/hesabim/favoriler` ürünü listeliyor. **904 test.**
+
+---
+### 4.6B — vitrinde kategori gezinme
+
+Marka kategori ağacı kuruyordu (1B) ve ürünleri kategoriye bağlıyordu,
+ama müşteri kategoriye **hiçbir yerden ulaşamıyordu**. Ekmek kırıntısı API
+cevabında vardı; tıklanacak bir sayfa yoktu. 4.5H'nin kapsam testinde
+bilerek `null` bırakılmıştı.
+
+**✅ ÜST KATEGORİ ALT AĞACI GÖSTERİYOR — bloğun en kritik iddiası.**
+
+> "Giyim"de doğrudan ürün olmayabilir; ürün "Giyim / Tişört" altındadır.
+> Alt ağaç sayılmasaydı üst kategoriye tıklayan müşteri **boş sayfa**
+> görür ve mağazayı bozuk sanardı. `ProductQuery::kategoriyeGore()` (2C)
+> bunu zaten yapıyordu — eksik olan yalnızca ekrandı.
+>
+> Canlı ölçüm: `/k/elektronik-teknoloji` kendi ürünü **0**, sayfada
+> **11 ürün** görünüyor.
+
+**✅ Alt kategoriler de listeleniyor.** Yalnızca ürün gösterilseydi yaprak
+olmayan kategoriler **çıkmaz sokak** olurdu: müşteri "Giyim"e girer ve
+daha derine inemezdi.
+
+**✅ Boş kategori LİSTEDE yok ama ADRESİ çalışıyor.** İkisi ayrı sorular:
+listede göstermek tıklanacak ama hiçbir şey vermeyen bir bağlantı sunmak
+olurdu (4.5H'de koleksiyon için verilen kararın aynısı); adresi 404
+yapmak ise eski bağlantıdan ya da arama motorundan gelen müşteriye "yok"
+demek olurdu.
+
+**⚠️ ÜRÜNÜ OLAN KATEGORİNİN ATASI DA LİSTEDE.** Yalnızca dolu kategoriler
+listelenseydi ağacın **gövdesi kaybolur** ve yapraklara ulaşmak
+anlamsızlaşırdı. Atalar `path`'ten okunuyor, ek sorgu yok.
+
+**✅ Ekmek kırıntısı formülü MODELE taşındı** (`Category::zincir()`). API
+cevabında (2C) zaten vardı; vitrin için kopyalansaydı aynı kategori iki
+yüzeyde farklı yol gösterebilirdi. Ürün sayfasına da eklendi — orası artık
+çıkmaz sokak değil.
+
+**⚠️ Adres `/k/{slug}` — 1B'de kararlaştırılmıştı.** Kategori **yolu
+içermiyor**: kategori ağaçta taşınınca adres kırılmasın diye. Yeni bir
+şema uydurmak yerine o karara uyuldu.
+
+**✅ Menüdeki bağlantı koşullu.** "Var" demek **ürünü olan** kategori
+demek; kategori kaydı olup ürünü olmayan mağazada menü boş bir ağaca
+götürürdü.
+
+**✅ Ürün ızgarası ORTAK PARÇA yapıldı** — koleksiyon sayfası da artık onu
+kullanıyor. Kopyalansaydı biri güncellenip öteki unutulurdu.
+
+**Beş kırma denemesi, beşi de düştü** (alt ağacı kaldır · ataları
+listeden çıkar · boşları da listele · menü bağlantısını koşulsuz yap ·
+`forStorefront()`'u kaldır).
+
+DOĞRULANDI (gerçek curl, geliştirme markası): `/kategoriler` yedi kategori
+listeliyor · `/k/elektronik-teknoloji` (kendi ürünü 0) **11 ürün** ve iki
+alt kategori gösteriyor · `/k/tisort` yolu **Kategoriler / Giyim /
+Tişört** · menüde bağlantı görünüyor. **914 test.**
 
 ---
 ---
