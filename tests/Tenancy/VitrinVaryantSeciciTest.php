@@ -4,8 +4,10 @@ use App\Domain\Catalog\OptionService;
 use App\Domain\Catalog\ProductService;
 use App\Domain\Catalog\VariantSelector;
 use App\Domain\Catalog\VariantService;
+use App\Domain\Settings\SettingsService;
 use App\Domain\Settings\StorePublication;
 use App\Enums\ProductStatus;
+use App\Enums\SettingGroup;
 use App\Models\Product;
 
 /*
@@ -179,4 +181,45 @@ it('★★ URETILMEMIS deger LISTEDE GORUNMUYOR — "yok" ile "tukendi" ayri', f
     $bedenler = collect($veri['eksenler'])->firstOrFail(fn (array $e) => $e['slug'] === 'beden');
 
     expect(collect($bedenler['degerler'])->pluck('slug')->all())->toBe(['s', 'm']);
+});
+
+it('★★★ IKI DUZEN de secıcıyı gosteriyor — duz liste HICBIRINDE yok', function () {
+    /*
+    | ⚠️ BU TEST BİR DOĞRULAMANIN BULDUĞU KUSURDAN DOĞDU.
+    |
+    | 4.6A "bitti" sayılıyordu ama seçici YALNIZCA `sade` düzenine
+    | uygulanmıştı. `vitrinli` kullanan marka — geliştirme markası dâhil —
+    | 4.6A'nın KALDIRMAYI AMAÇLADIĞI düz açılır listeyi görmeye devam
+    | ediyordu: "kirmizi · m — 249,90 TL".
+    |
+    | ⚠️ ÜSTTEKİ TESTLERİN HİÇBİRİ GÖREMEZDİ: hepsi varsayılan düzende
+    | (`sade`) koşuyor. Tema bir AYAR (4-K5), yani hangi düzenin
+    | kullanıldığını MARKA belirliyor — ürün sayfasına eklenen her şey iki
+    | düzeni de kapsamak zorunda.
+    |
+    | ⚠️ 4.6C ve 4.6D'de aynı ders için ortak parça kullanılmıştı; 4.6A
+    | onlardan ÖNCE yazıldığı için o desene hiç girmemişti.
+    */
+    $urun = seciciUrunu();
+
+    foreach (['sade', 'vitrinli'] as $duzen) {
+        app(SettingsService::class)
+            ->yaz(SettingGroup::Theme, 'layout', $duzen);
+
+        $cevap = $this->get("http://marka-a.test/urun/{$urun->slug}");
+
+        $cevap->assertOk()
+            ->assertSee('data-eksen="renk"', escape: false)
+            ->assertSee('data-eksen="beden"', escape: false)
+            ->assertSee('data-secici', escape: false)
+
+            /*
+            | ⚠️ Eski düz liste GİTMELİ: kalsaydı iki ayrı seçim yolu olur
+            | ve biri stok kontrolü yapmazdı.
+            */
+            ->assertDontSee('<select name="variant_uuid"', escape: false);
+
+        // ★ Betik de gelmiş olmalı — kutucuklar tek başına hiçbir şey yapmaz.
+        expect((string) $cevap->getContent())->toContain('data-secici-uyari');
+    }
 });

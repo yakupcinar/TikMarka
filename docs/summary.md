@@ -3028,3 +3028,31 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek curl): /kategoriler 7 kategori · üst kategori 11
       ürün + 2 alt kategori · yol "Kategoriler / Giyim / Tişört"
+
+4.6A.1 ✅ VARYANT SEÇİCİSİ İKİNCİ DÜZENE DE UYGULANDI — 915 test
+      DOĞRULAMANIN BULDUĞU KUSUR: 4.6A "bitti" sayılıyordu, kaydı
+      ayrıntılıydı, 4 kırma denemesi yazılıydı, 6 testi yeşildi —
+      ama YARIM UYGULANMIŞTI
+
+        sade/urun.blade.php      data-eksen: 4
+        vitrinli/urun.blade.php  data-eksen: 0
+
+      vitrinli kullanan marka (GELİŞTİRME MARKASI DÂHİL) 4.6A'nın
+      kaldırmayı amaçladığı DÜZ AÇILIR LİSTEYİ görüyordu:
+      "kirmizi · m — 249,90 TL"
+
+      ⚠️ ALTI TESTİN HİÇBİRİ GÖREMEZDİ: hepsi VARSAYILAN düzende koşuyor
+        tema bir AYAR (4-K5) → ürün sayfasına eklenen her şey İKİ DÜZENİ
+        de kapsamalı; 4.6C ve 4.6D'de bu ders için ortak parça
+        kullanılmıştı, 4.6A onlardan ÖNCE yazıldığı için girmemişti
+
+      ✅ seçici + betiği ORTAK PARÇAYA çıkarıldı (kopyalanmadı)
+      ⚠️ üç şarttan biri zaten sağlanıyordu: stokta olmayan vitrinli'de
+        de seçilemiyordu ama seçicinin marifetiyle değil —
+        forStorefront() onları zaten yüklemiyor (1B-K8)
+        → kusur GÜVENLİK değil KULLANILABİLİRLİK tarafındaydı
+
+      1 kırma denemesi, düştü
+
+      DOĞRULANDI (gerçek curl, vitrinli marka): 2 eksen · 6 kutucuk ·
+      düz liste YOK · betik ve fiyat matrisi sayfada

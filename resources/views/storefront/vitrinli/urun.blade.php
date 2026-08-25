@@ -59,21 +59,14 @@
                     --}}
                     @csrf
 
-                    @if ($urun->variants->count() > 1)
-                        <label>
-                            Seçenek
-                            <select name="variant_uuid" required>
-                                @foreach ($urun->variants as $varyant)
-                                    <option value="{{ $varyant->uuid }}">
-                                        {{ collect($varyant->options)->implode(' · ') ?: $varyant->sku }}
-                                        — {{ number_format((float) $varyant->price, 2, ',', '.') }} TL
-                                    </option>
-                                @endforeach
-                            </select>
-                        </label>
-                    @else
-                        <input type="hidden" name="variant_uuid" value="{{ $urun->variants->first()->uuid }}">
-                    @endif
+                    {{--
+                        ⚠️ ÖNCE BURADA DÜZ AÇILIR LİSTE VARDI — 4.6A'nın
+                        kaldırmayı amaçladığı şeyin ta kendisi:
+                        "kirmizi · m — 249,90 TL". Seçici yalnızca `sade`
+                        düzenine uygulanmıştı; `vitrinli` kullanan marka
+                        (geliştirme markası dâhil) eski hâli görüyordu.
+                    --}}
+                    @include('storefront.partials.varyant-secici')
 
                     <label>
                         Adet
@@ -94,5 +87,7 @@
     @include('storefront.partials.favori-dugmesi')
 
     @include('storefront.partials.yorumlar')
+
+    @include('storefront.partials.varyant-betigi')
 
 @endsection

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6B BİTTİ — iyileştirme listesi 8/13 ──────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6A.1 BİTTİ — iyileştirme listesi 9/13 ───────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6336,7 +6336,7 @@ değer varsa açılır liste**, stokta olmayan birleşim **tıklanamaz**.
 > ⚠️ Eşik (5) **sunucudan** gelmeli, arayüzde sabit yazılmamalı — 4.5S'de
 > `maksEksen` için verilen kararın aynısı.
 
-### 4.6A — varyant seçimi: eksen kutucukları  ◀ AÇIK
+### 4.6A — varyant seçimi: eksen kutucukları
 
 Önce **tek düz açılır liste** vardı ve tüm varyantları
 *"Kırmızı · M — 100 TL"* diye basıyordu: müşteri iki ekseni birden okumak
@@ -7358,6 +7358,52 @@ DOĞRULANDI (gerçek curl, geliştirme markası): `/kategoriler` yedi kategori
 listeliyor · `/k/elektronik-teknoloji` (kendi ürünü 0) **11 ürün** ve iki
 alt kategori gösteriyor · `/k/tisort` yolu **Kategoriler / Giyim /
 Tişört** · menüde bağlantı görünüyor. **914 test.**
+
+---
+### 4.6A.1 — varyant seçicisi İKİNCİ düzene de uygulandı
+
+**Bu blok bir doğrulamanın bulduğu kusurdan doğdu.** 4.6A "bitti"
+sayılıyordu; kaydı ayrıntılıydı, dört kırma denemesi yazılıydı, altı testi
+yeşildi. Ölçünce yarım uygulandığı çıktı.
+
+**⚠️ SEÇİCİ YALNIZCA `sade` DÜZENİNDEYDİ.**
+
+```
+sade/urun.blade.php      data-eksen: 4
+vitrinli/urun.blade.php  data-eksen: 0
+```
+
+`vitrinli` kullanan marka — **geliştirme markası dâhil** — 4.6A'nın
+kaldırmayı amaçladığı **düz açılır listeyi** görmeye devam ediyordu.
+Gerçek sayfadan alınan hâli: *"kirmizi · m — 249,90 TL"* — PLAN.md'nin
+"önce böyleydi" diye tarif ettiği şeyin ta kendisi.
+
+**⚠️ ALTI TESTİN HİÇBİRİ GÖREMEZDİ:** hepsi varsayılan düzende (`sade`)
+koşuyor. Tema bir **ayar** (4-K5), yani hangi düzenin kullanıldığını
+marka belirliyor — ürün sayfasına eklenen her şey iki düzeni de kapsamak
+zorunda. 4.6C ve 4.6D'de bu ders için ortak parça kullanılmıştı; 4.6A
+onlardan **önce** yazıldığı için o desene hiç girmemişti.
+
+**✅ Seçici ve betiği ORTAK PARÇAYA çıkarıldı**, iki düzen de onu
+kullanıyor. Kopyalanmadı — kopya, aynı hatanın üçüncü kez tekrarı olurdu.
+
+**⚠️ Üç şarttan biri zaten sağlanıyordu:** stokta olmayan birleşim
+`vitrinli`'de de seçilemiyordu, ama seçicinin marifetiyle değil —
+`forStorefront()` satılabilir olmayan varyantları zaten yüklemiyor
+(1B-K8). Yani kusur "güvenlik" değil **kullanılabilirlik** tarafındaydı:
+müşteri iki ekseni birden okumak zorundaydı ve fiyat seçime göre
+güncellenmiyordu.
+
+**Bir kırma denemesi, düştü** (`vitrinli`'yi düz listeye geri döndürmek).
+
+DOĞRULANDI (gerçek curl, `vitrinli` kullanan geliştirme markası): iki
+eksen grubu · altı kutucuk · düz liste **yok** · betik ve fiyat matrisi
+sayfada. **915 test.**
+
+> ⚠️ Ders CLAUDE.md'ye yazıldı: **"bitti" kaydı, bittiğinin kanıtı
+> değildir.** Blok kaydı ayrıntılı ve kırma denemeleri yazılıyken bile
+> yarım kalabilir; kapsamı ölçen tek şey testin gerçekten o yüzeye
+> bakmasıdır.
 
 ---
 ---

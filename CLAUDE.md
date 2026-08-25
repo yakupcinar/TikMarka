@@ -758,6 +758,22 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   DEVREYE GİRMEZ: o yol müşteriyi silmiyor, maskeliyor.
 
 
+- **ÜRÜN SAYFASINA EKLENEN HER ŞEY İKİ DÜZENİ DE KAPSAMALI.** Vitrinin iki
+  düzeni var (`sade`, `vitrinli`) ve hangisinin kullanıldığını **marka
+  belirliyor** (tema bir ayar, 4-K5). Yalnızca birine eklenen özellik,
+  öteki düzeni seçmiş markanın müşterisinde **hiç yok**. 4.6A'da ısırdı:
+  varyant seçicisi yalnızca `sade`'ye uygulanmıştı, `vitrinli` kullanan
+  marka (geliştirme markası dâhil) eski düz açılır listeyi görmeye devam
+  ediyordu. ⚠️ Altı testin hiçbiri göremedi çünkü hepsi VARSAYILAN
+  düzende koşuyordu — kapsamı ölçen test düzeni tek tek DEĞİŞTİRMELİ.
+  ⚠️ Çözüm kopyalamak değil ORTAK PARÇA (`partials/`): kopya, aynı
+  hatanın bir sonraki tekrarını hazırlar.
+- **"BİTTİ" KAYDI, BİTTİĞİNİN KANITI DEĞİLDİR.** 4.6A'nın PLAN kaydı
+  ayrıntılıydı, dört kırma denemesi yazılıydı ve altı testi yeşildi — blok
+  yine de yarım uygulanmıştı. Bir bloğun kapsamını doğrularken kayda
+  değil **ölçüme** bak: özelliğin geçtiği her yüzeyi tek tek aç.
+
+
 ## Yapı
 
 ```
