@@ -2,9 +2,11 @@
 
 namespace App\Http\Storefront;
 
+use App\Domain\Cart\CartService;
 use App\Domain\Legal\LegalDocumentService;
 use App\Domain\Order\CartNotOrderableException;
 use App\Domain\Order\CheckoutService;
+use App\Domain\Order\OrderNotCancellableException;
 use App\Domain\Order\StaleContractException;
 use App\Domain\Payment\PaymentService;
 use App\Enums\LegalDocumentType;
@@ -31,6 +33,7 @@ class CheckoutPageController extends Controller
         private readonly PaymentService $odemeler,
         private readonly LegalDocumentService $belgeler,
         private readonly CartResolver $coz,
+        private readonly CartService $sepetler,
     ) {}
 
     public function form(Request $istek): View|RedirectResponse
@@ -288,6 +291,61 @@ class CheckoutPageController extends Controller
      * 1E'deki ödeme ucunda da var; daraltılacaksa iki yerde birden
      * daraltılmalı.
      */
+    /**
+     * Ödemeden vazgeçme — sipariş iptal edilir, ürünler sepete döner. (4.6Z)
+     *
+     * ★ ÖLÇÜLEN BOŞLUK: ödeme ekranından çıkmanın temiz bir yolu yoktu.
+     * Müşteri üst menüden başka sayfaya geçiyor, sipariş `pending` kalıyor
+     * ve bağlı stok 60 dakika kimseye satılamıyordu. "Hesabım"daki iptal
+     * düğmesi vardı (4.5J) ama MİSAFİRİN oraya erişimi yok.
+     *
+     * ⚠️ SAYFADAN AYRILINCA OTOMATİK İPTAL YAPILMIYOR — bilerek. Müşteri
+     * meşru sebeplerle ayrılıyor: sözleşmeyi okumak, kart bilgisine
+     * bakmak, bankadan gelen SMS'i beklerken uygulama değiştirmek.
+     * Otomatik iptal bunların hepsini sipariş kaybına çevirirdi.
+     * Terk edilen siparişi rezervasyon süresi zaten topluyor.
+     *
+     * ⚠️ YARIŞ DURUMU BİLİNİYOR VE KABUL EDİLİYOR: müşteri iptal ederken
+     * ödeme sağlayıcıda tamamlanmış olabilir. Ölçüldü — o durumda sipariş
+     * `paid` oluyor ama stok düşmüyor ve `stock_shortfall` bayrağı
+     * kalkıyor, yani marka panelde uyarı görüyor. Bu, 1E-K5'te verilmiş
+     * kararın aynısı: sipariş reddedilmiyor ama SESSİZ de kalınmıyor.
+     */
+    public function iptal(Request $istek, Order $siparis): RedirectResponse
+    {
+        // ⚠️ Ödeme sayfasının KENDİ kuralı; ayrı yazılsaydı ikisi ayrışırdı.
+        $this->siparisiDogrula($istek, $siparis);
+
+        try {
+            $this->siparisler->musteriIptali($siparis);
+        } catch (OrderNotCancellableException) {
+            /*
+            | ⚠️ Ödemesi tamamlanmış siparişte buraya düşülüyor. "İptal
+            | edildi" denip hiçbir şey yapmamak müşteriyi parasının geri
+            | geldiğine inandırırdı.
+            */
+            return redirect()->route('vitrin.anasayfa')
+                ->with('hata', 'Bu sipariş artık iptal edilemez. Ödemesi tamamlandıysa "Siparişlerim" üzerinden iade talebi açabilirsiniz.');
+        }
+
+        /*
+        | ⚠️ SIRA ÖNEMLİ: önce iptal (rezervasyon serbest kalıyor), sonra
+        | sepete ekleme. Ters olsaydı sepetin yumuşak stok kontrolü kendi
+        | rezervasyonumuzu "dolu" görür ve adedi gereksiz yere kırpardı.
+        */
+        $sepet = $this->coz->bulYaDaAc($istek);
+        $atlananlar = $this->sepetler->siparistenGeriYukle($sepet, $siparis);
+
+        $mesaj = $atlananlar === []
+            ? 'Ödeme iptal edildi, ürünleriniz sepette.'
+            : 'Ödeme iptal edildi. Şunlar sepete konulamadı (stokta yok ya da satıştan kalktı): '.implode(', ', $atlananlar);
+
+        return $this->coz->cerezle(
+            redirect()->route('vitrin.sepet')->with('mesaj', $mesaj),
+            $sepet,
+        );
+    }
+
     private function siparisiDogrula(Request $istek, Order $siparis): void
     {
         // ⚠️ SAYFA katmanı: kimlik oturumda. Bkz. [CartResolver].

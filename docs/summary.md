@@ -2859,3 +2859,42 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       DOĞRULANDI (gerçek curl): form çıkıyor · kendi adresine POST →
       sepet doldu · satıştan kalkan ürün için "Şunlar eklenemedi…" ·
       imzasız POST 403
+
+4.6Z ✅ JOKER ALAN ADI + ÖDEMEDEN VAZGEÇME — 875 test
+
+      ✅ GELİŞTİRMEDE YENİ MARKA ARTIK ELLE EKLENMİYOR
+        Caddyfile'da alan adları tek tek sayılıydı; unutulunca
+        tenant:create BAŞARILI görünüyor ama site açılmıyor
+        belirti yanıltıcı: TLS el sıkışmasına bile gelmiyor
+        ölçüldü: samil.localhost 000 → 200 (joker sonrası)
+        c.localhost'un 503'ü ÖNCEDEN de vardı (mağaza kapalı)
+        ⚠️ *.localhost bare `localhost`'u KAPSAMAZ (merkez orada)
+
+      ✅ ÖDEME EKRANINDAN TEMİZ ÇIKIŞ
+        öncesinde yol YOKTU: üst menüden çıkılıyor, sipariş `pending`
+        kalıyor, stok 60 DAKİKA kimseye satılamıyordu
+        Hesabım'daki iptal vardı (4.5J) ama MİSAFİRİN erişimi yok
+        iptal + ürünleri sepete geri koy (4.6Y'nin servisi yeniden
+        kullanılıyor)
+        ⚠️ SIRA ÖNEMLİ: önce iptal sonra sepet; ters olsaydı sepetin
+          yumuşak stok kontrolü KENDİ rezervasyonumuzu dolu görürdü
+
+      ⚠️ SAYFADAN AYRILINCA OTOMATİK İPTAL YAPILMADI — bilerek
+        müşteri meşru sebeplerle ayrılıyor (sözleşme okumak, karta
+        bakmak, banka SMS'i beklemek) → otomatik iptal sipariş kaybı
+        terk edileni rezervasyon süresi zaten topluyor
+
+      ⚠️ YARIŞ DURUMU ÖLÇÜLDÜ VE BELGELENDİ
+        iptal ederken ödeme tamamlanmış olabilir → sipariş `paid`,
+        stok DÜŞMÜYOR, ama stock_shortfall bayrağı kalkıyor
+        1E-K5 kararının aynısı: reddetme yok ama SESSİZLİK de yok
+
+      3 kırma denemesi, 3'ü de düştü
+
+      ⚠️ AYRICA GÖRÜLDÜ: marka-a.localhost üzerinden iyzico ile ödeme
+        BAŞLATILAMIYOR — kodumuz değil, callback adresi gerçek ve
+        ulaşılabilir olmalı (.localhost değil). ngrok bunun için var.
+
+      DOĞRULANDI (gerçek curl): samil 000→200 · ödeme sayfası açılıyor,
+      düğme görünüyor · formun kendi adresine POST → sipariş cancelled ·
+      stok geri geldi · sepette ürün var · mesaj ekranda

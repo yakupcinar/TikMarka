@@ -765,6 +765,23 @@ Route::middleware([
     */
     Route::get('/odeme/ode/{siparis:uuid}', [CheckoutPageController::class, 'ode'])->name('vitrin.ode');
 
+    /*
+    | ÖDEMEDEN VAZGEÇME (4.6Z) — ödeme ekranındaki iptal düğmesi.
+    |
+    | ⚠️ Öncesinde ödeme ekranından çıkmanın TEMİZ bir yolu yoktu: müşteri
+    | üst menüden başka sayfaya geçiyordu, sipariş `pending` kalıyor ve
+    | stok 60 dakika kimseye satılamıyordu. Tek kurtuluş "Hesabım"daki
+    | iptal düğmesiydi ve MİSAFİRİN oraya erişimi yok.
+    |
+    | ⚠️ Sahiplik ödeme sayfasının kendi kuralıyla doğrulanıyor
+    | (`siparisiDogrula`) — ayrı bir kural yazılsaydı ikisi zamanla
+    | ayrışırdı.
+    |
+    | ⚠️ İSİM ŞART — form `route()` ile bu adresi üretiyor (4.6V).
+    */
+    Route::post('/odeme/ode/{siparis:uuid}/iptal', [CheckoutPageController::class, 'iptal'])
+        ->name('vitrin.ode.iptal');
+
 });
 
 /*

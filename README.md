@@ -143,11 +143,16 @@ Senden ricam, token bütçemizi korumak için tüm kodu baştan yazmak yerine sa
 ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istediğin bir skill var mı bunu çalıştırırken daha iyi sonuç almamıza yarayacak"
 
 
-* samil.localhost domaini ekledim marka a'dan ama onla ulaşamıyorum sayfaya doğrulandı diye gösteriyor acaba kodunda eksik mi var ya da cadye dış servisine izin vermek mi lazım manuel ya da localhost tanımladığım için mi ikinci,
+* ~~samil.localhost açılmıyor~~ → **4.6Z'de kapandı** (Caddyfile artık joker kullanıyor; yeni marka için elle ekleme gerekmiyor)
 
 * Şirket panellerinde resim ekleme var, paneli kullanan genelde jpeg veya png yükleyeceği için laravelde bunu otomatik sıkıştırılmış optimize edilmiş WebP formatına dönüştüren bir kod bloğu yazalım yoksa.
 
-* Vitrinde kullanıcı ödemeye gidince yukardan menülerden ödemeden çıkabiliyor ama bu ödemeyi iptal ettirmiyor arkada siparişlerde tutuyor en iyisi biz oraya iptal et butonu koyalım sayfada uygun bir yere ödemeyi direkt iptal etsin ama ürünü sepete geri koyalım, ayrıca hatta onu da geçtim direkt başka sayfaya giderse ödemeyi iptal edelim yukardaki panellerden bir şeye tıklasa bile hiç bir daha siparişlerde ödemeyi tamamla veya iptal etle uğraşmayalım sen ne düşünüyorsun önce etrafa bakalım e ticaretler nasıl işlemiş sonra bakarız.
+* ~~Ödeme ekranından çıkış yolu yok~~ → **4.6Z'de kapandı** (iptal düğmesi + ürünler sepete dönüyor)
+
+> ⚠️ **Otomatik iptal YAPILMADI** — bilerek. Müşteri meşru sebeplerle
+> ayrılıyor (sözleşmeyi okumak, karta bakmak, banka SMS'i beklerken
+> uygulama değiştirmek); otomatik iptal bunların hepsini sipariş kaybına
+> çevirirdi. Terk edilen siparişi rezervasyon süresi zaten topluyor.
 
 * Vitrin için hesabı olan kullanıcılara favorileme seçeneği koyalım ürünlere ürün içerisinde.
 
@@ -252,6 +257,8 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Aynı SKU verilince ham veritabanı hatası çıkıyordu | Panel → ürün → varyant → var olan bir SKU yaz → **SKU kutusunun altında Türkçe uyarı** (ham 500 değil) | 4.6X |
 | Silinmiş bir varyantın SKU'su neden "dolu" belli değildi | Silinen varyantın kodu **rezerve kalıyor** (dış sistemlerle ortak dil) ve mesaj bunu açıkça söylüyor: *"silinmiş bir varyanta ait"* | 4.6X.1 |
 | Ödeme dönüş ekranında duruma göre bağlantı yoktu | Ödeme başarılıysa **"Siparişimi görüntüle"** (yalnızca hesap sahibine) · başarısızsa **"Ürünleri sepete geri koy"** — alınamayan ürün varsa adıyla söylüyor | 4.6Y |
+| Yeni marka alan adı Caddyfile'a elle ekleniyordu | `tenant:create` sonrası site **doğrudan açılıyor** (joker) — `samil.localhost` ile dene | 4.6Z |
+| Ödeme ekranından çıkışın temiz yolu yoktu (stok 60 dk kilitli kalıyordu) | Ödeme sayfası → **"Ödemeden vazgeç ve sepete dön"** — sipariş iptal, stok serbest, ürünler sepette | 4.6Z |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

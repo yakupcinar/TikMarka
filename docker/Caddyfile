@@ -57,12 +57,21 @@
 #    oldu.
 # ─────────────────────────────────────────────────────────────────────
 
-# ⚠️ HER YENİ MARKA BURAYA ELLE EKLENİR — geliştirmede.
-#    Let's Encrypt `.localhost` adreslerine sertifika veremediği için
-#    on-demand TLS (3H) burada devreye giremiyor; üretimde bu liste
-#    gerekmiyor. `tenant:create` başarılı görünür ama alan adı eklenmezse
-#    site AÇILMAZ — bağlantı TLS el sıkışmasına bile gelmez.
-marka-a.localhost, marka-b.localhost, c.localhost, localhost {
+# ⚠️ JOKER — yeni marka artık ELLE EKLENMİYOR (4.6Z).
+#
+# Önce alan adları tek tek sayılıydı ve her yeni marka için bu dosyanın
+# düzenlenip Caddy'nin yeniden başlatılması gerekiyordu. Unutulduğunda
+# `tenant:create` BAŞARILI görünüyor ama site açılmıyor ve belirti
+# yanıltıcı: bağlantı TLS el sıkışmasına bile gelmediği için "sunucu
+# kapalı" gibi duruyor. Gerçek kullanımda `samil.localhost` böyle kayboldu.
+#
+# ⚠️ `*.localhost` BARE `localhost`'U KAPSAMAZ — merkez panel orada
+#    yaşıyor, bu yüzden ayrıca yazılı. Joker tek seviye eşleşiyor
+#    (`a.b.localhost` kapsam dışı); bugün öyle bir kullanım yok.
+#
+# ⚠️ ÜRETİMDE bu blok kullanılmıyor: gerçek alan adları on-demand TLS
+#    (3H) ile çözülüyor ve orada kapı `domain-check` ucu.
+*.localhost, localhost {
 
 	# Let's Encrypt .localhost adreslerine sertifika veremez.
 	# Caddy kendi iç otoritesiyle üretir. (M-4)

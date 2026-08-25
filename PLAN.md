@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6Y BİTTİ — iyileştirme listesi 2/13 ──────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6Z BİTTİ — iyileştirme listesi 4/13 ──────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7038,6 +7038,70 @@ DOĞRULANDI (gerçek curl, geliştirme markası): başarısız siparişin dönü
 ekranında form çıkıyor · formun kendi adresine POST → sepet doldu ·
 satıştan kaldırılmış ürün için ekranda *"Şunlar eklenemedi (stokta yok ya
 da satıştan kalktı): Basic Tişört"* · imzasız POST **403**. **868 test.**
+
+---
+### 4.6Z — joker alan adı ve ödemeden vazgeçme
+
+İki küçük madde birlikte; ikisi de "uç var ≠ kullanılabilir" ailesinden.
+
+**✅ Geliştirmede yeni marka artık ELLE EKLENMİYOR.**
+
+`docker/Caddyfile`'da alan adları tek tek sayılıydı ve her yeni marka için
+dosyanın düzenlenip Caddy'nin yeniden başlatılması gerekiyordu. Unutulunca
+`tenant:create` **başarılı görünüyor** ama site açılmıyor — ve belirti çok
+yanıltıcı: bağlantı TLS el sıkışmasına bile gelmediği için "sunucu kapalı"
+gibi duruyor. Gerçek kullanımda `samil.localhost` böyle kayboldu.
+
+> Ölçüldü: joker öncesi `samil.localhost` → **HTTP 000** (bağlantı yok),
+> sonrası **200**. `marka-a` · `marka-b` · `localhost` etkilenmedi.
+> `c.localhost`'un **503**'ü joker öncesinde de vardı — mağazası kapalı,
+> yani gerileme değil.
+
+⚠️ `*.localhost` **bare `localhost`'u kapsamıyor** (merkez panel orada),
+bu yüzden ayrıca yazılı. ⚠️ Üretimde bu blok kullanılmıyor: gerçek alan
+adları on-demand TLS (3H) ile çözülüyor.
+
+**✅ Ödeme ekranından temiz çıkış — "Ödemeden vazgeç ve sepete dön".**
+
+> ⚠️ Öncesinde çıkışın temiz bir yolu YOKTU: müşteri üst menüden başka
+> sayfaya geçiyor, sipariş `pending` kalıyor ve bağlı stok **60 dakika**
+> kimseye satılamıyordu. "Hesabım"da iptal düğmesi vardı (4.5J) ama
+> **misafirin oraya erişimi yok** — misafir ödemesi açık olduğu için bu,
+> müşterilerin bir bölümünün hiç çıkışı olmaması demekti.
+
+İptal ediyor (rezervasyon serbest kalıyor) **ve ürünleri sepete geri
+koyuyor** — 4.6Y'de yazılan `siparistenGeriYukle` yeniden kullanılıyor.
+⚠️ Sıra önemli: önce iptal, sonra sepete ekleme. Ters olsaydı sepetin
+yumuşak stok kontrolü **kendi rezervasyonumuzu** "dolu" görür ve adedi
+gereksiz yere kırpardı.
+
+**⚠️ SAYFADAN AYRILINCA OTOMATİK İPTAL YAPILMADI — bilerek.** Kullanıcının
+ilk fikri buydu; ölçmeden reddedilmedi, gerekçesi şu: müşteri meşru
+sebeplerle ayrılıyor (sözleşmeyi okumak, kart bilgisine bakmak, bankadan
+gelen SMS'i beklerken uygulama değiştirmek). Otomatik iptal bunların
+hepsini **sipariş kaybına** çevirirdi. Terk edileni rezervasyon süresi
+zaten topluyor; eksik olan tek şey **iradeli** çıkıştı.
+
+**⚠️ YARIŞ DURUMU BİLİNİYOR VE ÖLÇÜLDÜ.** Müşteri iptal ederken ödeme
+sağlayıcıda tamamlanmış olabilir. Ölçüm: sipariş `paid` oluyor, stok
+**düşmüyor**, ama `stock_shortfall` bayrağı kalkıyor ve marka panelde
+uyarı görüyor. Bu 1E-K5'te verilmiş kararın aynısı — sipariş reddedilmiyor
+(müşteriyi 3-5 gün parasız bırakmamak için) ama **sessiz de kalınmıyor**.
+Bir test bu riski açıkça belgeliyor.
+
+**Üç kırma denemesi, üçü de düştü** (sahiplik doğrulamasını kaldır · sepete
+geri koymayı kaldır · form adresini GET rotasına yönlendir).
+
+⚠️ Ölçüm sırasında ayrıca görüldü: `marka-a.localhost` üzerinden iyzico ile
+ödeme **başlatılamıyor** (`PaymentProviderException`). Sebep bizim kodumuz
+değil — callback adresi gerçek ve ulaşılabilir olmak zorunda, `.localhost`
+değil. ngrok tüneli tam bunun için var (1E-K10). Canlı doğrulama için marka
+geçici olarak sahte sağlayıcıya alındı ve **geri konuldu**.
+
+DOĞRULANDI (gerçek curl): `samil.localhost` 000 → 200 · ödeme sayfası
+açılıyor ve düğme görünüyor · formun kendi adresine POST → sipariş
+`cancelled` · stok geri geldi · sepette ürün var · ekranda *"Ödeme iptal
+edildi, ürünleriniz sepette."* **875 test.**
 
 ---
 ---

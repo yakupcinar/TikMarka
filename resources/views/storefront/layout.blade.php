@@ -216,6 +216,11 @@
         .kupon-form { display: flex; gap: 8px; align-items: center; margin: 20px 0; flex-wrap: wrap; }
         .kupon-form input { padding: 8px 12px; border: 1px solid #d6d3d1; border-radius: 8px; font: inherit; }
         .ipucu { color: #78716c; font-size: 13px; }
+
+        /* ⚠️ Ödemeden vazgeçme (4.6Z) — iframe'in ALTINDA ve sade tutuluyor:
+           kart formunun yanında dikkat çeken bir düğme, ödemeye devam etmek
+           isteyen müşteriyi tereddüde düşürürdü. */
+        .odeme-vazgec { margin-top: 16px; }
         .engel-kutusu { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px; padding: 14px 18px; margin: 20px 0; }
 
         /* BİLDİRİMLER */

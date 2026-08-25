@@ -439,9 +439,13 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   sunucusu aynı anda tek istek işliyor. Ayrıca SSR bozulunca **sessizce**
   istemci render'ına düşüyor: sayfa çalışır, testler yeşil kalır, **SEO
   sessizce gider**.
-- **Yeni marka geliştirmede HTTPS'e çıkmaz.** `docker/caddy/Caddyfile`'da alan
-  adları elle sayılı; `tenant:create` başarılı görünür ama site açılmaz.
-  Alan adını ekleyip `docker compose restart caddy`. (Faz 3: on-demand TLS.)
+- **Yeni marka geliştirmede HTTPS'e çıkmaz — ARTIK ÇIKIYOR (4.6Z).**
+  `docker/Caddyfile` joker kullanıyor (`*.localhost`), yani yeni marka için
+  elle ekleme GEREKMİYOR. ⚠️ Joker **bare `localhost`'u kapsamaz** (merkez
+  panel orada) ve tek seviye eşleşir. ⚠️ Belirti hâlâ bilinmeli: alan adı
+  Caddy tarafından tanınmıyorsa bağlantı **TLS el sıkışmasına bile
+  gelmiyor** (`curl` → 000) ve "sunucu kapalı" gibi görünüyor — mağazanın
+  kapalı olmasıyla (503) karıştırma.
 
 - **`firstOrFail()` OKUMA YOLUNDA veri sorununu 404'e ÇEVİRİR.** Laravel
   `ModelNotFoundException`'ı 404'e eşliyor; yani "kuralın gösterdiği kategori
