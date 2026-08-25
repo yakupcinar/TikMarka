@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6Z BİTTİ — iyileştirme listesi 4/13 ──────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AA BİTTİ — iyileştirme listesi 5/13 ─────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7102,6 +7102,72 @@ DOĞRULANDI (gerçek curl): `samil.localhost` 000 → 200 · ödeme sayfası
 açılıyor ve düğme görünüyor · formun kendi adresine POST → sipariş
 `cancelled` · stok geri geldi · sepette ürün var · ekranda *"Ödeme iptal
 edildi, ürünleriniz sepette."* **875 test.**
+
+---
+### 4.6AA — görsel optimizasyonu: WebP
+
+Marka panelden telefonundan çıkmış JPEG/PNG yüklüyor; aynı kalitede WebP
+yaklaşık yarısı kadar yer kaplıyor ve vitrin sayfası onlarca görsel
+taşıyor. Ama iş buraya gelmeden **iki ayrı kusur** çıktı.
+
+**⚠️⚠️ MARKA ZATEN YÜKLEYEMİYORDU — ölçüldü.**
+
+Doğrulama kuralı `max:5120` (5 MB) diyordu ama PHP'nin varsayılanı
+`upload_max_filesize = 2M`. Arada kalan dosya Laravel'e **hiç ulaşmıyor**;
+kural konuşamıyor, PHP kesiyor. 4,83 MB'lık gerçek bir ürün fotoğrafıyla
+sınandı ve reddedildi — yani panelin vaat ettiği sınır gerçek değildi.
+
+**⚠️ ÜSTELİK SEBEBİ SÖYLENMİYORDU.** Marka ekranda ham anahtar görüyordu:
+`validation.uploaded`. `lang/tr/validation.php` dosyasının kendi yorumu
+*"unutulursa anahtar görünür ve hemen fark edilir"* diyor — **fark
+edilmedi**, çünkü hiçbir test ekranı okumuyordu. `uploaded` · `file` ·
+`image` · `mimes` · `dimensions` eklendi.
+
+**✅ PHP ayarları bağlanıyor, imaja gömülmüyor.** `COPY` denendi ve pratikte
+kırılgan çıktı: ayar değiştikçe imaj yeniden derlenmek zorunda ve derleme
+dış kayıt defterine bağlı (bu blokta tam orada takıldı). Caddyfile deseni
+kullanıldı — `:ro` bağlı dosya. ⚠️ Değişince `docker compose restart app`
+şart, `up -d` yetmez.
+
+> ⚠️ CI'da bu dosya YOK: CI `setup-php` kullanıyor, Docker imajını değil.
+> Bu yüzden hiçbir test bu ayarlara bağlı olmamalı — ölçüldü, görsel
+> testleri `-d memory_limit=128M -d upload_max_filesize=2M` ile de geçiyor.
+
+**✅ Her görsel WebP'ye çevriliyor ve en uzun kenar 2048'e iniyor.**
+
+> Gerçek ölçüm (canlı panel): 4,83 MB · 4000×3000 · JPEG →
+> **0,34 MB · 2048×1536 · WebP** — **%93 küçülme**. Aynı dosya blok
+> öncesinde hiç yüklenemiyordu.
+
+⚠️ Uzantı artık türden türetilmiyor, **sabit** `.webp`. Eski `match`
+bırakılsaydı içerik WebP, adı `.jpg` olurdu — dosya adı yalan söylerdi.
+
+**⚠️ SIKIŞTIRMA BOMBASI KORUMASI — dosya boyutu sınırı bunu GÖRMEZ.**
+Birkaç yüz baytlık bir PNG, başlığında 6000×5000 yazarak gigabaytlarca
+bellek isteyebilir. Koruma piksel sayısında (24 MP) ve **görsel
+açılmadan** çalışıyor: `getimagesize()` yalnızca başlığı okuyor.
+⚠️ Sıra ters olsaydı bombayı önce belleğe açar, sonra "çok büyük" derdik —
+koruma hiçbir işe yaramazdı.
+
+**✅ Saydamlık korunuyor.** `imagecreatetruecolor` opak siyah tuval
+üretiyor; `imagealphablending` + `imagesavealpha` konmasaydı saydam
+PNG'ler **siyah zeminle** kaydedilirdi ve bozulma vitrinde görülene kadar
+fark edilmezdi.
+
+**⚠️ ESKİ GÖRSELLER DÖNÜŞTÜRÜLMEDİ — bilerek.** Yollar kolonda saklı ve
+eski uzantılar çalışmaya devam ediyor. Geriye dönük dönüştürme ayrı bir iş
+(dosya taşıma + kolon güncelleme + geri alınamaz kayıp riski).
+
+**Dört kırma denemesi yapıldı, üçü düştü — DÖRDÜNCÜSÜ DÜŞMEDİ.**
+`ac()` içindeki "açılamadı → reddet" dalını boş tuvalle değiştirdim ve
+**bütün testler yeşil kaldı**: öteki testin kırpılmış JPEG'i zaten
+`getimagesize()` aşamasında düşüyordu, yani o dala hiç gelinmiyordu.
+Başlığı geçerli ama piksel verisi olmayan bir PNG ile ölçen test eklendi;
+deneme tekrarlandı ve bu kez düştü.
+
+DOĞRULANDI (gerçek panel, curl): blok öncesi 4,83 MB reddediliyordu ve
+ekranda `validation.uploaded` yazıyordu · blok sonrası aynı dosya kabul
+edildi, diskte 0,34 MB WebP olarak duruyor. **883 test.**
 
 ---
 ---

@@ -32,6 +32,12 @@ services:
     volumes:
       - .:/var/www/html           # kod canlı bağlı — kaydettiğin anda geçerli
 
+      # ⚠️ PHP ayarları (4.6AA): yükleme sınırları ve bellek. Caddyfile ile
+      #   aynı desen — imaja gömülmüyor ki değişiklik yeniden derleme
+      #   gerektirmesin. Değişince `docker compose restart app` ŞART;
+      #   `up -d` yetmez (bağlı `:ro` dosya bayat kalıyor).
+      - ./docker/php/tikmarka.ini:/usr/local/etc/php/conf.d/tikmarka.ini:ro
+
       # ⚠️ node_modules BAĞLI KLASÖRÜN DIŞINDA — adlandırılmış birimde. (4E)
       #
       # macOS'ta bind mount üzerinden binlerce küçük dosya okumak hem çok

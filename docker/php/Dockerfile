@@ -36,6 +36,17 @@ COPY --from=node:22-slim /usr/local/bin/node /usr/local/bin/node
 COPY --from=node:22-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 
+# ⚠️ PHP AYARLARI BURADA DEĞİL, BAĞLANIYOR (4.6AA).
+#
+# `docker/php/tikmarka.ini` compose'da `:ro` bağlanıyor — Caddyfile ile
+# aynı desen. `COPY` ile imaja gömmek denendi ve pratikte kırılgan çıktı:
+# ayar değiştikçe imaj yeniden derlenmek zorunda kalıyor ve derleme dış
+# kayıt defterine bağlı (bu blokta tam orada takıldı).
+#
+# ⚠️ CI'da bu dosya YOK: CI `setup-php` kullanıyor, Docker imajını değil.
+# Bu yüzden HİÇBİR TEST bu ayarlara bağlı olmamalı — bağlı olsaydı yerelde
+# yeşil, CI'da kırmızı olurdu. ("Otorite CI" kuralının bir örneği daha.)
+
 WORKDIR /var/www/html
 
 # ─────────────────────────────────────────────────────────────────────

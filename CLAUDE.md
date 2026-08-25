@@ -709,6 +709,27 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   uygulandığını, kırmanın uygulandığı kadar dikkatle doğrula.
 
 
+- **PHP'NİN YÜKLEME SINIRI DOĞRULAMA KURALINDAN KÜÇÜKSE KURAL HİÇ
+  KONUŞMAZ.** `upload_max_filesize` varsayılanı **2M**; `max:5120` yazan
+  bir kural 2–5 MB arası dosyayı hiç görmüyor, çünkü PHP isteği Laravel'e
+  ulaşmadan kesiyor. 4.6AA'da ısırdı: marka 4,83 MB'lık ürün fotoğrafını
+  yükleyemiyordu. ⚠️ Belirti ayrıca **çevrilmemiş** geliyor —
+  `validation.uploaded` — çünkü o anahtar `lang/tr/validation.php`'de
+  yoktu. Yeni bir doğrulama kuralı kullanıldığında çevirisini de ekle;
+  dosyanın kendi yorumu "unutulursa hemen fark edilir" diyor ama **fark
+  edilmiyor**: ekranı okuyan test yoksa kimse görmüyor.
+  ⚠️ `post_max_size` yükleme sınırından büyük olmalı (gövdede form alanları
+  da var), `memory_limit` ise GD için: 4000×3000 bir JPEG diskte 5 MB,
+  bellekte ~48 MB.
+- **GÖRSEL İŞLERKEN PİKSEL TAVANI ŞART — DOSYA BOYUTU SINIRI YETMEZ.**
+  Birkaç yüz baytlık bir PNG başlığında 6000×5000 yazarak gigabaytlarca
+  bellek isteyebilir (sıkıştırma bombası). Tavan `getimagesize()` ile
+  **görsel açılmadan** uygulanmalı; sıra ters olursa bombayı önce belleğe
+  açmış olursun ve koruma hiçbir işe yaramaz.
+  ⚠️ `imagecreatetruecolor` OPAK SİYAH tuval üretiyor: `imagealphablending(false)`
+  + `imagesavealpha(true)` konmazsa saydam PNG'ler siyah zeminle kaydedilir.
+
+
 ## Yapı
 
 ```

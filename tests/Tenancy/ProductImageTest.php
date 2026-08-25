@@ -94,7 +94,14 @@ it('dosya adı ve uzantısı İSTEMCİDEN alınmıyor', function () {
     // ikinci yüklemenin öncekini ezmesi, bozuk karakterler.
     expect($gorsel->path)->not->toContain('..')
         ->and($gorsel->path)->not->toContain('zararlı')
-        ->and($gorsel->path)->toEndWith('.png');
+
+        /*
+        | ⚠️ Uzantı artık `.webp` — 4.6AA'da her görsel dönüştürülüyor.
+        | Önceden `.png` bekleniyordu (yüklenen türden türetiliyordu).
+        | Yeni hâli iddiayı GÜÇLENDİRİYOR: uzantı istemciden gelmediği
+        | gibi, yüklenen dosyanın türünden bile gelmiyor.
+        */
+        ->and($gorsel->path)->toEndWith('.webp');
 });
 
 it('desteklenmeyen tür reddediliyor', function () {

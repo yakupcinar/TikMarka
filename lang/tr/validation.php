@@ -26,7 +26,26 @@ return [
     'max' => [
         'string' => ':attribute en fazla :max karakter olabilir.',
         'numeric' => ':attribute en fazla :max olabilir.',
+        'file' => ':attribute en fazla :max KB olabilir.',
     ],
+
+    /*
+    | DOSYA YÜKLEME (4.6AA)
+    |
+    | ⚠️ `uploaded` GERÇEK KULLANIMDA ISIRDI: marka 4,8 MB'lık bir ürün
+    | fotoğrafı yükledi ve ekranda ham anahtar gördü — `validation.uploaded`.
+    | Bu mesaj yalnızca kural ihlalinde değil, PHP'nin dosyayı hiç KABUL
+    | ETMEDİĞİ durumda da çıkıyor; yani sebebini söylemesi en çok gereken
+    | mesajdı ve hiç çevrilmemişti.
+    |
+    | ⚠️ Bu dosyanın kendi yorumu "unutulursa anahtar görünür ve hemen fark
+    | edilir" diyor. Fark EDİLMEDİ — çünkü hiçbir test ekranı okumuyordu.
+    */
+    'uploaded' => ':attribute yüklenemedi. Dosya çok büyük olabilir ya da yükleme yarıda kesilmiş olabilir.',
+    'file' => ':attribute bir dosya olmalıdır.',
+    'image' => ':attribute bir görsel olmalıdır (JPEG, PNG veya WebP).',
+    'mimes' => ':attribute şu türlerden biri olmalıdır: :values.',
+    'dimensions' => ':attribute geçersiz boyutlarda.',
 
     /*
     | Alan adlarının kullanıcıya görünen karşılığı. Olmasaydı mesajda
@@ -43,5 +62,7 @@ return [
         'city' => 'il',
         'district' => 'ilçe',
         'line1' => 'adres',
+        'image' => 'görsel',
+        'sku' => 'stok kodu',
     ],
 ];

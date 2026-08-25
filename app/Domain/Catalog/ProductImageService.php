@@ -22,6 +22,8 @@ use Illuminate\Support\Str;
  */
 class ProductImageService
 {
+    public function __construct(private readonly ImageOptimizer $optimizer) {}
+
     /** Kabul edilen türler — istemcinin söylediğine değil, DOSYANIN kendisine bakılıyor. */
     public const IZINLI_TURLER = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -72,21 +74,37 @@ class ProductImageService
         | `../../` içeren bir ad yol dışına yazmayı denerdi.
         | Uzantı da gerçek türden türetiliyor.
         */
-        $uzanti = match ($tur) {
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/webp' => 'webp',
-        };
+        /*
+        | ★ HER GÖRSEL WebP'YE ÇEVRİLİYOR (4.6AA).
+        |
+        | Marka panelden genelde telefonundan çıkmış JPEG/PNG yüklüyor;
+        | aynı kalitede WebP yaklaşık YARISI kadar yer kaplıyor ve vitrin
+        | sayfası onlarca görsel taşıyor.
+        |
+        | ⚠️ Uzantı artık türden TÜRETİLMİYOR, SABİT: dosya ne yüklenirse
+        | yüklensin diske WebP olarak gidiyor. Eski `match` bırakılsaydı
+        | içerik WebP, adı `.jpg` olurdu — tarayıcı yine açardı ama
+        | `Content-Type` yanlış çıkar ve dosya adı YALAN söylerdi.
+        |
+        | ⚠️ ÖNCEDEN YÜKLENMİŞ GÖRSELLER DÖNÜŞTÜRÜLMÜYOR. Kayıt yolu
+        | kolonda saklı ve eski uzantılar çalışmaya devam ediyor; geriye
+        | dönük dönüştürme ayrı bir iş (dosya taşıma + kolon güncelleme +
+        | geri alınamaz kayıp riski). "Kolon sonradan eklendiyse geriye
+        | dönük doldurma gerekir" tuzağının görsel hâli — burada BİLEREK
+        | yapılmadı, unutulmadı.
+        */
+        $icerik = $this->optimizer->webpYap($dosya);
 
         $klasor = "products/{$urun->uuid}";
-        $ad = Str::uuid7().'.'.$uzanti;
+        $ad = Str::uuid7().'.webp';
 
         /*
-        | ⚠️ `put($yol, $dosya->get())` DEĞİL: `get()` hata durumunda `false`
-        | döndürebiliyor ve o `false` sessizce boş dosya yazardı.
-        | `putFileAs` dosyayı akıtarak kopyalıyor — bellekte de tutmuyor.
+        | ⚠️ Artık `putFileAs` DEĞİL `put`: diske yazılan şey yüklenen dosya
+        | değil, dönüştürülmüş baytlar. Eski yorumun uyardığı tuzak
+        | (`$dosya->get()` false döndürebilir) burada YOK — `webpYap()`
+        | ya string döndürüyor ya istisna fırlatıyor.
         */
-        Storage::disk('public')->putFileAs($klasor, $dosya, $ad);
+        Storage::disk('public')->put("{$klasor}/{$ad}", $icerik);
 
         $yol = "{$klasor}/{$ad}";
 

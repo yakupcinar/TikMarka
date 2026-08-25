@@ -2898,3 +2898,42 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       DOĞRULANDI (gerçek curl): samil 000→200 · ödeme sayfası açılıyor,
       düğme görünüyor · formun kendi adresine POST → sipariş cancelled ·
       stok geri geldi · sepette ürün var · mesaj ekranda
+
+4.6AA ✅ GÖRSEL OPTİMİZASYONU: WebP — 883 test
+      iş buraya gelmeden İKİ AYRI KUSUR çıktı:
+
+      ⚠️⚠️ MARKA ZATEN YÜKLEYEMİYORDU
+        kural max:5120 (5 MB) diyordu, PHP varsayılanı 2M
+        arada kalan dosya Laravel'e HİÇ ULAŞMIYOR → kural konuşamıyor
+        4,83 MB gerçek fotoğrafla sınandı, reddedildi
+      ⚠️ ÜSTELİK SEBEBİ SÖYLENMİYORDU: ekranda `validation.uploaded`
+        lang/tr/validation.php'nin KENDİ yorumu "unutulursa hemen fark
+        edilir" diyor — FARK EDİLMEDİ (hiçbir test ekranı okumuyordu)
+
+      ✅ PHP ayarları BAĞLANIYOR, imaja gömülmüyor (Caddyfile deseni)
+        COPY denendi, kırılgan: ayar değişince yeniden derleme gerekiyor
+        ve derleme dış kayıt defterine bağlı (bu blokta orada takıldı)
+        ⚠️ CI'da bu dosya YOK (setup-php kullanıyor) → hiçbir test bu
+          ayarlara bağlı olmamalı; -d memory_limit=128M ile de ölçüldü
+
+      ✅ HER GÖRSEL WebP + en uzun kenar 2048
+        CANLI ÖLÇÜM: 4,83 MB 4000x3000 JPEG → 0,34 MB 2048x1536 WebP
+        = %93 küçülme (ve o dosya önceden HİÇ yüklenemiyordu)
+        ⚠️ uzantı türden türetilmiyor, SABİT .webp (yoksa ad yalan söyler)
+
+      ⚠️ SIKIŞTIRMA BOMBASI KORUMASI — dosya boyutu sınırı BUNU GÖRMEZ
+        birkaç yüz baytlık PNG başlığında 6000x5000 yazabilir
+        koruma PİKSEL sayısında (24 MP) ve GÖRSEL AÇILMADAN çalışıyor
+        ⚠️ sıra ters olsaydı bombayı önce belleğe açardık
+
+      ✅ SAYDAMLIK korunuyor — yoksa saydam PNG'ler SİYAH zeminle kaydolur
+      ⚠️ ESKİ GÖRSELLER DÖNÜŞTÜRÜLMEDİ (ayrı iş, geri alınamaz risk)
+
+      ⚠️ 4 kırma denemesi: 3'ü düştü, DÖRDÜNCÜSÜ DÜŞMEDİ
+        "açılamadı → reddet" dalı ÖLÇÜLMÜYORDU (öteki testin kırpılmış
+        JPEG'i zaten getimagesize'da düşüyor, o dala gelinmiyordu)
+        başlığı geçerli/piksel verisi olmayan PNG ile test eklendi →
+        deneme tekrarlandı, bu kez düştü
+
+      DOĞRULANDI (gerçek panel): önce 4,83 MB reddediliyordu ve ekranda
+      validation.uploaded yazıyordu · sonra kabul edildi, diskte 0,34 MB

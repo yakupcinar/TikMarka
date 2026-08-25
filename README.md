@@ -145,7 +145,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 
 * ~~samil.localhost açılmıyor~~ → **4.6Z'de kapandı** (Caddyfile artık joker kullanıyor; yeni marka için elle ekleme gerekmiyor)
 
-* Şirket panellerinde resim ekleme var, paneli kullanan genelde jpeg veya png yükleyeceği için laravelde bunu otomatik sıkıştırılmış optimize edilmiş WebP formatına dönüştüren bir kod bloğu yazalım yoksa.
+* ~~Görseller WebP'ye çevrilmiyor~~ → **4.6AA'da kapandı** (üstelik 2–5 MB arası dosyalar hiç yüklenemiyormuş, o da düzeldi)
 
 * ~~Ödeme ekranından çıkış yolu yok~~ → **4.6Z'de kapandı** (iptal düğmesi + ürünler sepete dönüyor)
 
@@ -259,6 +259,8 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Ödeme dönüş ekranında duruma göre bağlantı yoktu | Ödeme başarılıysa **"Siparişimi görüntüle"** (yalnızca hesap sahibine) · başarısızsa **"Ürünleri sepete geri koy"** — alınamayan ürün varsa adıyla söylüyor | 4.6Y |
 | Yeni marka alan adı Caddyfile'a elle ekleniyordu | `tenant:create` sonrası site **doğrudan açılıyor** (joker) — `samil.localhost` ile dene | 4.6Z |
 | Ödeme ekranından çıkışın temiz yolu yoktu (stok 60 dk kilitli kalıyordu) | Ödeme sayfası → **"Ödemeden vazgeç ve sepete dön"** — sipariş iptal, stok serbest, ürünler sepette | 4.6Z |
+| 2–5 MB arası görseller sessizce reddediliyordu (ekranda `validation.uploaded`) | Panel → ürün → görsel ekle → **5 MB'a kadar kabul ediliyor**, hata olursa Türkçe mesaj | 4.6AA |
+| Görseller olduğu gibi saklanıyordu | Yüklenen her görsel **WebP**'ye çevriliyor, en uzun kenar 2048'e iniyor — ölçüldü: 4,83 MB → 0,34 MB | 4.6AA |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 
