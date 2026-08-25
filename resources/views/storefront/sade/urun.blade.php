@@ -254,6 +254,8 @@
     </script>
     @endif
 
+    @include('storefront.partials.favori-dugmesi')
+
     @include('storefront.partials.yorumlar')
 
 @endsection

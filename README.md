@@ -122,7 +122,7 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
-* Mailime bu düştü ama neden bu düştü anlamadım işlemleri mi sanki zaten maili doğru kaydettiğim hesaptan yapıyorum bu şaşırttı şimdi: Address not found Your message wasn't delivered to vazgec@marka-a.localhost because the domain marka-a.localhost couldn't be found. Check for typos or unnecessary spaces and try again
+* Mailime bu düştü ama neden bu düştü anlamadım işlemleri mi sanki zaten maili doğru kaydettiğim hesaptan yapıyorum bu şaşırttı şimdi: "Address not found Your message wasn't delivered to vazgec@marka-a.localhost because the domain marka-a.localhost couldn't be found. Check for typos or unnecessary spaces and try again"
 
 * Şirket Panelinde aşağıdan sayfa atlamak pagination next yazıyor sadece sayılar 1 2 3 ... istiyorum.
 
@@ -156,7 +156,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 > uygulama değiştirmek); otomatik iptal bunların hepsini sipariş kaybına
 > çevirirdi. Terk edilen siparişi rezervasyon süresi zaten topluyor.
 
-* Vitrin için hesabı olan kullanıcılara favorileme seçeneği koyalım ürünlere ürün içerisinde.
+* ~~Vitrinde favorileme yok~~ → **4.6D'de kapandı**
 
 * ~~Ödeme dönüş ekranında duruma göre bağlantı yok~~ → **4.6Y'de kapandı**
 
@@ -203,7 +203,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | 1 | Varyantlar sıralı kutucuklardan seçilsin; eksen 5'ten fazla değer içeriyorsa açılır liste; stokta olmayan tıklanamaz | **4.6A** |
 | 2 | Ürün sayfasının altında benzer ürünler, beğenilenler | **4.6E** |
 | 3 | Ürüne tıklamayı sayma, kullanıcı başına veri; panelde bölüm | **4.6F** |
-| 4 | Vitrinde ürün favorileme | **4.6D** |
+| 4 | ~~Vitrinde ürün favorileme~~ → **4.6D'de kapandı** | **4.6D** |
 | 5 | Büyük e-ticaret sitelerinin niş özelliklerini tespit et | **4.6G** |
 
 **Planlama sırasında ölçümle bulunan iki eksik de fazın içine alındı:**
@@ -264,6 +264,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | 2–5 MB arası görseller sessizce reddediliyordu (ekranda `validation.uploaded`) | Panel → ürün → görsel ekle → **5 MB'a kadar kabul ediliyor**, hata olursa Türkçe mesaj | 4.6AA |
 | Görseller olduğu gibi saklanıyordu | Yüklenen her görsel **WebP**'ye çevriliyor, en uzun kenar 2048'e iniyor — ölçüldü: 4,83 MB → 0,34 MB | 4.6AA |
 | Yorumlar vitrinde hiç görünmüyordu (uçlar ve moderasyon vardı) | Vitrin → ürün sayfası → **Yorumlar** bölümü · satın alıp teslim almış müşteri form görüyor, göremiyorsa **sebebi yazıyor** | 4.6C |
+| Vitrinde favorileme yoktu | Ürün sayfası → **♡ Favorilere ekle** · Hesabım → **Favorilerim** · KVKK: anonimleştirmede siliniyor, veri dökümünde listeleniyor | 4.6D |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

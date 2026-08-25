@@ -811,3 +811,14 @@ function vitrinYorumGirisi(Customer $musteri): void
         'email' => $musteri->email, 'password' => 'sifre12345',
     ])->assertRedirect();
 }
+
+/*
+| ⚠️ `test()` KULLANDIĞI İÇİN BURADA — statik analiz Pest'in bağlamasını
+| göremiyor ve `phpstan.neon`'daki istisna YALNIZCA bu dosya için tanımlı.
+| (4.6W ve 4.6C'de aynı sebeple iki yardımcı daha taşınmıştı.)
+*/
+function favoriGirisi(string $eposta = 'favori@ornek.test'): void
+{
+    test()->post('http://marka-a.test/giris', ['email' => $eposta, 'password' => 'sifre12345'])
+        ->assertRedirect();
+}

@@ -2968,3 +2968,34 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       DOĞRULANDI (gerçek curl): misafir → yorum + özet var, form yok ·
       doğrulanmamış müşteri → "e-postanızı doğrulayın" · doğrulanınca →
       "zaten yorum yazdınız" (zincirin sonraki halkası) · "Ahmet Y." 
+
+4.6D ✅ VİTRİNDE FAVORİLEME — 904 test
+      sıfırdan: tablo + servis + iki uç + iki ekran
+
+      ✅ KVKK YOLLARI DA KAPSANDI — favori KİŞİSEL VERİ
+        anonimleştirme MASKELEMİYOR, SİLİYOR: iki kolon da kimlik,
+        kişisel veri olan şey BAĞIN KENDİSİ
+        ⚠️ cascadeOnDelete burada DEVREYE GİRMİYOR (anonimleştirme
+          müşteriyi silmiyor, maskeliyor)
+        ⚠️ veri dökümünde TERSİ: silinmiş ürünün favorisi de YAZILIYOR
+          (soru "ne gösterelim" değil "ELİMİZDE NE VAR")
+
+      ✅ TEK UÇ İKİ YÖN (degistir) — ayrı uçlar olsaydı ekran önce durumu
+        okumak zorunda kalırdı, iki istek arasında durum değişebilir
+      ✅ liste silinmiş ürünü göstermiyor (whereHas) — yoksa tıklanınca
+        404 veren ölü kartlar
+      ✅ yayınlanmamış ürün favorilenemiyor — ham slug sorgusu taslağın
+        VARLIĞINI doğrulardı (1B-K10)
+
+      ⚠️ yarış durumu YUTULUYOR ama yalnızca BENZERSİZLİK ihlali;
+        kısıt SON SAVUNMA olarak kalıyor, 500 göstermek yanlış olurdu
+      ⚠️ kısmi indekse gerek YOK (4.6X.1'in tersi): favoride yumuşak
+        silme yok, çıkarmak gerçekten silmek
+
+      ⚠️ 4 kırma denemesi: 3'ü düştü, DÖRDÜNCÜSÜ DÜŞMEDİ
+        rotadan auth kaldırıldı → hiçbir test düşmedi (controller'daki
+        kontrol de durduruyor ve İKİSİ DE aynı yere yönlendiriyor)
+        → rotanın middleware listesine bakan YAPISAL test eklendi
+
+      DOĞRULANDI (gerçek curl): misafir → düğme yok · müşteri → formun
+      kendi adresine POST → aria-pressed="true" · liste ürünü gösteriyor

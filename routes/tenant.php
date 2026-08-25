@@ -46,6 +46,7 @@ use App\Http\Storefront\CollectionController as StorefrontCollectionController;
 use App\Http\Storefront\CollectionPageController as StorefrontKoleksiyonSayfa;
 use App\Http\Storefront\CouponController;
 use App\Http\Storefront\EmailVerificationPageController;
+use App\Http\Storefront\FavoritePageController;
 use App\Http\Storefront\HomeController;
 use App\Http\Storefront\LegalController as VitrinLegal;
 use App\Http\Storefront\LegalPageController;
@@ -616,6 +617,23 @@ Route::middleware([
         ->name('vitrin.urun.yorum');
 
     /*
+    | FAVORİLEME (4.6D)
+    |
+    | ⚠️ TEK UÇ, İKİ YÖN (`degistir`). Ayrı ekle/çıkar uçları olsaydı
+    | ekran hangisine gideceğini bilmek için önce durumu okumak zorunda
+    | kalırdı ve iki istek arasında durum değişebilirdi (iki sekme).
+    |
+    | ⚠️ `auth:customer-web` ŞART: favori kişiye bağlı, misafirde kimlik
+    | yok. Middleware'siz bırakılsaydı controller'daki kontrol tek savunma
+    | olurdu.
+    |
+    | ⚠️ İSİM ŞART — form `route()` ile bu adresi üretiyor (4.6V).
+    */
+    Route::post('/urun/{slug}/favori', [FavoritePageController::class, 'degistir'])
+        ->middleware('auth:customer-web')
+        ->name('vitrin.urun.favori');
+
+    /*
     | KOLEKSİYONLAR (4.5H) — 2D'nin vitrin karşılığı.
     |
     | ⚠️ Uçları vardı (`/api/collections`) ama SAYFASI YOKTU: marka
@@ -768,6 +786,12 @@ Route::middleware([
         | stok 60 dakika kimseye satılamıyordu.
         */
         Route::post('/hesabim/siparis/{siparis:uuid}/iptal', [AccountPageController::class, 'siparisIptal'])->name('vitrin.hesap.iptal');
+        /*
+        | ⚠️ `auth:customer-web` grubunun İÇİNDE: favori listesi kişisel
+        | veri, misafir görmemeli.
+        */
+        Route::get('/hesabim/favoriler', [FavoritePageController::class, 'liste'])->name('vitrin.favoriler');
+
         Route::get('/hesabim/adresler', [AccountPageController::class, 'adresler'])->name('vitrin.adresler');
         Route::post('/hesabim/adresler', [AccountPageController::class, 'adresEkle'])->name('vitrin.adres.ekle');
         Route::delete('/hesabim/adresler/{adres}', [AccountPageController::class, 'adresSil'])->name('vitrin.adres.sil');

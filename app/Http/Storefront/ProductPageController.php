@@ -4,6 +4,7 @@ namespace App\Http\Storefront;
 
 use App\Domain\Catalog\ProductQuery;
 use App\Domain\Catalog\VariantSelector;
+use App\Domain\Favorite\FavoriteService;
 use App\Domain\Review\ReviewService;
 use App\Domain\Settings\ThemeSettings;
 use App\Http\Controllers\Controller;
@@ -24,6 +25,7 @@ class ProductPageController extends Controller
         private readonly ThemeSettings $tema,
         private readonly VariantSelector $secici,
         private readonly ReviewService $yorumlar,
+        private readonly FavoriteService $favoriler,
     ) {}
 
     public function __invoke(Request $istek, string $slug): View
@@ -102,6 +104,18 @@ class ProductPageController extends Controller
                 ? $this->yorumlar->yazmaEngeli($musteri, $urun)?->getMessage()
                 : null,
             'musteriGirisli' => $musteri instanceof Customer,
+
+            /*
+            | ★ FAVORİ DURUMU (4.6D) — düğme iki durumlu, hangisinde
+            | olduğunu sunucu söylüyor.
+            |
+            | ⚠️ Misafirde sorgu HİÇ çalışmıyor: `false` sabit. Koşulsuz
+            | sorulsaydı her misafir ziyaretinde gereksiz bir sorgu açılır
+            | ve ürün sayfası herkese açık olduğu için bu yük TÜM
+            | trafiğe binerdi.
+            */
+            'favorideMi' => $musteri instanceof Customer
+                && $this->favoriler->favorideMi($musteri, $urun),
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Privacy;
 
+use App\Domain\Favorite\FavoriteService;
 use App\Models\Address;
 use App\Models\Customer;
 use App\Models\Order;
@@ -29,6 +30,8 @@ use Illuminate\Support\Str;
  */
 class Anonymizer
 {
+    public function __construct(private readonly FavoriteService $favoriler) {}
+
     /** Anonimleştirilmiş alanlara yazılan işaret. */
     public const SILINDI = '[silindi]';
 
@@ -52,6 +55,21 @@ class Anonymizer
 
             Address::where('customer_id', $musteri->id)->get()
                 ->each(fn (Address $adres) => $this->adresiAnonimlestir($adres));
+
+            /*
+            | ★ FAVORİLER SİLİNİYOR, maskelenmiyor. (4.6D)
+            |
+            | ⚠️ Favorinin anonimleştirilecek bir ALANI yok: iki kolonu da
+            | kimlik (`customer_id`, `product_id`). Kişisel veri olan şey
+            | BAĞIN KENDİSİ — "bu kişi şunları beğendi". Maskelenemez,
+            | ancak silinebilir.
+            |
+            | ⚠️ Yabancı anahtar `cascadeOnDelete` ama o yalnızca müşteri
+            | GERÇEKTEN silinince çalışıyor; anonimleştirme müşteriyi
+            | silmiyor, maskeliyor. Bu satır olmasaydı favoriler olduğu
+            | gibi kalırdı.
+            */
+            $this->favoriler->hepsiniSil($musteri);
 
             /*
             | ⚠️ E-posta BENZERSİZ olmak zorunda (`customers.email` unique).

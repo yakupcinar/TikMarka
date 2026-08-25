@@ -747,6 +747,17 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   mesajı hepsini çıkmaza çevirir.
 
 
+- **MÜŞTERİ BAŞINA VERİ EKLERKEN KVKK YOLLARI DA GENİŞLETİLİR.** Yeni bir
+  tablo müşteriye bağlanıyorsa `Anonymizer` ve `DataExporter` aynı blokta
+  güncellenmeli; unutulursa müşteri başına veri tutan ama KVKK'ya girmeyen
+  bir alan doğar ve bu **hata vermez**. ⚠️ İki yolun kararı FARKLI
+  olabilir: 4.6D'de anonimleştirme favoriyi **siliyor** (maskelenecek
+  alanı yok — kişisel veri bağın kendisi), veri dökümü ise silinmiş
+  ürününkini bile **yazıyor** (orada soru "ne gösterelim" değil "elimizde
+  ne var"). ⚠️ Yabancı anahtardaki `cascadeOnDelete` anonimleştirmede
+  DEVREYE GİRMEZ: o yol müşteriyi silmiyor, maskeliyor.
+
+
 ## Yapı
 
 ```

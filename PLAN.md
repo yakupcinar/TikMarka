@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6C BİTTİ — iyileştirme listesi 6/13 ──────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6D BİTTİ — iyileştirme listesi 7/13 ──────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7246,6 +7246,61 @@ DOĞRULANDI (gerçek curl): misafir → yorum + puan özeti görünüyor, form y
 adresinizi doğrulamanız gerekiyor"* · doğrulanınca → *"Bu ürüne zaten
 yorum yazdınız"* (zincirin bir sonraki halkası) · vitrinde **"Ahmet Y."**
 yazıyor, tam ad yok. **892 test.**
+
+---
+### 4.6D — vitrinde favorileme
+
+Sıfırdan bir özellik: tablo, servis, iki uç, iki ekran. Ama kapsamı
+göründüğünden geniş — çünkü favori **kişisel veridir**.
+
+**✅ KVKK YOLLARI DA KAPSANDI.** "Bu kişi neyi beğendi" bir müşteri
+verisi; kapsanmasaydı müşteri başına veri tutan ama KVKK'ya girmeyen bir
+alan doğardı (README'de `ProductViewed` için zaten uyarı vardı).
+
+> ⚠️ Anonimleştirmede favori **maskelenmiyor, SİLİNİYOR**: iki kolonu da
+> kimlik (`customer_id`, `product_id`), yani anonimleştirilecek bir alanı
+> yok — kişisel veri olan şey **bağın kendisi**.
+>
+> ⚠️ Yabancı anahtardaki `cascadeOnDelete` burada devreye GİRMİYOR:
+> anonimleştirme müşteriyi silmiyor, maskeliyor.
+>
+> ⚠️ Veri dökümünde TERSİ karar: silinmiş ürünün favorisi de yazılıyor.
+> Orada soru "ne gösterelim" değil **"elimizde ne var"**; gizlemek veriyi
+> eksik bildirmek olurdu.
+
+**✅ TEK UÇ, İKİ YÖN** (`degistir`). Ayrı ekle/çıkar uçları olsaydı ekran
+hangisine gideceğini bilmek için önce durumu okumak zorunda kalırdı ve iki
+istek arasında durum değişebilirdi (iki sekme).
+
+**✅ Liste silinmiş ürünü göstermiyor** (`whereHas('product')`) — "AÇAN yol
+silinmişi görmemeli" kuralının liste hâli. Eklenmeseydi liste, tıklanınca
+404 veren ölü kartlar gösterirdi.
+
+**✅ Yayınlanmamış ürün favorilenemiyor** (`vitrindeBul`). Ham slug sorgusu
+yazılsaydı adresi bilen biri taslak ürünü favorileyebilir ve **varlığını
+doğrulamış** olurdu (1B-K10).
+
+**⚠️ YARIŞ DURUMU YUTULUYOR — ama yalnızca doğru olanı.** İki sekmeden aynı
+anda basılırsa ikisi de "yok" görüp eklemeye çalışır ve benzersiz kısıt
+patlar. Kısıt **son savunma** olarak kalıyor (4.6X'in dersi) ama müşteriye
+500 göstermek yanlış olurdu: sonuç zaten istediği şey. ⚠️ Yalnızca
+benzersizlik ihlali yutuluyor, başka veritabanı hatası yukarı fırlıyor.
+
+**⚠️ KISMİ İNDEKSE GEREK YOK** (4.6X.1'in tersi): favoride yumuşak silme
+yok. Favoriden çıkarmak gerçekten silmek demek — "geçmişi" olan bir kayıt
+değil.
+
+**Dört kırma denemesi yapıldı, üçü düştü — DÖRDÜNCÜSÜ DÜŞMEDİ.**
+Rotadan `auth:customer-web` kaldırıldı ve **hiçbir test düşmedi**:
+controller'daki kontrol de misafiri durduruyor ve ikisi de aynı yere
+yönlendiriyor (`back()` → referer yoksa anasayfa). Yani davranış testi
+"korunuyor" diyordu ama **neyin** koruduğunu ölçmüyordu. Rotanın
+middleware listesine bakan yapısal bir test eklendi; deneme tekrarlandı ve
+bu kez düştü.
+
+DOĞRULANDI (gerçek curl): misafir → düğme yok, "giriş yapın" var · giriş
+yapmış müşteri → formun kendi adresine POST → `aria-pressed="true"` ve
+"Favorilerimde" · `/hesabim/favoriler` ürünü listeliyor. **904 test.**
 
 ---
 ---

@@ -63,6 +63,7 @@
         @endif
 
         <p><a href="{{ route('vitrin.adresler') }}">Adres defterim</a></p>
+        <p><a href="{{ route('vitrin.favoriler') }}">Favorilerim</a></p>
 
         <h2>Siparişlerim</h2>
 

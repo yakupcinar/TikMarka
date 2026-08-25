@@ -4,6 +4,7 @@ namespace App\Domain\Privacy;
 
 use App\Models\Address;
 use App\Models\Customer;
+use App\Models\Favorite;
 use App\Models\Order;
 use App\Models\OrderItem;
 
@@ -41,6 +42,23 @@ class DataExporter
                 'adres' => trim($a->line1.' '.($a->line2 ?? '')),
                 'posta_kodu' => $a->postal_code,
             ])->all(),
+
+            /*
+            | ★ FAVORİLER (4.6D). KVKK "hangi verim var" sorusunu
+            | cevaplıyor; favori de müşteri başına tutulan bir veri.
+            |
+            | ⚠️ Silinmiş ürünün favorisi de YAZILIYOR (`listele`'nin
+            | tersine): burada soru "ne gösterelim" değil "elimizde ne
+            | var". Gizlemek, veriyi eksik bildirmek olurdu.
+            */
+            'favoriler' => Favorite::where('customer_id', $musteri->id)
+                ->with('product')
+                ->orderByDesc('created_at')
+                ->get()
+                ->map(fn (Favorite $f): array => [
+                    'urun' => $f->product?->title,
+                    'eklenme' => $f->created_at?->toIso8601String(),
+                ])->all(),
 
             'siparisler' => Order::where('customer_id', $musteri->id)
                 ->with('items')

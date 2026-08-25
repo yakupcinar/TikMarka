@@ -217,6 +217,15 @@
         .kupon-form input { padding: 8px 12px; border: 1px solid #d6d3d1; border-radius: 8px; font: inherit; }
         .ipucu { color: #78716c; font-size: 13px; }
 
+        /* ── Favoriler (4.6D) ────────────────────────────────────── */
+        .favori-form { margin: 12px 0; }
+        .favori { padding: 8px 14px; border: 1px solid #d6d3d1; border-radius: 6px; background: #fff; cursor: pointer; font: inherit; }
+        .favori-dolu { border-color: #be123c; color: #be123c; }
+        .favori-listesi { list-style: none; padding: 0; margin: 16px 0 0; }
+        .favori-satir { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f4; flex-wrap: wrap; }
+        .favori-gorsel { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; }
+        .favori-bilgi { flex: 1; min-width: 160px; }
+
         /* ── Yorumlar (4.6C) ─────────────────────────────────────── */
         .yorumlar { margin-top: 40px; border-top: 1px solid #e7e5e4; padding-top: 24px; }
         .yorum-ozet { font-size: 18px; margin: 0 0 16px; }
