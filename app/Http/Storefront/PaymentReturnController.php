@@ -2,6 +2,7 @@
 
 namespace App\Http\Storefront;
 
+use App\Domain\Cart\CartService;
 use App\Domain\Payment\PaymentProviderFactory;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
@@ -35,7 +36,11 @@ use Illuminate\Http\Request;
  */
 class PaymentReturnController extends Controller
 {
-    public function __construct(private readonly PaymentProviderFactory $saglayicilar) {}
+    public function __construct(
+        private readonly PaymentProviderFactory $saglayicilar,
+        private readonly CartService $sepetler,
+        private readonly CartResolver $sepetCozucu,
+    ) {}
 
     /**
      * ⚠️ GET ve POST birlikte: sağlayıcılar dönüşü ikisinden biriyle
@@ -153,6 +158,41 @@ class PaymentReturnController extends Controller
      * ⚠️ Durum yine SİPARİŞTEN okunuyor, istekten değil: imzalı adres
      * "bu siparişi görebilirsin" der, "ödendi" demez.
      */
+    /**
+     * Başarısız siparişin ürünlerini sepete geri koyar. (4.6Y)
+     *
+     * ★ Ölçülmüş boşluk: ödeme başarısız olunca sepet `converted` kalıyor
+     * ve vitrinde BOŞ görünüyor; siparişi yeniden ödemek de mümkün değil
+     * (`ode()` ve `PaymentService::baslat()` yalnızca `pending` kabul
+     * ediyor). Yani müşterinin elinde hiçbir şey kalmıyordu.
+     */
+    public function sepeteGeri(Request $istek, Order $siparis): RedirectResponse
+    {
+        /*
+        | ⚠️ YALNIZCA BAŞARISIZ/İPTAL siparişte. `pending` bir siparişte
+        | çalışsaydı stok iki kez bağlanırdı (sipariş rezervasyonu duruyor,
+        | üstüne sepet); `paid` olanda ise müşteri ödediği ürünleri yeniden
+        | satın almaya yönlendirilirdi.
+        */
+        if (! in_array($siparis->payment_status, [PaymentStatus::Failed, PaymentStatus::Cancelled], true)) {
+            return redirect()->route('vitrin.anasayfa');
+        }
+
+        // ⚠️ `bulYaDaAc`: bu bir EKLEME yolu, sepeti açması doğru.
+        $sepet = $this->sepetCozucu->bulYaDaAc($istek);
+
+        $atlananlar = $this->sepetler->siparistenGeriYukle($sepet, $siparis);
+
+        $mesaj = $atlananlar === []
+            ? 'Ürünler sepetinize geri kondu.'
+            : 'Ürünler sepetinize geri kondu. Şunlar eklenemedi (stokta yok ya da satıştan kalktı): '.implode(', ', $atlananlar);
+
+        return $this->sepetCozucu->cerezle(
+            redirect()->route('vitrin.sepet')->with('mesaj', $mesaj),
+            $sepet,
+        );
+    }
+
     public function sonuc(Order $siparis): View
     {
         $durum = match ($siparis->payment_status) {

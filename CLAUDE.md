@@ -687,6 +687,24 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **doğrudan tabloyu** kullanmalı (`DB::table(...)->insert(...)`).
 
 
+- **FLASH MESAJI `api` GRUBUNDA KAYBOLUR — ve TEST BUNU GÖREMEZ.**
+  `api` grubunda `StartSession` yok; `->with('mesaj', …)` yazıldığı anda
+  kayboluyor. 4.6Y'de ısırdı: ürün sepete geliyordu ama "şunlar
+  eklenemedi" uyarısı müşteriye **hiç ulaşmıyordu**. ⚠️ Davranış testi
+  yeşil kaldı çünkü test istemcisi oturumu ayakta tutuyor ve
+  `session('mesaj')` doğru dönüyor — `getJson`'ın çerezi düşürmesiyle
+  (4A) aynı aile. Ölçmek istiyorsan **rotanın middleware listesine** bak
+  (`gatherMiddleware()`), davranışa değil.
+  ⚠️ `gatherMiddleware()` grup adını GENİŞLETMİYOR: `web` döndürüyor,
+  `StartSession` diye aramak boşa çıkar.
+- **`git checkout` KIRMA DENEMESİNİ GERİ ALMAZ — DOSYAYI COMMIT'E
+  DÖNDÜRÜR.** O oturumda yazılan, henüz commit edilmemiş kod sessizce
+  gider. 4.6X.1 ve 4.6Y'de **iki kez** oldu; ikisinde de testler geri
+  almadan sonra kırmızı kaldığı için fark edildi. Kırmadan önce
+  `cp <dosya> /tmp/x.bak`, sonra `cp /tmp/x.bak <dosya>`. ⚠️ Geri almanın
+  uygulandığını, kırmanın uygulandığı kadar dikkatle doğrula.
+
+
 ## Yapı
 
 ```

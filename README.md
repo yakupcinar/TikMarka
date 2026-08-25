@@ -122,6 +122,8 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
+* Şirket Panelinde aşağıdan sayfa atlamak pagination next yazıyor sadece sayılar 1 2 3 ... istiyorum.
+
 * Vitrinde ödemeyi yapıp siparişi veriyorum çıkan ekran biraz beklemem ödeme onaylanana kadar iyzicodan mı bekliyor onayı sonra yeniledim sayfayı o zaman ödeme başarılı dedi, siparişim hazırlanıyor ve afiyet olsun gibi mesajlar gördüm ama bizim ürünlrimiz de yemek yok neden öyle dedin düzelt oraları ayrıca ödeme sonrası bekleme sekmesinde hesabım yazısı yerine giriş, gözüküyor onu da düzeltelim.
 
 * "Mevcut projemizdeki çalışan tüm fonksiyonları, state yönetimini ve component bağlantılarını aynen korumanı istiyorum. Hiçbir işlevsel kodu silme veya değiştirme.
@@ -149,8 +151,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 
 * Vitrin için hesabı olan kullanıcılara favorileme seçeneği koyalım ürünlere ürün içerisinde.
 
-* Vitrin sipariş ekle, ödemeye git web in web gelsin iyzico servisi doğru bilgileri gir ödeme yap tam bu sırada web in web iyzico servisinin olduğu yerde url erişilemiyor yazısı çıkıyor bunu ben nasıl iyziconun panelinden ayarlarım farklı senaryolar için (bu standart değil mi ödeme geçerli ise mesajı direkt iyzico göstermesi gerekmez mi sandboxta mı yok bu özellik).
-// Sanırsam ben ödeme bitince iyzicoya kullanıcıyı hangi adrese atacağını söylemediğim için bu oluyor o zaman şöyle yapalım ödemeniz başarılı veya başarız etc. bir adres ekleyelim sayfada duruma göre ödeme başarılı/başarısız diyecek -> başarılı ise sipariş detayına gidebilmesi için altı çizili bir yazı ekleyelim ->başarısza sepete geri git altı çizili bir yazı ekleyelim (sepet kaybolmasın ödeme başarısızsa)
+* ~~Ödeme dönüş ekranında duruma göre bağlantı yok~~ → **4.6Y'de kapandı**
 
 * Şirket paneline Müşteri diye bir sekme ekleyip o kullanıcının siparişlerini(aldığı ürünler toplam harcama vb.), favorilerini, başarız ödeme denemeleri.
 
@@ -250,6 +251,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | E-posta doğrulama yoktu | Kayıt sonrası posta gelir · **Hesabım** sayfasında şerit + "yeniden gönder" · doğrulamadan **yorum yazılamaz**, alışveriş etkilenmez | 4.6W |
 | Aynı SKU verilince ham veritabanı hatası çıkıyordu | Panel → ürün → varyant → var olan bir SKU yaz → **SKU kutusunun altında Türkçe uyarı** (ham 500 değil) | 4.6X |
 | Silinmiş bir varyantın SKU'su neden "dolu" belli değildi | Silinen varyantın kodu **rezerve kalıyor** (dış sistemlerle ortak dil) ve mesaj bunu açıkça söylüyor: *"silinmiş bir varyanta ait"* | 4.6X.1 |
+| Ödeme dönüş ekranında duruma göre bağlantı yoktu | Ödeme başarılıysa **"Siparişimi görüntüle"** (yalnızca hesap sahibine) · başarısızsa **"Ürünleri sepete geri koy"** — alınamayan ürün varsa adıyla söylüyor | 4.6Y |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6X.1 BİTTİ — iyileştirme listesi başladı ─────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6Y BİTTİ — iyileştirme listesi 2/13 ──────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6961,6 +6961,83 @@ uygulandığını da, kırmanın uygulandığı kadar dikkatle doğrula.
 DOĞRULANDI (gerçek panel, curl): silinmiş `a` SKU'su ile varyant eklenemedi
 · ekranda *"Bu stok kodu (SKU) silinmiş bir varyanta ait: a. Stok kodları
 geçmişe dönük olarak korunuyor…"* · yeni satır **oluşmadı**. **858 test.**
+
+---
+### 4.6Y — ödeme dönüşünde duruma göre bağlantılar
+
+Dönüş ekranı 4.5R'de yazılmış ve durumu üçe ayırıyordu (`paid` / `failed`
+/ `processing`) ama üç dalda da **tek bir** "Alışverişe devam et" bağlantısı
+vardı: ödemesi başarılı müşteri siparişini göremiyor, başarısız olan ise
+elinde **hiçbir şey kalmadan** mağazaya atılıyordu.
+
+**⚠️ "SEPETE DÖN" BAĞLANTISI KOYULAMAZDI — ölçüldü.** İlk plan oydu; ölçünce
+yalan olacağı görüldü:
+
+```
+baslat()          → sepet `converted`
+odemeBasarisiz()  → geri ALMIYOR
+CartService       → yalnızca `active` sepet arıyor
+sonuç             → vitrinde sepet BOŞ görünüyor
+```
+
+Siparişi yeniden ödemek de mümkün değil: `ode()` ve
+`PaymentService::baslat()` **ikisi de** yalnızca `pending` kabul ediyor,
+üstelik başarısızlıkta stok serbest bırakılmış ve idempotanslık anahtarı
+sipariş numarası. Yani üç yol da kapalıydı.
+
+**✅ Çözüm: ürünler YENİ sepete KOPYALANIYOR.**
+
+> ⚠️ Eski sepeti `active`'e çevirmek ilk akla gelen yol ama **çalışmaz**:
+> `carts` tablosunda `(customer_id) WHERE status='active'` kısmi benzersiz
+> indeksi var (1C-K4) ve giriş yapmış müşterinin zaten yeni bir aktif
+> sepeti oluyor — **üst bardaki rozet bile** `musteriSepeti()` üzerinden
+> sepet AÇIYOR. Kopyalama bu çakışmayı hiç doğurmuyor ve misafirde de
+> aynı şekilde çalışıyor.
+
+**✅ Alınamayan satır sessizce atlanmıyor.** Ürün silinmiş ya da stok
+bitmiş olabilir; "sepetiniz geri geldi" deyip eksik sepet göstermek
+müşteriyi ödeme adımında **ikinci kez** şaşırtırdı.
+
+**⚠️⚠️ GERÇEK CURL BENİM DEĞİŞİKLİĞİMDE KUSUR BULDU.** Rota önce sonuç
+sayfasıyla aynı grupta (`api`) duruyordu. Ürün sepete geliyordu ama
+*"şunlar eklenemedi"* uyarısı **müşteriye hiç ulaşmıyordu**: `api`
+grubunda `StartSession` yok, flash mesajı yazıldığı anda kayboluyor.
+⚠️ **Davranış testi bunu göremedi** — test istemcisi oturumu ayakta
+tutuyor ve `session('mesaj')` yeşil dönüyordu. `getJson`'ın çerezi
+düşürmesiyle (4A) aynı aile. Bu yüzden eklenen test davranışa değil
+**rotanın middleware listesine** bakıyor.
+
+**✅ Rota `web` grubunda, CSRF'ten muaf, yerine `signed`.** Formu render
+eden sayfa `api` grubunda (sağlayıcı POST ediyor, 4.5R) ve oturumu
+olmadığı için **CSRF jetonu üretemiyor**. Koruma kaybolmuyor, yer
+değiştiriyor: imza yalnızca isteğin bizden geldiğini değil, isteği yapanın
+**o siparişe ait bağlantıyı bildiğini** de kanıtlıyor — misafir ödemesinde
+kimlik olmadığı için tek koruma o. İstisnanın **dar** kaldığı ayrıca
+ölçülüyor.
+
+**✅ Sipariş bağlantısı YALNIZCA SAHİBİNE.** Sipariş detayı
+`auth:customer-web` arkasında ve `customer_id` eşleşmesi arıyor; **misafir
+ödemesi açık** olduğu için koşulsuz bağlantı misafiri önce giriş ekranına,
+oradan 404'e götürürdü. Misafirin elindeki referans sipariş numarası ve o
+zaten ekranda yazıyor.
+
+**⚠️ `processing` dalında EK BAĞLANTI YOK.** O durum "bildirim henüz
+gelmedi" demek, başarısız değil (4.5R). "Ürünleri sepete geri koy"
+gösterilseydi ödemesi yolda olan müşteri stoğu ikinci kez bağlar ve iki kez
+ödemeye çalışırdı.
+
+**Altı kırma denemesi, altısı da düştü** (bağlantıyı koşulsuz yap · durum
+kontrolünü kaldır · `signed`'ı kaldır · atlananları sessizce yut · rotayı
+`api`'ye geri taşı · CSRF muafiyetini kaldır).
+
+⚠️ Kırma denemesini geri alırken **yine** `git checkout` kullanıldı ve
+dosyayı commit'li hâline döndürüp o oturumda yazılan metodu sildi. İkinci
+kez oldu; kontrol edilmeseydi eksik kodla devam edilecekti.
+
+DOĞRULANDI (gerçek curl, geliştirme markası): başarısız siparişin dönüş
+ekranında form çıkıyor · formun kendi adresine POST → sepet doldu ·
+satıştan kaldırılmış ürün için ekranda *"Şunlar eklenemedi (stokta yok ya
+da satıştan kalktı): Basic Tişört"* · imzasız POST **403**. **868 test.**
 
 ---
 ---

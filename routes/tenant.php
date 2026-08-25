@@ -622,6 +622,29 @@ Route::middleware([
     Route::post('/sepet/kupon', [CartPageController::class, 'kupon'])->middleware('throttle:kupon')->name('vitrin.sepet.kupon');
 
     /*
+    | ÜRÜNLERİ SEPETE GERİ KOY (4.6Y) — başarısız ödemeden sonra.
+    |
+    | ⚠️ BU ROTA `web` GRUBUNDA, sonuç sayfası ise `api` grubunda — ve bu
+    | ayrım ÖLÇÜLEREK bulundu. Önce ikisi de `api`'deydi: ürün sepete
+    | geliyordu ama "şunlar eklenemedi" uyarısı MÜŞTERİYE HİÇ ULAŞMIYORDU,
+    | çünkü `api` grubunda oturum yok ve flash mesajı kayboluyor.
+    | ⚠️ Testler bunu GÖRMEDİ: test ortamı oturumu ayakta tutuyor ve
+    | `session('mesaj')` yeşil dönüyordu — gerçek `curl` gösterdi.
+    |
+    | ⚠️ CSRF'ten MUAF (`bootstrap/app.php` → `validateCsrfTokens`) ve
+    | yerine `signed` var. Formu render eden sayfa
+    | `api` grubunda (sağlayıcı POST ettiği için oturumu yok), yani CSRF
+    | jetonu ÜRETEMİYOR. İmza burada CSRF'ten güçlü: sahipliği de
+    | kanıtlıyor ve misafir ödemesinde tek koruma o.
+    |
+    | ⚠️ İSİM ŞART — form `route()` ile bu adresi üretiyor. 4.6V'de
+    | isimsiz POST rotası müşteriye 405 aldırmıştı.
+    */
+    Route::post('/odeme/sonuc/{siparis:uuid}/sepete-geri', [PaymentReturnController::class, 'sepeteGeri'])
+        ->middleware('signed')
+        ->name('vitrin.odeme.sepeteGeri');
+
+    /*
     | ÖDEME SAYFASI
     |
     | ⚠️ Ödeme DÖNÜŞÜ burada DEĞİL: o `api` grubunda kalıyor çünkü

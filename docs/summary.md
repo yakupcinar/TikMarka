@@ -2815,3 +2815,47 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek panel): silinmiş 'a' ile varyant EKLENEMEDİ,
       ekranda açıklayıcı mesaj, yeni satır OLUŞMADI
+
+4.6Y ✅ ÖDEME DÖNÜŞÜNDE DURUMA GÖRE BAĞLANTILAR — 868 test
+      ekran 4.5R'de durumu üçe ayırıyordu ama üç dalda da TEK bağlantı:
+      başarılı müşteri siparişini göremiyor, başarısız olan elinde
+      HİÇBİR ŞEY kalmadan mağazaya atılıyordu
+
+      ⚠️ "SEPETE DÖN" KOYULAMAZDI — ölçüldü:
+        baslat() sepeti `converted` yapıyor, odemeBasarisiz() geri
+        almıyor, CartService yalnızca `active` arıyor → sepet BOŞ
+        yeniden ödeme de kapalı: ode() ve PaymentService::baslat()
+        ikisi de yalnızca `pending`, üstelik stok serbest bırakılmış
+
+      ✅ ÜRÜNLER YENİ SEPETE KOPYALANIYOR
+        eski sepeti active'e çevirmek ÇALIŞMAZ: (customer_id) WHERE
+        status='active' kısmi indeksi var (1C-K4) ve ÜST BARDAKİ ROZET
+        BİLE musteriSepeti() ile sepet AÇIYOR
+      ✅ alınamayan satır SESSİZCE atlanmıyor, müşteriye söyleniyor
+
+      ⚠️⚠️ GERÇEK CURL BENİM DEĞİŞİKLİĞİMDE KUSUR BULDU
+        rota önce `api` grubundaydı → ürün sepete geliyor ama
+        "eklenemedi" uyarısı MÜŞTERİYE ULAŞMIYOR (api'de StartSession
+        yok, flash kayboluyor)
+        ⚠️ davranış testi göremedi: test istemcisi oturumu ayakta
+          tutuyor, session('mesaj') yeşil dönüyordu (4A ailesi)
+        → eklenen test DAVRANIŞA değil ROTANIN MIDDLEWARE'İNE bakıyor
+
+      ✅ rota `web` grubunda, CSRF'ten MUAF, yerine `signed`
+        formu render eden sayfa api grubunda (sağlayıcı POST ediyor,
+        4.5R) → CSRF jetonu ÜRETEMİYOR; imza daha güçlü: isteği yapanın
+        O SİPARİŞE ait bağlantıyı bildiğini de kanıtlıyor
+        ⚠️ istisnanın DAR kaldığı ayrıca ölçülüyor
+
+      ✅ sipariş bağlantısı YALNIZCA SAHİBİNE — misafir ödemesi açık,
+        koşulsuz bağlantı misafiri giriş ekranına sonra 404'e götürürdü
+      ⚠️ `processing` dalında EK BAĞLANTI YOK: "bildirim henüz gelmedi"
+        demek; geri koyma gösterilseydi stok ikinci kez bağlanırdı
+
+      6 kırma denemesi, 6'sı da düştü
+      ⚠️ geri alırken YİNE `git checkout` kullanıldı ve o oturumda
+        yazılan metodu sildi — ikinci kez
+
+      DOĞRULANDI (gerçek curl): form çıkıyor · kendi adresine POST →
+      sepet doldu · satıştan kalkan ürün için "Şunlar eklenemedi…" ·
+      imzasız POST 403

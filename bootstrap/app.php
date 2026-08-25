@@ -157,6 +157,26 @@ return Application::configure(basePath: dirname(__DIR__))
         | doğrulaması veritabanına karşı yapılıyor — kurcalanan token
         | eşleşmez, yalnızca bulunamaz.
         */
+        /*
+        | CSRF İSTİSNASI — ödeme dönüşündeki "ürünleri sepete geri koy"
+        | formu. (4.6Y)
+        |
+        | ⚠️ DAR TUTULMUŞ ve gerekçesi yapısal: formu render eden sayfa
+        | (`/odeme/sonuc/...`) `api` grubunda — sağlayıcı oraya POST ettiği
+        | için oturumu YOK (4.5R) ve dolayısıyla CSRF jetonu ÜRETEMİYOR.
+        | Rotanın kendisi `web` grubunda çünkü flash mesajı için oturum
+        | gerekiyordu (`api`'deyken uyarı müşteriye hiç ulaşmıyordu,
+        | gerçek curl ile ölçüldü).
+        |
+        | ⚠️ Koruma KAYBOLMUYOR, YER DEĞİŞTİRİYOR: rota `signed` altında ve
+        | imza burada CSRF'ten güçlü — yalnızca isteğin bizden geldiğini
+        | değil, isteği yapanın O SİPARİŞE ait bağlantıyı bildiğini de
+        | kanıtlıyor. Misafir ödemesinde kimlik olmadığı için tek koruma o.
+        */
+        $middleware->validateCsrfTokens(except: [
+            'odeme/sonuc/*/sepete-geri',
+        ]);
+
         $middleware->encryptCookies(except: [CartToken::CEREZ]);
 
         /*

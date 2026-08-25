@@ -8,6 +8,7 @@ use App\Enums\EventType;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Customer;
+use App\Models\Order;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -131,6 +132,55 @@ class CartService
 
             return $satir;
         });
+    }
+
+    /**
+     * Başarısız bir siparişin ürünlerini sepete GERİ KOYAR. (4.6Y)
+     *
+     * ★ Ödeme başarısız olunca müşterinin elinde hiçbir şey kalmıyordu:
+     * sepet `converted` durumda (yani vitrinde BOŞ görünüyor, ölçüldü) ve
+     * siparişi yeniden ödemeye açmak da mümkün değil — `ode()` ve
+     * `PaymentService::baslat()` ikisi de yalnızca `pending` kabul ediyor,
+     * üstelik stok serbest bırakılmış durumda. Müşterinin tek yolu
+     * ürünleri tek tek yeniden bulmaktı.
+     *
+     * ⚠️ ESKİ SEPET GERİ ALINMIYOR, ÜRÜNLER YENİ SEPETE KOPYALANIYOR.
+     * `converted` sepeti `active`'e çevirmek ilk akla gelen yol ama
+     * ÇALIŞMAZ: `carts` tablosunda `(customer_id) WHERE status='active'`
+     * kısmi benzersiz indeksi var (1C-K4) ve giriş yapmış müşterinin
+     * zaten yeni bir aktif sepeti oluyor — üst bardaki rozet bile
+     * `musteriSepeti()` üzerinden sepet AÇIYOR. Kopyalama bu çakışmayı
+     * hiç doğurmuyor ve misafirde de aynı şekilde çalışıyor.
+     *
+     * ⚠️ ALINAMAYAN SATIR SESSİZCE ATLANMIYOR, geri bildiriliyor. Ürün
+     * silinmiş ya da stok bitmiş olabilir; "sepetiniz geri geldi" deyip
+     * eksik sepet göstermek müşteriyi ödeme adımında ikinci kez şaşırtırdı.
+     *
+     * @return list<string> sepete konulamayan ürünlerin adları
+     */
+    public function siparistenGeriYukle(Cart $sepet, Order $siparis): array
+    {
+        $atlananlar = [];
+
+        foreach ($siparis->items()->get() as $satir) {
+            /*
+            | ⚠️ `variant()` yumuşak silinmişi GÖRMÜYOR ve bu doğru: sepete
+            | ekleme bir AÇAN yol, silinmiş varyantı görmemeli. Sipariş
+            | satırı zaten kendi kopyasını taşıyor (fotoğraf), yani geçmiş
+            | bundan etkilenmiyor.
+            */
+            $varyant = $satir->variant()->first();
+
+            if (! $varyant instanceof ProductVariant || ! $varyant->satinAlinabilirMi()) {
+                $atlananlar[] = $satir->product_title;
+
+                continue;
+            }
+
+            $this->ekle($sepet, $varyant, $satir->quantity);
+        }
+
+        return $atlananlar;
     }
 
     /** Adedi doğrudan belirler. 0 verilirse satır silinir. */

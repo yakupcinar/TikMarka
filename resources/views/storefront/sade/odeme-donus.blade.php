@@ -69,6 +69,50 @@
             </p>
         @endif
 
+        {{--
+          DURUMA GÖRE BAĞLANTILAR (4.6Y)
+
+          ⚠️ Önce üç durumda da TEK bir "Alışverişe devam et" vardı: ödemesi
+          başarılı müşteri siparişini göremiyor, başarısız olan ise elinde
+          hiçbir şey kalmadan mağazaya atılıyordu.
+
+          ⚠️ `target="_top"` HEPSİNDE: sayfa ödeme çerçevesinin içinde
+          açılmış olabilir (4.5-K1). Olmasaydı müşteri sipariş detayını
+          küçük bir çerçevede görürdü.
+        --}}
+        @if ($durum === 'success' && $siparis->customer_id !== null && auth('customer-web')->id() === $siparis->customer_id)
+            {{--
+              ⚠️ KOŞUL ŞART: sipariş detayı `auth:customer-web` arkasında ve
+              `customer_id` eşleşmesi arıyor. MİSAFİR ÖDEMESİ AÇIK olduğu
+              için koşulsuz bağlantı, misafiri önce giriş ekranına sonra
+              404'e götürürdü. Misafirin elindeki referans sipariş numarası
+              ve o zaten yukarıda yazıyor.
+            --}}
+            <p>
+                <a class="dugme" target="_top"
+                   href="{{ route('vitrin.hesap.siparis', ['siparis' => $siparis->uuid]) }}">Siparişimi görüntüle</a>
+            </p>
+
+        @elseif ($durum === 'failed')
+            {{--
+              ⚠️ "Sepete dön" YAZMIYOR ve yazamaz: ölçüldü, ödeme
+              başarısız olunca sepet `converted` kalıyor ve vitrinde BOŞ
+              görünüyor. Bağlantı müşteriyi boş bir sepete götürürdü.
+              Bunun yerine ürünler geri KONULUYOR.
+
+              ⚠️ Adres imzalı üretiliyor; gerekçesi rota dosyasında.
+            --}}
+            <form method="post" target="_top"
+                  action="{{ URL::temporarySignedRoute('vitrin.odeme.sepeteGeri', now()->addHours(24), ['siparis' => $siparis->uuid]) }}">
+                {{--
+                  ⚠️ `@csrf` YOK ve olamaz: bu sayfa `api` grubunda render
+                  ediliyor (sağlayıcı POST ettiği için oturumsuz), yani
+                  jeton üretilemiyor. Koruma imzada — bkz. `bootstrap/app.php`.
+                --}}
+                <button type="submit" class="dugme">Ürünleri sepete geri koy</button>
+            </form>
+        @endif
+
         {{-- ⚠️ `target="_top"`: betik çalışmazsa müşteri çerçeveden elle çıkabilsin. --}}
         <p><a class="dugme" target="_top" href="{{ route('vitrin.anasayfa') }}">Alışverişe devam et</a></p>
     </div>
