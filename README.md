@@ -122,6 +122,8 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
+* Vitrinde ödemeyi yapıp siparişi veriyorum çıkan ekran biraz beklemem ödeme onaylanana kadar iyzicodan mı bekliyor onayı sonra yeniledim sayfayı o zaman ödeme başarılı dedi, siparişim hazırlanıyor ve afiyet olsun gibi mesajlar gördüm ama bizim ürünlrimiz de yemek yok neden öyle dedin düzelt oraları ayrıca ödeme sonrası bekleme sekmesinde hesabım yazısı yerine giriş, gözüküyor onu da düzeltelim.
+
 * "Mevcut projemizdeki çalışan tüm fonksiyonları, state yönetimini ve component bağlantılarını aynen korumanı istiyorum. Hiçbir işlevsel kodu silme veya değiştirme.
 
 Şu anki arayüz bana çok standart ve sıradan geliyor. Senden bir "Kıdemli UI/UX Tasarımcısı" gibi düşünmeni ve projemizi modern bir SaaS uygulaması estetiğine kavuşturmanı istiyorum.
@@ -246,7 +248,8 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Güvenlik başlıkları yoktu (clickjacking, MIME koklama, referrer sızıntısı) | Herhangi bir sayfada tarayıcı geliştirici konsolu → **Network** → başlıklarda `X-Frame-Options: SAMEORIGIN` görünür | 4.6U |
 | Şifre sıfırlama akışı yoktu | Vitrin → Giriş → **"Şifremi unuttum"** · Panel → `/yonetim/giris` → **"Şifremi unuttum"** | 4.6V |
 | E-posta doğrulama yoktu | Kayıt sonrası posta gelir · **Hesabım** sayfasında şerit + "yeniden gönder" · doğrulamadan **yorum yazılamaz**, alışveriş etkilenmez | 4.6W |
-| Silinen varyantın SKU'su tekrar kullanılamıyordu (ham veritabanı hatası) | Panel → ürün → varyant sil → **aynı SKU ile yeniden ekle** (artık kabul ediliyor) · canlı iki varyanta aynı SKU verirsen SKU kutusunun altında Türkçe uyarı | 4.6X |
+| Aynı SKU verilince ham veritabanı hatası çıkıyordu | Panel → ürün → varyant → var olan bir SKU yaz → **SKU kutusunun altında Türkçe uyarı** (ham 500 değil) | 4.6X |
+| Silinmiş bir varyantın SKU'su neden "dolu" belli değildi | Silinen varyantın kodu **rezerve kalıyor** (dış sistemlerle ortak dil) ve mesaj bunu açıkça söylüyor: *"silinmiş bir varyanta ait"* | 4.6X.1 |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

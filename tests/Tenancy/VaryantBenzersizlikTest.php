@@ -8,17 +8,26 @@ use App\Domain\Settings\StorePublication;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /*
 | VARYANT BENZERSİZLİĞİ (4.6X) — gerçek kullanımda bulunan kusur.
 |
 | ★ Marka bir varyant açtı, sildi, aynı SKU ile yenisini açmak istedi ve
-| ham `UniqueConstraintViolationException` gördü. Ölçünce üç ayrı boşluk
-| çıktı:
-|   1. `sku` ve `(product_id, options)` kısıtları `deleted_at`'e
-|      BAKMIYORDU — silinen varyant kimliğini sonsuza kadar işgal ediyordu.
-|   2. `ekle()` SKU'yu HİÇ kontrol etmiyordu.
-|   3. `guncelle()` İKİSİNİ DE kontrol etmiyordu.
+| ham `UniqueConstraintViolationException` gördü. Ölçünce üç boşluk çıktı:
+|   1. `ekle()` SKU'yu HİÇ kontrol etmiyordu.
+|   2. `guncelle()` İKİSİNİ DE kontrol etmiyordu.
+|   3. `(product_id, options)` kısıtı silinmişleri de sayıyordu.
+|
+| ⚠️ SKU İLE SEÇENEK FARKLI DAVRANIYOR — bilerek:
+|   · `sku` SİLİNMİŞLERİ DE kapsıyor. Kod markanın dış dünyayla ortak
+|     dili (depo, kargo, muhasebe); yeniden kullanılırsa aynı kod iki
+|     farklı fiziksel ürüne işaret eder, yani eski ürün yok sayılır.
+|   · `(product_id, options)` KISMİ. O bir dış kimlik değil, "hangi
+|     birleşim" sorusunun cevabı; sonsuza kadar rezerve edilseydi marka
+|     "Kırmızı / M"yi silip bir daha ASLA açamazdı.
 |
 | ⚠️ 4.5L'de `(product_id, options)` için "kısıt tek başına arayüz
 | değildir" dersi çıkarılmıştı; kontrol yazıldı ama YALNIZCA ekleme
@@ -46,20 +55,43 @@ function varyantEkle(Product $urun, string $sku, string $renk): ProductVariant
     );
 }
 
-it('★★★ SILINEN varyantin SKU su SERBEST kaliyor — kullanicinin yasadigi hata', function () {
+it('★★★ SILINEN varyantin SKU su REZERVE KALIYOR — ham hata DEGIL, anlasilir uyari', function () {
     $urun = benzersizlikUrunu();
 
     $ilk = varyantEkle($urun, 'CZ-1', 'kirmizi');
     app(VariantService::class)->sil($ilk);
 
-    // ⚠️ Öncesinde burası ham UniqueConstraintViolationException veriyordu.
-    $yeni = varyantEkle($urun, 'CZ-1', 'mavi');
+    /*
+    | ⚠️ İddia "reddediliyor" DEĞİL, "HANGİ İSTİSNAYLA reddediliyor":
+    | ham `UniqueConstraintViolationException` panelde 500 demek. Kullanıcının
+    | bugün gördüğü şey tam olarak oydu.
+    */
+    expect(fn () => varyantEkle($urun, 'CZ-1', 'mavi'))
+        ->toThrow(DuplicateSkuException::class);
 
-    expect($yeni->sku)->toBe('CZ-1')
-        ->and(ProductVariant::withTrashed()->where('sku', 'CZ-1')->count())->toBe(2);
+    expect(ProductVariant::withTrashed()->where('sku', 'CZ-1')->count())->toBe(1);
 });
 
-it('★★★ SILINEN varyantin SECENEGI de SERBEST — 4.5L eksik kalmis', function () {
+it('★★★ SILINMIS cakismanin MESAJI FARKLI — marka o SKU yu ekranda ARAYAMAZ', function () {
+    $urun = benzersizlikUrunu();
+    app(VariantService::class)->sil(varyantEkle($urun, 'CZ-1', 'kirmizi'));
+
+    try {
+        varyantEkle($urun, 'CZ-1', 'mavi');
+        $this->fail('istisna beklenmişti');
+    } catch (DuplicateSkuException $hata) {
+        /*
+        | ⚠️ Bu ayrım kozmetik DEĞİL. Çakışma silinmiş bir varyantlaysa
+        | kayıt katalogda görünmüyor; "başka bir varyantta kullanılıyor"
+        | denseydi marka olmayan bir şeyi arar, bulamaz ve hatayı sistem
+        | arızası sanardı — gerçek kullanımda tam bu yaşandı.
+        */
+        expect($hata->silinmisVaryantta)->toBeTrue()
+            ->and($hata->getMessage())->toContain('silinmiş');
+    }
+});
+
+it('★★★ SILINEN varyantin SECENEGI SERBEST — SKU dan FARKLI, bilerek', function () {
     $urun = benzersizlikUrunu();
 
     $ilk = varyantEkle($urun, 'CZ-1', 'yesil');
@@ -69,6 +101,10 @@ it('★★★ SILINEN varyantin SECENEGI de SERBEST — 4.5L eksik kalmis', func
     | ⚠️ Bu yol 4.5L'de kapatıldı SANILIYORDU. Domain kontrolü silinmişi
     | görmüyordu (doğru), ama veritabanı kısıtı görüyordu (yanlış) —
     | ikisi uyuşmadığı için hata Domain'i atlayıp veritabanından geliyordu.
+    |
+    | ⚠️ SKU'dan FARKLI davranıyor ve bu bilinçli: seçenek birleşimi bir
+    | DIŞ KİMLİK değil. Rezerve edilseydi marka "Yeşil" varyantını silip
+    | bir daha asla açamazdı.
     */
     $yeni = varyantEkle($urun, 'CZ-2', 'yesil');
 
@@ -167,7 +203,7 @@ it('★★★ PANELDE ham 500 DEGIL, SKU kutusunun altinda uyari — asil olcule
     expect(session('errors')?->first('sku'))->toContain('CZ-1');
 });
 
-it('★★★ PANELDEN silinen varyantin SKU su yeniden KULLANILABILIYOR', function () {
+it('★★★ PANELDE silinen SKU uyarisi ALAN HATASI olarak gorunuyor', function () {
     $urun = benzersizlikUrunu();
     $sahip = User::where('email', 'sahip@marka-a.test')->firstOrFail();
 
@@ -183,7 +219,63 @@ it('★★★ PANELDEN silinen varyantin SKU su yeniden KULLANILABILIYOR', funct
             'options' => ['renk' => 'mavi'],
         ])
         ->assertRedirect()
-        ->assertSessionHasNoErrors();
+        ->assertSessionHasErrors('sku');
 
-    expect(ProductVariant::where('sku', 'CZ-1')->count())->toBe(1);
+    // ⚠️ Ekranda "silinmiş" geçmeli: marka kodu katalogda arayamaz.
+    expect(session('errors')?->first('sku'))->toContain('silinmiş');
+
+    expect(ProductVariant::withTrashed()->where('sku', 'CZ-1')->count())->toBe(1);
+});
+
+it('★★★ VERITABANI KISITI da silinmisleri sayiyor — DOMAIN ATLANARAK olculuyor', function () {
+    /*
+    | ⚠️ BU TEST OLMADAN KISIT ÖLÇÜLMÜYORDU. Ölçüldü: migration'ı geri
+    | almak (SKU'yu kısmi indekste bırakmak) HİÇBİR testi düşürmüyordu,
+    | çünkü Domain kontrolü isteği veritabanına hiç ulaştırmıyor.
+    |
+    | Kısıt Domain'in yedeği değil SON SAVUNMASI: yarış durumunda iki
+    | eşzamanlı istek de kontrolü geçip aynı anda yazmaya çalışabilir,
+    | ayrıca tohumlayıcı/komut satırı Domain'i hiç kullanmayabilir.
+    | Bu yüzden burada servis DEĞİL, doğrudan tablo kullanılıyor.
+    */
+    $urun = benzersizlikUrunu();
+    $ilk = varyantEkle($urun, 'CZ-1', 'kirmizi');
+    app(VariantService::class)->sil($ilk);
+
+    expect(fn () => DB::table('product_variants')->insert([
+        'uuid' => (string) Str::uuid(),
+        'product_id' => $urun->id,
+        'sku' => 'CZ-1',
+        'options' => json_encode(['renk' => 'mavi']),
+        'price' => 100,
+        'stock' => 5,
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]))->toThrow(UniqueConstraintViolationException::class);
+});
+
+it('★★ VERITABANI KISITI secenekte silinmisi SAYMIYOR — SKU dan farkli, DOMAIN ATLANARAK', function () {
+    /*
+    | ⚠️ İki kuralın gerçekten FARKLI davrandığı burada kanıtlanıyor.
+    | Aynı ölçüm Domain üzerinden yapılsaydı ikisinin de "geçtiğini"
+    | görürdük ama SEBEBİNİ görmezdik.
+    */
+    $urun = benzersizlikUrunu();
+    $ilk = varyantEkle($urun, 'CZ-1', 'yesil');
+    app(VariantService::class)->sil($ilk);
+
+    DB::table('product_variants')->insert([
+        'uuid' => (string) Str::uuid(),
+        'product_id' => $urun->id,
+        'sku' => 'CZ-9',
+        'options' => json_encode(['renk' => 'yesil']),
+        'price' => 100,
+        'stock' => 5,
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    expect(ProductVariant::where('sku', 'CZ-9')->exists())->toBeTrue();
 });

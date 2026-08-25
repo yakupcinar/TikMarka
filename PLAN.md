@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6X BİTTİ — iyileştirme listesi başladı ───────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6X.1 BİTTİ — iyileştirme listesi başladı ─────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6909,6 +6909,58 @@ DOĞRULANDI (gerçek panel, curl): silinmiş `a` SKU'su yeni bir üründe
 **kullanılabildi** (biri silinmiş biri canlı iki satır) · aynı SKU tekrar
 denenince ekranda **"Bu stok kodu (SKU) başka bir varyantta kullanılıyor:
 a"** — ham 500 değil. **855 test.**
+
+---
+### 4.6X.1 — SKU rezervasyonu: karar geri alındı
+
+**Bu blok bir DÜZELTME değil, bir KARAR DEĞİŞİKLİĞİ.** 4.6X'te SKU'yu
+kısmi indekse çevirip silinen varyantın kodunu serbest bırakmıştım.
+Kullanıcı bunu geri aldı ve gerekçesi benimkinden güçlüydü:
+
+> SKU markanın **dış dünyayla ortak dili** — depo, kargo, muhasebe,
+> pazaryeri entegrasyonu hep onu konuşuyor. Aynı kodun zaman içinde iki
+> farklı fiziksel ürüne işaret etmesi "bu neydi" sorusunu cevapsız
+> bırakır. Kodu yeniden kullanmak, eski ürünü **yok saymak** demek.
+
+⚠️ Benim gerekçem *"sipariş satırları SKU'yu metin kopyalıyor, geçmiş
+bozulmaz"*dı. Bu doğru ama **yetersiz**: geçmişin bozulmaması, geçmişin
+**okunabilir kalması** anlamına gelmiyor. Marka SKU'yu dışarıdaki bir
+sistemde ararsa iki farklı ürün bulur — ve bizim veritabanımız bu konuda
+ona yardım edemez.
+
+**✅ `sku` kısıtı tam benzersizliğe döndü** (silinenler dâhil), Domain
+kontrolü `withTrashed()` ile arıyor.
+
+**⚠️ `(product_id, options)` KISMİ KALIYOR — bilerek, ve bu ayrım önemli.**
+O bir dış kimlik değil, *"hangi birleşim"* sorusunun cevabı. Sonsuza kadar
+rezerve edilseydi marka "Kırmızı / M" varyantını silip bir daha **asla**
+açamazdı. Yani doğru cevap alanın ne olduğuna bağlı; tek bir kural yok.
+
+**✅ MESAJ İKİ DURUMU AYIRIYOR ve bu kozmetik değil.** Çakışma silinmiş
+bir varyantlaysa marka o SKU'yu ekranda **arayamaz** — kayıt katalogda
+görünmüyor. Genel mesaj verilseydi marka olmayan bir şeyi arar, bulamaz ve
+hatayı sistem arızası sanardı; gerçek kullanımda tam bu yaşandı.
+
+**⚠️ DOMAIN KONTROLÜ KISITI MASKELİYORDU — ölçüldü.** Migration'ı geri
+gevşetmek **hiçbir testi düşürmedi**, çünkü Domain isteği veritabanına hiç
+ulaştırmıyor. Oysa kısıt Domain'in yedeği değil **son savunması**: yarış
+durumunda iki eşzamanlı istek de kontrolü geçebilir, tohumlayıcı ve komut
+satırı Domain'i hiç kullanmayabilir. İki test eklendi ve ikisi de servisi
+değil **doğrudan tabloyu** kullanıyor — biri SKU'nun silinmişi saydığını,
+öteki seçeneğin saymadığını kanıtlıyor.
+
+**Üç kırma denemesi, üçü de düştü** (`withTrashed()`'i kaldır · mesaj
+ayrımını kaldır · migration'ı geri gevşet). ⚠️ Sonuncusu ilk denemede
+**hiçbir şeyi düşürmedi**; eksik olan testin varlık sebebi bu.
+
+⚠️ Bir kırma denemesini geri alırken `git checkout` kullanıldı ve dosyayı
+**commit'li** hâline döndürdü — o oturumda yazılan yeni yapıcıyı sildi.
+Testler geri almadan sonra da kırmızı kaldı. Ders: geri almanın
+uygulandığını da, kırmanın uygulandığı kadar dikkatle doğrula.
+
+DOĞRULANDI (gerçek panel, curl): silinmiş `a` SKU'su ile varyant eklenemedi
+· ekranda *"Bu stok kodu (SKU) silinmiş bir varyanta ait: a. Stok kodları
+geçmişe dönük olarak korunuyor…"* · yeni satır **oluşmadı**. **858 test.**
 
 ---
 ---

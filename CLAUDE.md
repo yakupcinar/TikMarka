@@ -656,23 +656,35 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **üçü de** bozuk dosyayla düştü.
 
 
-- **YUMUŞAK SİLİNEN KAYIT BENZERSİZ ALANI İŞGAL ETMEYE DEVAM EDER.**
-  `unique` kısıtı `deleted_at`'e bakmaz; silinen satır SKU'yu (ya da hangi
-  alansa) **sonsuza kadar** tutar. 4.6X'te ısırdı: marka varyantı silip
-  aynı SKU ile yenisini açmak isteyince ham
-  `UniqueConstraintViolationException` gördü. ⚠️ Daha sinsisi: Domain
-  kontrolü silinmişi GÖRMÜYOR (doğru), kısıt GÖRÜYOR (yanlış) — ikisi
-  aynı kuralı farklı anlayınca hata Domain'i **atlayıp** veritabanından
-  geliyor ve yakalanamıyor. Kural: yumuşak silme varsa benzersiz indeks
-  de **kısmi** olmalı (`WHERE deleted_at IS NULL`). Serbest bırakmadan
-  önce üçünü ölç: o alanla **kayıt aranıyor mu**, geçmiş kayıtlar değeri
-  **kopyalıyor mu**, `restore()` yolu **var mı**.
+- **YUMUŞAK SİLME + `unique` = DOMAIN İLE VERİTABANI AYNI KURALI FARKLI
+  ANLAYABİLİR.** `unique` kısıtı `deleted_at`'e bakmaz, Eloquent sorgusu
+  bakar. İkisi hizalanmazsa hata Domain'i **atlayıp** veritabanından
+  geliyor ve yakalanamıyor — panelde ham
+  `UniqueConstraintViolationException`. 4.6X'te ısırdı.
+  ⚠️ Doğru yön ALANIN NE OLDUĞUNA bağlı, tek bir cevabı YOK:
+  · **Dış kimlik** (SKU, barkod, fatura no) → silinmişler DE sayılmalı;
+    kısıt tam kalır, Domain `withTrashed()` ile arar. Kod dışarıda da
+    kullanılıyor (depo, kargo, muhasebe); yeniden kullanılırsa aynı kod
+    iki farklı fiziksel şeye işaret eder.
+  · **İç ayrım** (`(product_id, options)` gibi "hangi birleşim") → kısmi
+    indeks (`WHERE deleted_at IS NULL`), Domain silinmişi görmez. Rezerve
+    edilseydi "Kırmızı / M" bir kez silinince bir daha ASLA açılamazdı.
+  ⚠️ Silinmiş kayıtla çakışmanın MESAJI ayrı olmalı: kayıt katalogda
+  görünmediği için marka o değeri ekranda **arayamaz** ve genel mesajı
+  sistem arızası sanar.
 - **BİR KURALI TEK YOLA YAZMAK YETMEZ — AİLENİN TAMAMINA YAZ.** 4.5L'de
   `(product_id, options)` için Domain kontrolü yazıldı ama YALNIZCA
   `ekle()`'ye; `guncelle()` boş kaldı ve aynı ham hata oradan çıkmaya
   devam etti. 4.6X'te ikisi de kapatıldı. "Tarayıcıya HTML, API'ye JSON"
   tuzağıyla aynı aile: **bir uçta düzeltmek, ailenin düzeldiği anlamına
   gelmiyor.**
+- **DOMAIN KONTROLÜ VERİTABANI KISITINI MASKELER — kısıtı ölçen test
+  DOMAIN'İ ATLAMALI.** 4.6X.1'de ölçüldü: kısıtı geri gevşeten migration
+  değişikliği **hiçbir testi düşürmedi**, çünkü Domain isteği veritabanına
+  hiç ulaştırmıyor. Oysa kısıt Domain'in yedeği değil SON SAVUNMASI —
+  yarış durumunda iki eşzamanlı istek de kontrolü geçebilir, tohumlayıcı
+  ve komut satırı Domain'i hiç kullanmayabilir. Ölçen test servisi değil
+  **doğrudan tabloyu** kullanmalı (`DB::table(...)->insert(...)`).
 
 
 ## Yapı

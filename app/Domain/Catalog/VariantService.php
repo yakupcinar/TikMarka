@@ -257,13 +257,19 @@ class VariantService
             return;
         }
 
-        $var = ProductVariant::query()
+        /*
+        | ⚠️ `withTrashed()` ŞART — kural silinmişleri de kapsıyor
+        | (4.6X.1) ve veritabanı kısıtı da öyle. Bakılmasaydı Domain
+        | "boş" der, veritabanı "dolu" derdi ve marka yine ham hata
+        | görürdü; 4.6X'te düzeltilen tuzağın aynısı ters yönde.
+        */
+        $cakisan = ProductVariant::withTrashed()
             ->where('sku', $sku)
             ->when($haric !== null, fn ($q) => $q->whereKeyNot($haric?->getKey()))
-            ->exists();
+            ->first();
 
-        if ($var) {
-            throw new DuplicateSkuException($sku);
+        if ($cakisan !== null) {
+            throw new DuplicateSkuException($sku, $cakisan->trashed());
         }
     }
 

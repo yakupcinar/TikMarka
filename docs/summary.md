@@ -2781,6 +2781,37 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       ⚠️ testlerden biri Domain'i değil PANELİ ölçüyor: istisnanın
         ekranda neye dönüştüğünü Domain testi göremez (4.5L bu yüzden)
 
-      DOĞRULANDI (gerçek panel, curl): silinmiş 'a' SKU'su yeni üründe
-      KULLANILDI · aynı SKU tekrar → "Bu stok kodu (SKU) başka bir
-      varyantta kullanılıyor: a" (ham 500 DEĞİL)
+      DOĞRULANDI (gerçek panel, curl): aynı SKU tekrar → alan hatası,
+      ham 500 DEĞİL
+
+4.6X.1 ✅ SKU REZERVASYONU — 858 test · KARAR DEĞİŞİKLİĞİ (düzeltme değil)
+      4.6X'te SKU kısmi indekse çevrilip silinen kod SERBEST bırakılmıştı;
+      kullanıcı geri aldı, gerekçesi daha güçlüydü:
+
+        SKU markanın DIŞ DÜNYAYLA ORTAK DİLİ (depo, kargo, muhasebe,
+        pazaryeri). Yeniden kullanılırsa aynı kod iki farklı fiziksel
+        ürüne işaret eder = eski ürünü YOK SAYMAK
+
+      ⚠️ benim gerekçem ("sipariş satırı SKU'yu kopyalıyor, geçmiş
+        bozulmaz") DOĞRU ama YETERSİZ: geçmişin bozulmaması, geçmişin
+        OKUNABİLİR kalması demek değil
+
+      ✅ sku kısıtı TAM benzersizliğe döndü, Domain withTrashed() ile arıyor
+      ⚠️ (product_id, options) KISMİ KALIYOR — dış kimlik değil, "hangi
+        birleşim"; rezerve edilseydi "Kırmızı/M" bir kez silinince bir
+        daha ASLA açılamazdı → tek kural yok, ALANIN NE OLDUĞUNA bağlı
+
+      ✅ MESAJ İKİ DURUMU AYIRIYOR (kozmetik değil): silinmiş çakışmada
+        marka o SKU'yu ekranda ARAYAMAZ, genel mesajı arıza sanardı
+
+      ⚠️ DOMAIN KONTROLÜ KISITI MASKELİYORDU — ölçüldü
+        migration'ı geri gevşetmek HİÇBİR testi düşürmedi
+        kısıt Domain'in yedeği değil SON SAVUNMASI (yarış, tohumlayıcı)
+        → 2 test eklendi, ikisi de DOĞRUDAN TABLOYU kullanıyor
+
+      3 kırma denemesi, 3'ü de düştü
+      ⚠️ geri alırken `git checkout` dosyayı COMMIT'Lİ hâline döndürdü ve
+        o oturumda yazılanı sildi → geri almayı da kırma kadar doğrula
+
+      DOĞRULANDI (gerçek panel): silinmiş 'a' ile varyant EKLENEMEDİ,
+      ekranda açıklayıcı mesaj, yeni satır OLUŞMADI

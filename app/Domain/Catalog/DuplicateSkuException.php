@@ -3,26 +3,28 @@
 namespace App\Domain\Catalog;
 
 /**
- * Aynı SKU ile ikinci bir CANLI varyant açılmak isteniyor. (4.6X)
+ * Aynı SKU ile ikinci bir varyant açılmak isteniyor. (4.6X · 4.6X.1)
  *
- * ★ SKU marka genelinde benzersiz ve bu doğru: stok kodu deponun,
- * kargonun ve muhasebenin ortak dili. İki varyant aynı kodu taşısaydı
- * "hangi ürün sevk edildi" sorusunun cevabı olmazdı.
+ * ★ SKU marka genelinde benzersiz ve SİLİNENLER DE SAYILIYOR: kod
+ * markanın dış dünyayla ortak dili (depo, kargo, muhasebe, pazaryeri).
+ * Yeniden kullanılsaydı aynı kod zaman içinde iki farklı fiziksel ürüne
+ * işaret ederdi — yani eski ürünü yok saymış olurduk.
  *
- * ⚠️ Ama kısıt tek başına YETMİYORDU — `DuplicateVariantException`'ın
- * (4.5L) yaşadığının aynısı: Domain'de hiçbir kontrol yoktu, panelde ham
- * `UniqueConstraintViolationException` görünüyordu. Gerçek kullanımda
- * yakalandı.
- *
- * ⚠️ Mesaj "başka bir varyantta kullanılıyor" diyor, "silinmiş bir
- * varyantta" DEMİYOR: 4.6X'ten sonra silinmiş varyantın SKU'su serbest,
- * yani çakışma yalnızca CANLI bir varyantla olabilir.
+ * ⚠️ MESAJ İKİ DURUMU AYIRIYOR ve bu kozmetik değil. Çakışma silinmiş bir
+ * varyantlaysa marka o SKU'yu ekranda ARAYAMAZ — kayıt katalogda
+ * görünmüyor. "Başka bir varyantta kullanılıyor" denseydi marka olmayan
+ * bir şeyi arar, bulamaz ve hatayı sistem arızası sanardı. Gerçek
+ * kullanımda tam bu yaşandı.
  */
 class DuplicateSkuException extends CatalogRuleException
 {
-    public function __construct(public readonly string $sku)
-    {
-        parent::__construct("Bu stok kodu (SKU) başka bir varyantta kullanılıyor: {$sku}");
+    public function __construct(
+        public readonly string $sku,
+        public readonly bool $silinmisVaryantta = false,
+    ) {
+        parent::__construct($silinmisVaryantta
+            ? "Bu stok kodu (SKU) silinmiş bir varyanta ait: {$sku}. Stok kodları geçmişe dönük olarak korunuyor — silinen bir ürünün kodu yeniden kullanılamaz. Farklı bir kod seçin."
+            : "Bu stok kodu (SKU) başka bir varyantta kullanılıyor: {$sku}");
     }
 
     /** @return array<string, list<string>> */
