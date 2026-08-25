@@ -209,7 +209,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Eksik | Blok |
 |---|---|
 | Vitrinde **kategori gezinme sayfası yok** (4.5H kapsam testinde bilerek `null`) | **4.6B** |
-| **Yorumlar vitrinde hiç görünmüyor** — uçlar (2E) ve panel moderasyonu (4.5F) var, müşteri ulaşamıyor | **4.6C** |
+| ~~**Yorumlar vitrinde hiç görünmüyor**~~ → **4.6C'de kapandı** | **4.6C** |
 
 > ⚠️ Ayrıca ölçüldü: `ProductViewed` olayı **yalnızca API'den** yazılıyor,
 > vitrin sayfası hiç kaydetmiyor — bugünkü sayılar eksik. Ve
@@ -261,6 +261,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Ödeme ekranından çıkışın temiz yolu yoktu (stok 60 dk kilitli kalıyordu) | Ödeme sayfası → **"Ödemeden vazgeç ve sepete dön"** — sipariş iptal, stok serbest, ürünler sepette | 4.6Z |
 | 2–5 MB arası görseller sessizce reddediliyordu (ekranda `validation.uploaded`) | Panel → ürün → görsel ekle → **5 MB'a kadar kabul ediliyor**, hata olursa Türkçe mesaj | 4.6AA |
 | Görseller olduğu gibi saklanıyordu | Yüklenen her görsel **WebP**'ye çevriliyor, en uzun kenar 2048'e iniyor — ölçüldü: 4,83 MB → 0,34 MB | 4.6AA |
+| Yorumlar vitrinde hiç görünmüyordu (uçlar ve moderasyon vardı) | Vitrin → ürün sayfası → **Yorumlar** bölümü · satın alıp teslim almış müşteri form görüyor, göremiyorsa **sebebi yazıyor** | 4.6C |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

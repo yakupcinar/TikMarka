@@ -254,4 +254,6 @@
     </script>
     @endif
 
+    @include('storefront.partials.yorumlar')
+
 @endsection

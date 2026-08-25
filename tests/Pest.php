@@ -799,3 +799,15 @@ function dogrulamaAdresi(Customer $musteri, string $alanAdi = 'marka-a.test'): s
 
     return $adres;
 }
+
+/*
+| ⚠️ `test()` KULLANDIĞI İÇİN BURADA: statik analiz Pest'in bağlamasını
+| göremiyor ve `phpstan.neon`'daki istisna YALNIZCA bu dosya için tanımlı
+| (4.6W'de aynı sebeple `dogrulamaAdresi` taşınmıştı).
+*/
+function vitrinYorumGirisi(Customer $musteri): void
+{
+    test()->post('http://marka-a.test/giris', [
+        'email' => $musteri->email, 'password' => 'sifre12345',
+    ])->assertRedirect();
+}

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AA BİTTİ — iyileştirme listesi 5/13 ─────────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6C BİTTİ — iyileştirme listesi 6/13 ──────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7168,6 +7168,62 @@ deneme tekrarlandı ve bu kez düştü.
 DOĞRULANDI (gerçek panel, curl): blok öncesi 4,83 MB reddediliyordu ve
 ekranda `validation.uploaded` yazıyordu · blok sonrası aynı dosya kabul
 edildi, diskte 0,34 MB WebP olarak duruyor. **883 test.**
+
+---
+### 4.6C — vitrinde yorumlar
+
+Planlı bloklar arasındaki en ucuzu, çünkü arka uç zaten bitmişti: uçlar
+2E'de, panel moderasyonu 4.5F'de, doğrulama kapısı 4.6W'de. Eksik olan tek
+şey **müşterinin göreceği ekrandı** — yani "uç var ≠ kullanılabilir"in bir
+örneği daha.
+
+**✅ "Yorum yazabilir miyim" sorusunu EKRAN DEĞİL DOMAIN cevaplıyor.**
+
+> ⚠️ `ReviewService::yazmaEngeli()` eklendi ve `yaz()` ile **aynı özel
+> metodu** çağırıyor (`engelleriDogrula`); biri fırlatıyor, öteki
+> yakalayıp döndürüyor. Ekran için ayrı bir kontrol yazılsaydı **iki
+> formül** olurdu ve zamanla ayrışırlardı — 4.5J'de sepet rozeti ile
+> sepetin kendisi tam bu yüzden farklı sonuç veriyordu.
+
+**✅ Engel varsa SEBEP gösteriliyor, form gizlenip susulmuyor.** "Satın
+almadınız", "zaten yazdınız" ve "e-postanızı doğrulayın" farklı durumlar
+ve müşterinin yapması gereken de farklı; tek bir "yazamazsınız" mesajı
+üçünü de çıkmaza çevirirdi. Canlıda zincirin iki halkası da görüldü.
+
+**✅ Yorum bölümü ORTAK PARÇA** (`partials/yorumlar`). Kopyalansaydı biri
+güncellenip öteki unutulur ve o düzeni seçmiş markanın müşterisi yorumları
+göremezdi — tema bir **ayar** (4-K5), hangi düzenin kullanıldığını marka
+belirliyor. Bir kırma denemesi bunu ölçüyor.
+
+**✅ Yazar adı kısaltması MODELE taşındı** (`Review::vitrinAdi()`). API
+cevabında (2E) zaten vardı; vitrin için kopyalansaydı aynı yorum iki
+yüzeyde farklı görünebilirdi. ⚠️ Tam ad, e-posta ve `moderation_note`
+vitrinde **yok** — 2G'nin mantığı burada da geçerli.
+
+**⚠️ SAYFA KATMANI API'DEN AYRI OLMAK ZORUNDA.** Ayrı bir controller
+yazıldı çünkü kimlik farklı yerden geliyor: API'de sanctum token'ı,
+sayfada **oturum**. Aynı controller kullanılsaydı `$istek->user()`
+varsayılan guard'ı sorar ve giriş yapmış müşteri misafir sayılırdı —
+4.5I'de ölçülmüş hata.
+
+**⚠️ TARAYICIYA HTML, API'YE JSON — beşinci kez.** Genel işleyiciler
+`NotPurchased` · `DuplicateReview` · `UnverifiedEmail` istisnalarını JSON'a
+çeviriyor ve o API için doğru. Sayfa controller'ında yakalanmasaydı müşteri
+ham JSON görürdü (4A · 4B · 4.5G · 4.5O ailesi).
+
+**⚠️ Sayfalama YOK, ilk 20 gösteriliyor.** Sunucuda render edilen bir
+sayfada yorum sayfalaması ürün adresine sorgu parametresi eklemek demek ve
+o adres SEO'da ürünün kendisiyle yarışırdı.
+
+**Beş kırma denemesi, beşi de düştü** (onaysız yorumları göster · tam adı
+göster · Domain istisnasını yakalama · engel sebebini gizle · `vitrinli`
+düzenden bölümü çıkar).
+
+DOĞRULANDI (gerçek curl): misafir → yorum + puan özeti görünüyor, form yok,
+"giriş yapın" var · giriş yapmış doğrulanmamış müşteri → *"e-posta
+adresinizi doğrulamanız gerekiyor"* · doğrulanınca → *"Bu ürüne zaten
+yorum yazdınız"* (zincirin bir sonraki halkası) · vitrinde **"Ahmet Y."**
+yazıyor, tam ad yok. **892 test.**
 
 ---
 ---

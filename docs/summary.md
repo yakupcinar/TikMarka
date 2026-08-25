@@ -2937,3 +2937,34 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek panel): önce 4,83 MB reddediliyordu ve ekranda
       validation.uploaded yazıyordu · sonra kabul edildi, diskte 0,34 MB
+
+4.6C ✅ VİTRİNDE YORUMLAR — 892 test
+      arka uç zaten bitmişti (uçlar 2E, moderasyon 4.5F, doğrulama 4.6W);
+      eksik olan MÜŞTERİNİN GÖRECEĞİ EKRANDI → "uç var ≠ kullanılabilir"
+
+      ✅ "yazabilir miyim" sorusunu EKRAN DEĞİL DOMAIN cevaplıyor
+        yazmaEngeli() ve yaz() AYNI özel metodu çağırıyor
+        (engelleriDogrula); biri fırlatıyor, öteki yakalayıp döndürüyor
+        ⚠️ ekran için ayrı kontrol = İKİ FORMÜL (4.5J'de sepet rozeti ile
+          sepetin kendisi tam bu yüzden ayrışmıştı)
+
+      ✅ engel varsa SEBEP gösteriliyor, form gizlenip SUSULMUYOR
+        "satın almadınız" / "zaten yazdınız" / "doğrulayın" farklı
+        durumlar; tek mesaj üçünü de çıkmaza çevirirdi
+      ✅ yorum bölümü ORTAK PARÇA (iki düzen de kullanıyor, tema AYAR)
+      ✅ yazar adı kısaltması MODELE taşındı (API'de zaten vardı)
+        vitrinde tam ad / e-posta / moderation_note YOK (2G mantığı)
+
+      ⚠️ SAYFA KATMANI API'DEN AYRI OLMAK ZORUNDA
+        API'de kimlik sanctum token'ında, sayfada OTURUMDA
+        aynı controller = giriş yapmış müşteri MİSAFİR sayılır (4.5I)
+      ⚠️ TARAYICIYA HTML, API'YE JSON — BEŞİNCİ KEZ
+        (4A · 4B · 4.5G · 4.5O ailesi)
+      ⚠️ sayfalama YOK: sunucuda render edilen sayfada yorum sayfalaması
+        ürün adresiyle SEO'da yarışırdı
+
+      5 kırma denemesi, 5'i de düştü
+
+      DOĞRULANDI (gerçek curl): misafir → yorum + özet var, form yok ·
+      doğrulanmamış müşteri → "e-postanızı doğrulayın" · doğrulanınca →
+      "zaten yorum yazdınız" (zincirin sonraki halkası) · "Ahmet Y." 

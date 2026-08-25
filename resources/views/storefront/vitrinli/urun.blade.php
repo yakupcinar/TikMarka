@@ -89,4 +89,6 @@
         </div>
     </div>
 
+    @include('storefront.partials.yorumlar')
+
 @endsection

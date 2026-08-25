@@ -66,6 +66,36 @@ class Review extends Model
         return 'uuid';
     }
 
+    /**
+     * Vitrinde gösterilen yazar adı: "Ahmet Yılmaz" → "Ahmet Y."
+     *
+     * ★ MODELDE, çünkü İKİ YÜZEY kullanıyor: API cevabı (2E) ve vitrin
+     * sayfası (4.6C). İkisine ayrı ayrı yazılsaydı biri değişip öteki
+     * kalır ve aynı yorum iki yerde farklı görünürdü.
+     *
+     * ⚠️ Tam ad yazılsaydı müşterinin kim olduğu vitrinde herkese açık
+     * olurdu. Anonimleştirilmiş müşteride (2G) ad zaten tanınmaz hâlde;
+     * burada ek bir iş yapılmıyor, sadece kısaltılıyor.
+     */
+    public function vitrinAdi(): ?string
+    {
+        $ad = $this->customer?->name;
+
+        if (! is_string($ad) || trim($ad) === '') {
+            return null;
+        }
+
+        $parcalar = preg_split('/\s+/', trim($ad)) ?: [];
+
+        if (count($parcalar) < 2) {
+            return $parcalar[0] ?? null;
+        }
+
+        $son = (string) end($parcalar);
+
+        return $parcalar[0].' '.mb_strtoupper(mb_substr($son, 0, 1)).'.';
+    }
+
     /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {

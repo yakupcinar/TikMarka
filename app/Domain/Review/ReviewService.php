@@ -5,9 +5,11 @@ namespace App\Domain\Review;
 use App\Domain\Quota\QuotaGuard;
 use App\Enums\ReviewStatus;
 use App\Models\Customer;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -37,60 +39,42 @@ class ReviewService
      *
      * @throws NotPurchasedException|DuplicateReviewException|UnverifiedEmailException
      */
+    /**
+     * Müşteri bu ürüne yorum yazabilir mi — yazamıyorsa SEBEBİ.
+     *
+     * ★ EKRAN KENDİ HESABINI YAPMASIN DİYE VAR (4.6C). Vitrin "yorum
+     * yazabilir misin" sorusunu cevaplamak zorunda: yazamayacak birine
+     * form göstermek, doldurup gönderdikten sonra reddetmek demek.
+     *
+     * ⚠️ KURAL TEK YERDE. Ekran için ayrı bir kontrol yazılsaydı iki
+     * formül olurdu ve zamanla ayrışırlardı — 4.5J'de tam bu yaşandı
+     * (rozet ile sepet farklı hesaplıyordu). Burada ikisi de
+     * `engelleriDogrula()`'yı çağırıyor; biri fırlatıyor, öteki
+     * yakalayıp döndürüyor.
+     *
+     * @return DomainException|null engel yoksa null
+     */
+    public function yazmaEngeli(Customer $musteri, Product $urun): ?DomainException
+    {
+        try {
+            $this->engelleriDogrula($musteri, $urun);
+
+            return null;
+        } catch (DomainException $hata) {
+            return $hata;
+        }
+    }
+
+    /**
+     * Müşteri yorum yazar — ONAY BEKLEYEREK.
+     *
+     * @param  array<string, mixed>  $veri
+     *
+     * @throws NotPurchasedException|DuplicateReviewException|UnverifiedEmailException
+     */
     public function yaz(Customer $musteri, Product $urun, array $veri): Review
     {
-        /*
-        | ★ ÖZELLİK BAYRAĞI (3F). Plan yorumu kapsamıyorsa müşteri yorum
-        | yazamıyor.
-        |
-        | ⚠️ Kontrol EN BAŞTA: satın alma kanıtı sorgusu pahalı ve plan
-        | kapalıysa hiç çalıştırmaya gerek yok.
-        |
-        | ⚠️ VAR OLAN yorumlar vitrinde KALMAYA devam ediyor — plan
-        | düşüren markanın müşteri yorumları silinmemeli.
-        */
-        $this->kota->ozelligiDogrula('reviews');
-
-        /*
-        | ★ E-POSTA DOĞRULAMA KAPISI (4.6W).
-        |
-        | Yorum, marka adına YAYIMLANAN bir metin — ürün sayfasında
-        | herkese görünüyor. Doğrulanmamış adresle yazılan yorumun
-        | arkasında ulaşılabilir bir kişi olduğu bilinmiyor; itiraz,
-        | düzeltme ya da kötüye kullanım durumunda kimseye erişilemez.
-        |
-        | ⚠️ Ödeme BİLEREK bu kapının dışında (bkz.
-        | `EmailVerificationPageController`): misafir ödemesi açık olduğu
-        | için oraya kapı koymak satışı kırar, saldırganı durdurmaz.
-        | Yorumda durum tersi — misafir zaten yorum yazamıyor, yani kapı
-        | gerçekten kapalı.
-        |
-        | ⚠️ GERİYE DÖNÜK ETKİSİ VAR: bu blok öncesinde açılmış hesapların
-        | hiçbiri doğrulanmış değil ve otomatik doldurma YAPILMADI —
-        | adresin teslim edilebilir olduğuna dair elimizde kanıt yok,
-        | "doğrulanmış" yazmak o kanıtı uydurmak olurdu. Kurtarma yolu
-        | hesap sayfasındaki "yeniden gönder" düğmesi.
-        */
-        if (! $musteri->hasVerifiedEmail()) {
-            throw new UnverifiedEmailException('Yorum yazabilmek için e-posta adresinizi doğrulamanız gerekiyor.');
-        }
-
-        // Satın alma kanıtı — yoksa hiçbir kayıt oluşmuyor.
-        $satir = $this->kanit->bul($musteri, $urun);
-
-        /*
-        | ⚠️ Yumuşak silinmiş yorum da SAYILIYOR (`withTrashed`). Bakılmasaydı
-        | müşteri yorumunu silip yenisini yazarak kotayı sonsuz kullanır,
-        | veritabanı kısıtı ise `deleted_at`'e bakmadığı için 500 verirdi.
-        */
-        $var = Review::withTrashed()
-            ->where('product_id', $urun->id)
-            ->where('customer_id', $musteri->id)
-            ->exists();
-
-        if ($var) {
-            throw new DuplicateReviewException('Bu ürüne zaten yorum yazdınız.');
-        }
+        $satir = $this->engelleriDogrula($musteri, $urun);
 
         $yorum = new Review;
         $yorum->fill($veri);
@@ -193,5 +177,70 @@ class ReviewService
         $sorgu = Review::query()->with(['product', 'customer'])->orderBy('id');
 
         return $durum === null ? $sorgu : $sorgu->where('status', $durum);
+    }
+
+    /**
+     * Yorum yazmanın ÖN KOŞULLARI — tek formül.
+     *
+     * @return OrderItem satın alma kanıtı (yorum ona bağlanıyor)
+     *
+     * @throws NotPurchasedException|DuplicateReviewException|UnverifiedEmailException
+     */
+    private function engelleriDogrula(Customer $musteri, Product $urun): OrderItem
+    {
+        /*
+        | ★ ÖZELLİK BAYRAĞI (3F). Plan yorumu kapsamıyorsa müşteri yorum
+        | yazamıyor.
+        |
+        | ⚠️ Kontrol EN BAŞTA: satın alma kanıtı sorgusu pahalı ve plan
+        | kapalıysa hiç çalıştırmaya gerek yok.
+        |
+        | ⚠️ VAR OLAN yorumlar vitrinde KALMAYA devam ediyor — plan
+        | düşüren markanın müşteri yorumları silinmemeli.
+        */
+        $this->kota->ozelligiDogrula('reviews');
+
+        /*
+        | ★ E-POSTA DOĞRULAMA KAPISI (4.6W).
+        |
+        | Yorum, marka adına YAYIMLANAN bir metin — ürün sayfasında
+        | herkese görünüyor. Doğrulanmamış adresle yazılan yorumun
+        | arkasında ulaşılabilir bir kişi olduğu bilinmiyor; itiraz,
+        | düzeltme ya da kötüye kullanım durumunda kimseye erişilemez.
+        |
+        | ⚠️ Ödeme BİLEREK bu kapının dışında (bkz.
+        | `EmailVerificationPageController`): misafir ödemesi açık olduğu
+        | için oraya kapı koymak satışı kırar, saldırganı durdurmaz.
+        | Yorumda durum tersi — misafir zaten yorum yazamıyor, yani kapı
+        | gerçekten kapalı.
+        |
+        | ⚠️ GERİYE DÖNÜK ETKİSİ VAR: bu blok öncesinde açılmış hesapların
+        | hiçbiri doğrulanmış değil ve otomatik doldurma YAPILMADI —
+        | adresin teslim edilebilir olduğuna dair elimizde kanıt yok,
+        | "doğrulanmış" yazmak o kanıtı uydurmak olurdu. Kurtarma yolu
+        | hesap sayfasındaki "yeniden gönder" düğmesi.
+        */
+        if (! $musteri->hasVerifiedEmail()) {
+            throw new UnverifiedEmailException('Yorum yazabilmek için e-posta adresinizi doğrulamanız gerekiyor.');
+        }
+
+        // Satın alma kanıtı — yoksa hiçbir kayıt oluşmuyor.
+        $satir = $this->kanit->bul($musteri, $urun);
+
+        /*
+        | ⚠️ Yumuşak silinmiş yorum da SAYILIYOR (`withTrashed`). Bakılmasaydı
+        | müşteri yorumunu silip yenisini yazarak kotayı sonsuz kullanır,
+        | veritabanı kısıtı ise `deleted_at`'e bakmadığı için 500 verirdi.
+        */
+        $var = Review::withTrashed()
+            ->where('product_id', $urun->id)
+            ->where('customer_id', $musteri->id)
+            ->exists();
+
+        if ($var) {
+            throw new DuplicateReviewException('Bu ürüne zaten yorum yazdınız.');
+        }
+
+        return $satir;
     }
 }

@@ -82,31 +82,6 @@ class ReviewController extends Controller
         ], 201);
     }
 
-    /**
-     * "Ahmet Yılmaz" → "Ahmet Y."
-     *
-     * ⚠️ Anonimleştirilmiş müşteride (2G) ad zaten tanınmaz hâlde;
-     * burada ek bir iş yapılmıyor, sadece kısaltılıyor.
-     */
-    private function yazarAdi(Review $yorum): ?string
-    {
-        $ad = $yorum->customer?->name;
-
-        if (! is_string($ad) || trim($ad) === '') {
-            return null;
-        }
-
-        $parcalar = preg_split('/\\s+/', trim($ad)) ?: [];
-
-        if (count($parcalar) < 2) {
-            return $parcalar[0] ?? null;
-        }
-
-        $son = (string) end($parcalar);
-
-        return $parcalar[0].' '.mb_strtoupper(mb_substr($son, 0, 1)).'.';
-    }
-
     /** @return array<string, mixed> */
     private function goster(Review $yorum): array
     {
@@ -124,7 +99,12 @@ class ReviewController extends Controller
             |
             | ⚠️ `moderation_note` de YOK — o personel içindir.
             */
-            'author' => $this->yazarAdi($yorum),
+            /*
+            | ⚠️ Kısaltma MODELDE (4.6C): vitrin sayfası da aynı adı
+            | gösteriyor. Burada ayrı bir kopya kalsaydı iki yüzey
+            | zamanla ayrışırdı.
+            */
+            'author' => $yorum->vitrinAdi(),
             'published_at' => $yorum->moderated_at?->toIso8601String(),
         ];
     }

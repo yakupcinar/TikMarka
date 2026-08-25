@@ -57,6 +57,7 @@ use App\Http\Storefront\PrivacyController;
 use App\Http\Storefront\ProductPageController;
 use App\Http\Storefront\ReturnController as VitrinIade;
 use App\Http\Storefront\ReviewController as StorefrontReviewController;
+use App\Http\Storefront\ReviewPageController as StorefrontReviewPageController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -595,6 +596,24 @@ Route::middleware([
 
     Route::get('/', HomeController::class)->name('vitrin.anasayfa');
     Route::get('/urun/{slug}', ProductPageController::class)->name('vitrin.urun');
+
+    /*
+    | VİTRİNDE YORUM YAZMA (4.6C)
+    |
+    | ⚠️ API'deki uçtan (2E) AYRI ve öyle olmak zorunda: orada kimlik
+    | sanctum token'ında, burada OTURUMDA. Aynı controller kullanılsaydı
+    | `$istek->user()` varsayılan guard'ı (sanctum) sorar ve giriş yapmış
+    | müşteri MİSAFİR sayılırdı — 4.5I'de tam bu yaşandı.
+    |
+    | ⚠️ `auth:customer-web` grubunun İÇİNDE değil, kendi middleware'iyle:
+    | ürün sayfası herkese açık olduğu için bu rota da aynı yerde durmalı;
+    | kimliksiz istek giriş sayfasına yönlendiriliyor.
+    |
+    | ⚠️ İSİM ŞART — form `route()` ile bu adresi üretiyor (4.6V).
+    */
+    Route::post('/urun/{slug}/yorum', [StorefrontReviewPageController::class, 'yaz'])
+        ->middleware(['auth:customer-web', 'throttle:yorum'])
+        ->name('vitrin.urun.yorum');
 
     /*
     | KOLEKSİYONLAR (4.5H) — 2D'nin vitrin karşılığı.

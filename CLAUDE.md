@@ -730,6 +730,17 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   + `imagesavealpha(true)` konmazsa saydam PNG'ler siyah zeminle kaydedilir.
 
 
+- **"YAPABİLİR MİYİM" SORUSUNU EKRAN CEVAPLAMAZ, DOMAIN CEVAPLAR.** Vitrin
+  bir işlemin mümkün olup olmadığını göstermek zorunda (form çıkacak mı,
+  düğme açık mı) ve bunu kendi kontrolüyle hesaplarsa **iki formül** olur:
+  biri ekranda, biri serviste. Zamanla ayrışırlar — 4.5J'de sepet rozeti
+  ile sepetin kendisi farklı sonuç veriyordu. Doğrusu servise "engel var
+  mı" diye soran bir metot (`yazmaEngeli`) ve o metodun **yazma yoluyla
+  aynı** özel kontrolü çağırması. ⚠️ Engel varsa ekran SEBEBİ yazmalı:
+  farklı engeller farklı çözümler gerektiriyor, tek bir "yapamazsınız"
+  mesajı hepsini çıkmaza çevirir.
+
+
 ## Yapı
 
 ```

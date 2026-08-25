@@ -4,9 +4,12 @@ namespace App\Http\Storefront;
 
 use App\Domain\Catalog\ProductQuery;
 use App\Domain\Catalog\VariantSelector;
+use App\Domain\Review\ReviewService;
 use App\Domain\Settings\ThemeSettings;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -20,10 +23,14 @@ class ProductPageController extends Controller
         private readonly ProductQuery $sorgu,
         private readonly ThemeSettings $tema,
         private readonly VariantSelector $secici,
+        private readonly ReviewService $yorumlar,
     ) {}
 
-    public function __invoke(string $slug): View
+    public function __invoke(Request $istek, string $slug): View
     {
+        // ⚠️ GUARD AÇIKÇA (4.5I): sayfa katmanında kimlik OTURUMDA.
+        $musteri = $istek->user('customer-web');
+
         /*
         | ⚠️ `vitrindeBul()` — panel sorgusu DEĞİL. Taslak, arşiv ve
         | satılamayan ürün vitrinde 404 vermeli; panel sorgusu kullanılsaydı
@@ -68,6 +75,33 @@ class ProductPageController extends Controller
             */
             'secici' => $this->secici->coz($urun),
             'listeEsigi' => VariantSelector::LISTE_ESIGI,
+
+            /*
+            | ★ YORUMLAR (4.6C). Uçlar 2E'de, moderasyon 4.5F'de vardı ama
+            | müşterinin yorumları GÖREBİLECEĞİ bir yer hiç yoktu.
+            |
+            | ⚠️ Sayfalama YOK, ilk 20 gösteriliyor. Sunucuda render edilen
+            | bir sayfada (4-K1) yorum sayfalaması ürün adresine sorgu
+            | parametresi eklemek demek ve o adres SEO'da ürünün kendisiyle
+            | yarışırdı. Daha fazlası gerekirse ayrı bir iş.
+            */
+            'yorumlar' => $this->yorumlar->vitrindeGorunenler($urun)->limit(20)->get(),
+
+            /*
+            | ★ "YORUM YAZABİLİR MİYİM" sorusunu EKRAN CEVAPLAMIYOR, DOMAIN
+            | cevaplıyor (`yazmaEngeli`).
+            |
+            | ⚠️ Ekran kendi kontrolünü yazsaydı iki formül olurdu ve
+            | zamanla ayrışırlardı — 4.5J'de sepet rozeti ile sepetin
+            | kendisi tam bu yüzden farklı sonuç veriyordu.
+            |
+            | ⚠️ Misafirde sorgu HİÇ çalışmıyor: `null` müşteri için engel
+            | sorulmuyor, ekran doğrudan "giriş yapın" diyor.
+            */
+            'yorumEngeli' => $musteri instanceof Customer
+                ? $this->yorumlar->yazmaEngeli($musteri, $urun)?->getMessage()
+                : null,
+            'musteriGirisli' => $musteri instanceof Customer,
         ]);
     }
 }

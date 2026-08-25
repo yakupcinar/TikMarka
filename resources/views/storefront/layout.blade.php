@@ -217,6 +217,23 @@
         .kupon-form input { padding: 8px 12px; border: 1px solid #d6d3d1; border-radius: 8px; font: inherit; }
         .ipucu { color: #78716c; font-size: 13px; }
 
+        /* ── Yorumlar (4.6C) ─────────────────────────────────────── */
+        .yorumlar { margin-top: 40px; border-top: 1px solid #e7e5e4; padding-top: 24px; }
+        .yorum-ozet { font-size: 18px; margin: 0 0 16px; }
+        .yorum-listesi { list-style: none; padding: 0; margin: 0 0 24px; }
+        .yorum { border-bottom: 1px solid #f5f5f4; padding: 14px 0; }
+        .yorum-bas { margin: 0 0 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+        .yorum-puan { color: #ca8a04; letter-spacing: 1px; }
+        .yorum-yazar { font-weight: 600; }
+        .yorum-baslik, .yorum-metin { margin: 0 0 6px; }
+        .yorum-metin { white-space: pre-line; }
+        .yorum-form { display: grid; gap: 8px; max-width: 520px; }
+        .yorum-form label { font-weight: 600; font-size: 14px; }
+        .yorum-form input, .yorum-form select, .yorum-form textarea {
+            padding: 8px 10px; border: 1px solid #d6d3d1; border-radius: 6px; font: inherit; width: 100%;
+        }
+        .yorum-form button { justify-self: start; padding: 8px 16px; border: 0; border-radius: 6px; background: #1c1917; color: #fff; cursor: pointer; font: inherit; }
+
         /* ⚠️ Ödemeden vazgeçme (4.6Z) — iframe'in ALTINDA ve sade tutuluyor:
            kart formunun yanında dikkat çeken bir düğme, ödemeye devam etmek
            isteyen müşteriyi tereddüde düşürürdü. */
