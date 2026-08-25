@@ -774,6 +774,25 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   değil **ölçüme** bak: özelliğin geçtiği her yüzeyi tek tek aç.
 
 
+- **KOYU TEMA EKLERKEN SİSTEM KURALI KULLANICI SEÇİMİNİ EZMEMELİ.**
+  `@media (prefers-color-scheme: dark)` bloğu `:root:not([data-tema="acik"])`
+  ile korunmazsa, gece modundaki telefonda "açık tema" seçimi hiç
+  çalışmaz. ⚠️ Bunu ölçen test **belirteçleri tanımlayan bloğa** bakmalı,
+  sayfada bir yerde geçmesine değil: aynı ifade başka kurallarda da
+  geçebiliyor ve kırma denemesi tutmuyor (4.6AB'de yaşandı).
+  ⚠️ Tema betiği CSS'ten ÖNCE ve senkron olmalı; sonra gelirse sayfa
+  açık temayla boyanıp koyuya atlıyor (FOUC).
+  ⚠️ Marka rengi (`--marka`) koyu temada YENİDEN TANIMLANMAZ — marka
+  kimliği kaybolur. Okunması gereken metin ondan değil `--metin`'den
+  gelmeli.
+- **SABİT RENK KURAL GÖVDESİNDE KALIRSA KOYU TEMADA O KURAL AÇIK KALIR —
+  ve bu SESSİZDİR.** Sayfanın çoğu koyu, bir kutu beyaz; ya da daha
+  kötüsü koyu metin koyu zeminde **görünmez** olur (4.6AB'de iki kuralda
+  tam bu vardı). Renkleri belirtece çevirdikten sonra kural gövdelerinde
+  hex kalmadığını ÖLÇ. ⚠️ Ölçerken CSS yorumlarını ayıkla: yorumdaki renk
+  kodu hiçbir şey boyamıyor, testi boşuna kırar.
+
+
 ## Yapı
 
 ```

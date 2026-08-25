@@ -162,7 +162,14 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 
 * Şirket paneline Müşteri diye bir sekme ekleyip o kullanıcının siparişlerini(aldığı ürünler toplam harcama vb.), favorilerini, başarız ödeme denemeleri.
 
-* Appimizin frontunu mobil-tablet için de uygun hale getirelim, html şablonu olsun blade olsun, etc. buralarda genel ve ince ayarlara gidelim plan yapalım ayrıca dark mode ekleyelim sağ üst bir yere.
+* ~~Mobil-tablet uyumu ve dark mode~~ → **4.6AB'de kapandı (VİTRİN)**
+
+> ⚠️ **Panel dâhil değil**: ayrı sistem (Tailwind) ve vitrinin temasından
+> bilerek bağımsız. Panelin koyu teması ve mobil uyumu, aşağıdaki
+> **tasarım yenilemesi** maddesine ait.
+>
+> ⚠️ Görünümün kendisi tarayıcıda denenmeli — araç yerel sertifikalı
+> adrese ulaşamadığı için görsel doğrulama yapılamadı.
 
 * Lazy Loading (Tembel Yükleme): Ana sayfada çok fazla ürün listeleneceği için aşağı kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını uçurur.
 
@@ -267,6 +274,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Vitrinde favorileme yoktu | Ürün sayfası → **♡ Favorilere ekle** · Hesabım → **Favorilerim** · KVKK: anonimleştirmede siliniyor, veri dökümünde listeleniyor | 4.6D |
 | Kategoriye vitrinden ulaşılamıyordu | Üst menü → **Kategoriler** · `/k/{slug}` · üst kategori **alt ağacın ürünlerini** gösteriyor · ürün sayfasında kategori yolu | 4.6B |
 | Varyant seçicisi yalnızca bir düzendeydi (`vitrinli` markalar düz liste görüyordu) | Ürün sayfası → **eksen kutucukları** her iki düzende de | 4.6A.1 |
+| Vitrin koyu tema ve mobil uyumu yoktu | Üst barın sağında **☾/☀ düğmesi** · sistem tercihi de okunuyor · telefon/tablet kırılma noktaları | 4.6AB |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
 

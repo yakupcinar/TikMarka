@@ -3056,3 +3056,40 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek curl, vitrinli marka): 2 eksen · 6 kutucuk ·
       düz liste YOK · betik ve fiyat matrisi sayfada
+
+4.6AB ✅ KOYU TEMA + MOBİL UYUM (VİTRİN) — 922 test
+      ⚠️ KAPSAM VİTRİN, PANEL DÂHİL DEĞİL (ayrı sistem: Tailwind, 4C)
+
+      ✅ ~60 SABİT RENK BELİRTECE ÇEVRİLDİ
+        önce yalnızca --marka ve --yazi vardı; koyu tema eklemek her
+        kuralı elden geçirmek demekti
+        ⚠️ İKİSİ TEHLİKELİYDİ: .yasal-metin ve .aciklama KOYU METİN
+          renkleriydi → koyu zeminde GÖRÜNMEZ olurlardı (sessiz)
+
+      ✅ KOYU TEMA İKİ YOLDAN: sistem tercihi + açık seçim
+        ⚠️ sistem kuralı :not([data-tema="acik"]) ile KORUNUYOR, yoksa
+          gece modundaki telefonda "açık tema" seçimi hiç çalışmaz
+      ⚠️ tema betiği CSS'TEN ÖNCE ve SENKRON (yoksa beyaz parlama)
+        seçim localStorage'da, ÇEREZDE DEĞİL (EncryptCookies tuzağı)
+      ⚠️ --marka koyu temada YENİDEN TANIMLANMIYOR: marka kimliği
+        kaybolurdu; okunacak metin --metin'den geliyor
+
+      ✅ MOBİL: 1 medya sorgusu → 3. Asıl kırılmalar ızgarada DEĞİLDİ:
+        başlık çubuğu taşıyordu (.ara'nın margin-left:auto itmesi)
+        TABLOLAR TÜM SAYFAYI kaydırıyordu (başlık dâhil)
+        220px'lik sütun 360px telefonda sığmıyordu
+
+      ⚠️ 5 kırma denemesi: 4'ü düştü, BİRİ DÜŞMEDİ
+        :not() korumasını kaldırdım, testler yeşil kaldı — aynı ifade
+        tema düğmesi kurallarında da geçiyordu
+        → iddia BELİRTEÇLERİ TANIMLAYAN BLOĞA daraltıldı, düştü
+      ⚠️ ikinci yanlış ölçüm: sabit renk taraması CSS YORUMLARINI da
+        okuyordu; ayıklanmasaydı açıklama yazan kişi testi kırardı
+
+      ⚠️ TESTİN SINIRI AÇIKÇA YAZILDI: sunucu rengin nasıl göründüğünü,
+        medya sorgusunun hangi genişlikte devreye girdiğini ÖLÇEMEZ
+
+      DOĞRULANDI (gerçek curl): 23 belirteç, TANIMSIZ KULLANIM YOK, koyu
+      tema açığın HER belirtecini karşılıyor, kural gövdesinde sabit renk
+      yok · düğme ve FOUC betiği sayfada · iki düzen de taşıyor
+      ⚠️ TARAYICIDA GÖRSEL DOĞRULAMA YAPILAMADI (yerel sertifika)

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6A.1 BİTTİ — iyileştirme listesi 9/13 ───────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AB BİTTİ — iyileştirme listesi 10/13 ───────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7404,6 +7404,88 @@ sayfada. **915 test.**
 > değildir.** Blok kaydı ayrıntılı ve kırma denemeleri yazılıyken bile
 > yarım kalabilir; kapsamı ölçen tek şey testin gerçekten o yüzeye
 > bakmasıdır.
+
+---
+### 4.6AB — koyu tema ve mobil uyum (VİTRİN)
+
+İkisi birlikte, çünkü aynı dosyaya dokunuyorlar: iki vitrin düzeni de
+`layout.blade.php`'yi paylaşıyor.
+
+**⚠️ KAPSAM VİTRİN — PANEL DÂHİL DEĞİL.** Panel ayrı bir sistem
+(Tailwind, 4C) ve vitrinin temasından **bilerek bağımsız**: vitrin
+markanın sitesi, panel bizim aracımız. Panelin koyu teması ve mobil
+uyumu, listedeki **tasarım yenilemesi** maddesine ait.
+
+**✅ ~60 SABİT RENK BELİRTECE ÇEVRİLDİ.** Önce yalnızca iki değişken
+vardı (`--marka`, `--yazi`); geri kalan her renk kural gövdesine sabit
+yazılıydı. Koyu tema eklemek her kuralı tek tek elden geçirmek demekti —
+belirteçlere çevrilince koyu tema **yalnızca bir bloğun yeniden
+tanımlanması** oldu.
+
+> ⚠️ İkisi tehlikeliydi ve testin bulduğu şey tam buydu:
+> `.yasal-metin` ve `.aciklama` **koyu metin renkleri** sabit yazılıydı —
+> koyu zeminde **görünmez** olurlardı. Belirti sessiz: hata yok, sadece
+> okunmayan metin.
+
+**✅ KOYU TEMA İKİ YOLDAN.** İşletim sisteminin tercihi
+(`prefers-color-scheme`) ve müşterinin açık seçimi (`data-tema`).
+
+> ⚠️ Sistem kuralı `:not([data-tema="acik"])` ile korunuyor: müşteri
+> açıkça "açık tema" dediyse sistem tercihi onu **ezmemeli**. Koruma
+> olmasaydı gece modundaki telefonda "açık tema" seçimi hiç çalışmazdı.
+
+**⚠️ TEMA BETİĞİ CSS'TEN ÖNCE VE SENKRON.** Sonra gelseydi sayfa önce
+açık temayla boyanır, sonra koyuya atlardı — gece yarısı göz alan bir
+beyaz parlama (FOUC). Seçim `localStorage`'da, **çerezde değil**:
+sunucunun bu bilgiye ihtiyacı yok ve çerez olsaydı `EncryptCookies`
+istisna listesine girmesi gerekirdi (4A'daki `CartToken` tuzağı).
+
+**⚠️ `--marka` KOYU TEMADA DA MARKANIN RENGİ.** Değiştirilseydi marka
+kimliği kaybolurdu. Bedeli bilinçli: çok koyu bir marka rengi koyu
+zeminde sönük kalabilir — bu yüzden marka rengi **metin rengi olarak
+değil vurgu olarak** kullanılıyor ve okunması gereken her metin
+`--metin`'den geliyor. Kırma denemesiyle ölçüldü.
+
+**✅ MOBİL: tek medya sorgusu vardı, üçe çıktı.** Ölçülen asıl kırılmalar
+ızgaralarda değildi:
+
+* başlık çubuğu (logo + iki menü + arama + sepet + hesap) dar ekranda
+  **taşıyordu** — `.ara`'nın `margin-left: auto` itmesi ötekileri dışarı
+  atıyordu,
+* **tablolar tüm sayfayı** yatay kaydırıyordu (başlık dâhil) ve sorun
+  tabloda görünmüyordu,
+* ürün ızgarasının 220px'lik en küçük sütunu 360px'lik telefonda kenar
+  boşluklarıyla sığmıyordu.
+
+⚠️ Yaklaşım mobil öncelikli **değil**, düzeltici: mevcut CSS masaüstü
+varsayımıyla yazılmış ve baştan yazmak bu bloğun kapsamı değil.
+
+**Beş kırma denemesi yapıldı, dördü düştü — BİRİ DÜŞMEDİ.**
+Belirteç bloğundaki `:not([data-tema="acik"])` korumasını kaldırdım ve
+testler **yeşil kaldı**: aynı ifade tema düğmesinin kurallarında da
+geçiyor ve testim onu görüyordu. İddia, **renkleri tanımlayan bloğa**
+bakacak şekilde daraltıldı; deneme tekrarlandı ve düştü.
+
+⚠️ Test yazarken ikinci bir yanlış ölçüm de düzeltildi: sabit renk
+taraması **CSS yorumlarını da** okuyordu. Yorumda geçen bir renk kodu
+ekranda hiçbir şey boyamıyor; ayıklanmasaydı açıklama yazan kişi testi
+kırar ve gerçek bir kusur sanırdı.
+
+**⚠️ TESTİN ÖLÇEBİLECEĞİNİN SINIRI VAR ve açıkça yazıldı.** Sunucu HTML
+ve CSS gönderiyor; rengin ekranda nasıl göründüğünü, medya sorgusunun
+hangi genişlikte devreye girdiğini ya da düğmeye basınca ne olduğunu
+**ölçemez**. Ölçülen şey sözleşme: belirteçler tanımlı mı, koyu tema iki
+yoldan da geliyor mu, betik CSS'ten önce mi, kural gövdelerinde sabit
+renk kaldı mı.
+
+DOĞRULANDI (gerçek curl): 23 belirteç tanımlı, **tanımsız kullanım yok**,
+koyu tema açık temanın **her belirtecini** karşılıyor, kural gövdelerinde
+sabit renk yok · tema düğmesi ve FOUC betiği sayfada · iki düzen de
+taşıyor.
+
+> ⚠️ **Tarayıcıda görsel doğrulama YAPILAMADI**: araç yerel sertifikalı
+> adrese ulaşamıyor (4.6A'da da aynısı kaydedilmişti). Görünümün kendisi
+> kullanıcı tarafından denenmeli. **922 test.**
 
 ---
 ---
