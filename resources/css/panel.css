@@ -3,3 +3,217 @@
    ve her markada aynı görünüyor. Karıştırılsaydı marka kendi panelini
    okunamaz hâle getirebilirdi. */
 @import 'tailwindcss';
+
+/*
+| ── PANEL RENK BELİRTEÇLERİ (4.6AE) ───────────────────────────────────
+|
+| ⚠️ ÖNCE 532 SABİT RENK SINIFI VARDI ve tek bir `dark:` yoktu. Her
+| kullanıma `dark:` eklemek 532 dokunuş demekti ve unutulan her biri
+| SESSİZ bir kusur olurdu — koyu temada beyaz kalan bir kutu.
+|
+| Bunun yerine 36 farklı sınıf ANLAMLI ADLARA indirildi; koyu tema
+| yalnızca aşağıdaki değerlerin yeniden tanımlanması. Vitrinde 4.6AB'de
+| verilen kararın aynısı.
+|
+| ⚠️ `@theme inline` ŞART, düz `@theme` DEĞİL. Düz biçim değeri KOPYALIYOR
+| ve üretilen kural sabit renk taşıyor; `inline` ise değişkene REFERANS
+| veriyor (`background-color: var(--p-yuzey)`). Ölçüldü — çalışma anında
+| tema değişimi ancak öyle çalışıyor.
+*/
+:root {
+    --p-zemin: #fafaf9;
+    --p-yuzey: #ffffff;
+    --p-yuzey-2: #f5f5f4;
+    --p-yuzey-3: #e7e5e4;
+
+    /*
+    | ⚠️ AYRAÇ ile KONTROL KENARI AYRI — 4.6AD'de vitrinde ölçülen kusurun
+    | aynısı. WCAG 1.4.11 form kontrolünün sınırı için 3:1 zorunlu
+    | tutuyor; dekoratif ayraç sakin kalabilir. Tek belirteç kullanılsaydı
+    | ya girdiler görünmez ya ayraçlar gürültülü olurdu.
+    */
+    --p-kenar-soft: #ebe8e6;
+    --p-kenar: #e0dddb;
+    --p-kenar-kontrol: #8f8a85;
+
+    --p-metin: #1c1917;
+    --p-metin-2: #57534e;
+    --p-soluk: #78716c;
+    --p-soluk-2: #a8a29e;
+
+    /*
+    | ⚠️ VURGU İKİYE AYRILDI: `vurgu` bir ZEMİN rengi (düğme), `vurgu-metin`
+    | METİN rengi. Aynı turuncu ikisinde de kullanılsaydı, metin olarak
+    | açık zeminde 3.4 kontrastta kalırdı — okunur eşiğin altında.
+    */
+    /*
+    | ⚠️ ZEMİN TURUNCUSU KOYULAŞTIRILDI — tarayıcıda ölçülerek.
+    | `#ea580c` (orange-600) üzerinde beyaz yazı **3.56** kontrast
+    | veriyordu; WCAG AA normal metin için 4.5 istiyor. Bu, koyu tema
+    | işiyle gelmedi — ÖNCEDEN de vardı ve ölçüm ortaya çıkardı.
+    | `#c2410c` beyaz yazıyla 5.18 veriyor ve hâlâ belirgin turuncu.
+    */
+    --p-vurgu: #c2410c;
+    --p-vurgu-metin: #c2410c;
+
+    /*
+    | ⚠️ BİRİNCİL DÜĞME TERS ÇEVRİLİYOR: açık temada koyu zemin + beyaz
+    | yazı, koyu temada açık zemin + koyu yazı. Sabit bırakılsaydı koyu
+    | temada neredeyse siyah düğme, neredeyse siyah zeminde kaybolurdu.
+    */
+    --p-dugme: #1c1917;
+    --p-dugme-yazi: #ffffff;
+
+    --p-tehlike: #b91c1c;
+    --p-tehlike-zemin: #fee2e2;
+    --p-tehlike-kenar: #fca5a5;
+
+    --p-uyari: #92400e;
+    --p-uyari-zemin: #fef3c7;
+    --p-uyari-kenar: #fcd34d;
+
+    --p-basari: #166534;
+    --p-basari-zemin: #dcfce7;
+    --p-basari-kenar: #86efac;
+    --p-basari-dugme: #059669;
+
+    --p-bilgi: #1e40af;
+    --p-bilgi-zemin: #dbeafe;
+    --p-bilgi-kenar: #93c5fd;
+}
+
+/*
+| ⚠️ Sistem kuralı `:not([data-tema="acik"])` ile KORUNUYOR: personel
+| açıkça "açık tema" dediyse sistem tercihi onu ezmemeli. Vitrinde
+| 4.6AB'de verilen kararın aynısı — orada kırma denemesi bu korumanın
+| ölçülmediğini göstermişti.
+*/
+@media (prefers-color-scheme: dark) {
+    :root:not([data-tema="acik"]) {
+        --p-zemin: #1c1917;
+        --p-yuzey: #292524;
+        --p-yuzey-2: #332e2c;
+        --p-yuzey-3: #3f3a37;
+
+        --p-kenar-soft: #383431;
+        --p-kenar: #413c39;
+        --p-kenar-kontrol: #7a746e;
+
+        --p-metin: #f5f5f4;
+        --p-metin-2: #d6d3d1;
+        --p-soluk: #a8a29e;
+        --p-soluk-2: #78716c;
+
+        /* ⚠️ Zemin turuncusu KORUNUYOR: panelin kimliği o. Metin
+           turuncusu açılıyor, yoksa koyu zeminde okunmuyor. */
+        --p-vurgu: #c2410c;
+        --p-vurgu-metin: #fb923c;
+
+        --p-dugme: #f5f5f4;
+        --p-dugme-yazi: #1c1917;
+
+        --p-tehlike: #fca5a5;
+        --p-tehlike-zemin: #450a0a;
+        --p-tehlike-kenar: #991b1b;
+
+        --p-uyari: #fcd34d;
+        --p-uyari-zemin: #422006;
+        --p-uyari-kenar: #a16207;
+
+        --p-basari: #86efac;
+        --p-basari-zemin: #052e16;
+        --p-basari-kenar: #166534;
+        --p-basari-dugme: #059669;
+
+        --p-bilgi: #93c5fd;
+        --p-bilgi-zemin: #172554;
+        --p-bilgi-kenar: #1e40af;
+    }
+}
+
+:root[data-tema="koyu"] {
+    --p-zemin: #1c1917;
+    --p-yuzey: #292524;
+    --p-yuzey-2: #332e2c;
+    --p-yuzey-3: #3f3a37;
+
+    --p-kenar-soft: #383431;
+    --p-kenar: #413c39;
+    --p-kenar-kontrol: #7a746e;
+
+    --p-metin: #f5f5f4;
+    --p-metin-2: #d6d3d1;
+    --p-soluk: #a8a29e;
+    --p-soluk-2: #78716c;
+
+    --p-vurgu: #c2410c;
+    --p-vurgu-metin: #fb923c;
+
+    --p-dugme: #f5f5f4;
+    --p-dugme-yazi: #1c1917;
+
+    --p-tehlike: #fca5a5;
+    --p-tehlike-zemin: #450a0a;
+    --p-tehlike-kenar: #991b1b;
+
+    --p-uyari: #fcd34d;
+    --p-uyari-zemin: #422006;
+    --p-uyari-kenar: #a16207;
+
+    --p-basari: #86efac;
+    --p-basari-zemin: #052e16;
+    --p-basari-kenar: #166534;
+    --p-basari-dugme: #059669;
+
+    --p-bilgi: #93c5fd;
+    --p-bilgi-zemin: #172554;
+    --p-bilgi-kenar: #1e40af;
+}
+
+@theme inline {
+    --color-zemin: var(--p-zemin);
+    --color-yuzey: var(--p-yuzey);
+    --color-yuzey-2: var(--p-yuzey-2);
+    --color-yuzey-3: var(--p-yuzey-3);
+
+    --color-kenar-soft: var(--p-kenar-soft);
+    --color-kenar: var(--p-kenar);
+    --color-kenar-kontrol: var(--p-kenar-kontrol);
+
+    --color-metin: var(--p-metin);
+    --color-metin-2: var(--p-metin-2);
+    --color-soluk: var(--p-soluk);
+    --color-soluk-2: var(--p-soluk-2);
+
+    --color-vurgu: var(--p-vurgu);
+    --color-vurgu-metin: var(--p-vurgu-metin);
+
+    --color-dugme: var(--p-dugme);
+    --color-dugme-yazi: var(--p-dugme-yazi);
+
+    --color-tehlike: var(--p-tehlike);
+    --color-tehlike-zemin: var(--p-tehlike-zemin);
+    --color-tehlike-kenar: var(--p-tehlike-kenar);
+
+    --color-uyari: var(--p-uyari);
+    --color-uyari-zemin: var(--p-uyari-zemin);
+    --color-uyari-kenar: var(--p-uyari-kenar);
+
+    --color-basari: var(--p-basari);
+    --color-basari-zemin: var(--p-basari-zemin);
+    --color-basari-kenar: var(--p-basari-kenar);
+    --color-basari-dugme: var(--p-basari-dugme);
+
+    --color-bilgi: var(--p-bilgi);
+    --color-bilgi-zemin: var(--p-bilgi-zemin);
+    --color-bilgi-kenar: var(--p-bilgi-kenar);
+}
+
+/*
+| ⚠️ Gövde zemini AÇIKÇA veriliyor. Verilmeseydi sayfa şeffaf kalır ve
+| tarayıcının varsayılan beyazı koyu temada altta durmaya devam ederdi.
+*/
+body {
+    background-color: var(--p-zemin);
+    color: var(--p-metin);
+}

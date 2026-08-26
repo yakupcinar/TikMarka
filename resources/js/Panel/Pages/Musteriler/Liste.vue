@@ -39,19 +39,19 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
           v-model="arama"
           type="search"
           placeholder="Ad veya e-posta"
-          class="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+          class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm"
         >
-        <button type="submit" class="rounded-lg bg-stone-900 px-4 py-2 text-sm text-white">Ara</button>
+        <button type="submit" class="rounded-lg bg-dugme px-4 py-2 text-sm text-white">Ara</button>
       </form>
     </div>
 
     <!-- ⚠️ Boş liste bir HATA DEĞİL: yeni mağazada müşteri olmaması normal. -->
-    <p v-if="musteriler.data.length === 0" class="text-stone-500">
+    <p v-if="musteriler.data.length === 0" class="text-soluk">
       {{ ara ? 'Aramanıza uyan müşteri yok.' : 'Henüz kayıtlı müşteri yok.' }}
     </p>
 
     <table v-else class="w-full text-sm">
-      <thead class="text-left text-stone-500">
+      <thead class="text-left text-soluk">
         <tr>
           <th class="py-2">Müşteri</th>
           <th>E-posta</th>
@@ -62,9 +62,9 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
       </thead>
 
       <tbody>
-        <tr v-for="m in musteriler.data" :key="m.uuid" class="border-t border-stone-100">
+        <tr v-for="m in musteriler.data" :key="m.uuid" class="border-t border-kenar-soft">
           <td class="py-3">
-            <Link :href="`/yonetim/musteriler/${m.uuid}`" class="font-medium text-stone-900 hover:underline">
+            <Link :href="`/yonetim/musteriler/${m.uuid}`" class="font-medium text-metin hover:underline">
               {{ m.ad }}
             </Link>
           </td>
@@ -74,14 +74,14 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
 
             <!-- ⚠️ Doğrulama durumu listede: destek ekibi "postam gelmiyor"
                  diyen müşteride ilk buraya bakıyor (4.6W). -->
-            <span v-if="!m.dogrulanmis" class="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
+            <span v-if="!m.dogrulanmis" class="ml-2 rounded bg-uyari-zemin px-2 py-0.5 text-xs text-uyari">
               doğrulanmadı
             </span>
           </td>
 
           <td class="text-right">{{ m.siparis }}</td>
           <td class="text-right">{{ para(m.harcama) }}</td>
-          <td class="text-stone-500">{{ tarih(m.kayit) }}</td>
+          <td class="text-soluk">{{ tarih(m.kayit) }}</td>
         </tr>
       </tbody>
     </table>
@@ -92,7 +92,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
         :key="b.label"
         :href="b.url ?? '#'"
         class="rounded px-3 py-1 text-sm"
-        :class="b.active ? 'bg-stone-900 text-white' : 'bg-stone-100'"
+        :class="b.active ? 'bg-dugme text-dugme-yazi' : 'bg-yuzey-2'"
         v-html="b.label"
       />
     </div>

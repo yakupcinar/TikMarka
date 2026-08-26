@@ -850,6 +850,37 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   bulamıyordu.
 
 
+- **KAYNAK DOSYASINI OKUYAN İDDİA, YORUMLARI AYIKLAMADAN ÖLÇMEZ.** Bir kuralı
+  ANLATAN yorum, kuralın kendisiyle aynı metni içerir; ham metinde arayan test
+  yönerge bozulsa bile **yeşil kalır**. 4.6AE'de iki kırma denemesi bu yüzden
+  tutmadı: `@theme inline` dosyada iki kez geçiyordu (yönerge + onu anlatan
+  yorum) ve `mb_strpos` ile kurulan SIRA iddiasında ilk eşleşme yine yorumdaydı
+  — betik nereye taşınırsa taşınsın sıra değişmiyordu. Yorumlar ayıklanınca
+  ikisi de düştü.
+  ⚠️ Aynı tuzak 4.6AB'de bulunup düzeltilmişti (sabit renk taraması yorumları
+  okuyordu) ve **iki blok sonra tekrarlandı**; ayıklama tek yerde, test
+  yardımcısında olmalı.
+  ⚠️ Ailenin üçüncü yüzü 4D: "kalıp birden çok yerdeyse hedefi konumla daralt".
+  Orada KIRMA yanlış yeri kırmıştı, burada İDDİA yanlış yeri okuyordu.
+- **Tailwind v4'te `@theme inline` ŞART — düz `@theme` çalışma anında temayı
+  KIRAR.** Düz biçim değişkenin **değerini kopyalıyor**: üretilen sınıf açık
+  temanın rengini taşır ve `data-tema` değişince **hiçbir şey olmaz**. `inline`
+  değişkene **referans** bırakır. ⚠️ Belirti tamamen sessiz — derleme başarılı,
+  sayfa açılır, yalnızca renk değişmez (4.6AE).
+- **SABİT RENK SINIFINA `dark:` İKİZİ YAZMAK ÇÖZÜM DEĞİL.** Panelde 532 sabit
+  Tailwind renk sınıfı vardı; her birine ikiz yazmak 532 karar demekti ve biri
+  unutulduğunda **hata vermeden** okunmaz kalırdı. Renk **belirteçten** okunur,
+  belirteç temaya göre değişir (4.6AE).
+  ⚠️ `text-white` **bağlama duyarlıdır**: koyu vurgu zemini üstünde beyaz
+  DOĞRUDUR: toptan çevirmek onu bozar. Yalnızca açık temada koyu zeminle
+  eşleşenler belirtece taşınır.
+- **PANEL VE VİTRİN TEMA ANAHTARI AYRIDIR.** Panel bizim arayüzümüz, vitrin
+  markanın; ortak `localStorage` anahtarı birinin tercihini diğerine bulaştırır
+  (`tikmarka-panel-tema` / `tikmarka-tema`).
+- **KOYU TEMA MEVCUT KUSURU GÖRÜNÜR KILAR — bulunan her kusur o bloğun değildir.**
+  4.6AE'de düğme yazısının kontrastı 3,56 ölçüldü; değer **bloktan önce de**
+  öyleydi. Koyu tema onu ortaya çıkardı, yaratmadı. Vurgu `#ea580c` → `#c2410c`.
+
 ## Yapı
 
 ```

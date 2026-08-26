@@ -36,75 +36,75 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
     <h1 class="text-2xl font-bold mb-6">Katalog ayarları</h1>
 
     <div class="grid grid-cols-2 gap-6">
-      <div class="rounded-xl bg-white border border-stone-200 p-5">
+      <div class="rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-1">Kategoriler</h2>
-        <p class="text-xs text-stone-500 mb-3">Ürünler tek bir kategoriye bağlanır.</p>
+        <p class="text-xs text-soluk mb-3">Ürünler tek bir kategoriye bağlanır.</p>
 
         <table class="w-full text-sm mb-4">
-          <tr v-for="k in kategoriler" :key="k.uuid" class="border-b border-stone-100">
+          <tr v-for="k in kategoriler" :key="k.uuid" class="border-b border-kenar-soft">
             <!-- ⚠️ Girinti DERİNLİKTEN çiziliyor: `ltree` yolu zaten sıralı
                  geliyor, ağacı istemcide kurmaya gerek yok. -->
             <td class="py-2" :style="{ paddingLeft: (k.derinlik * 18) + 'px' }">
               {{ k.name }}
-              <span class="text-xs text-stone-500">{{ k.urun_sayisi }} ürün</span>
+              <span class="text-xs text-soluk">{{ k.urun_sayisi }} ürün</span>
             </td>
             <td class="py-2 text-right">
               <!-- ⚠️ Ürünü olan kategori silinemiyor; düğme gizlenmiyor,
                    sunucu sebebini yazıyor. -->
-              <button type="button" class="text-red-700 text-sm" @click="kategoriSil(k)">sil</button>
+              <button type="button" class="text-tehlike text-sm" @click="kategoriSil(k)">sil</button>
             </td>
           </tr>
         </table>
 
-        <form class="border-t border-stone-200 pt-4" @submit.prevent="kategoriEkle">
-          <input v-model="kategori.name" placeholder="Kategori adı" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm mb-2">
+        <form class="border-t border-kenar pt-4" @submit.prevent="kategoriEkle">
+          <input v-model="kategori.name" placeholder="Kategori adı" class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mb-2">
 
-          <select v-model="kategori.parent_uuid" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm mb-2">
+          <select v-model="kategori.parent_uuid" class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mb-2">
             <option value="">— üst kategori yok —</option>
             <option v-for="k in kategoriler" :key="k.uuid" :value="k.uuid">{{ k.name }}</option>
           </select>
 
-          <button type="submit" class="rounded-lg bg-orange-600 text-white px-4 py-2 text-sm font-semibold">Ekle</button>
+          <button type="submit" class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold">Ekle</button>
         </form>
       </div>
 
-      <div class="rounded-xl bg-white border border-stone-200 p-5">
+      <div class="rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-1">Varyant eksenleri</h2>
         <!-- ⚠️ Eksen olmadan çok varyantlı ürün kurulamıyor; ekran bunu
              söylüyor, yoksa marka "beden nasıl eklenir" diye arar. -->
-        <p class="text-xs text-stone-500 mb-3">Beden, renk gibi eksenler. Ürün varyantları bunlardan kurulur.</p>
+        <p class="text-xs text-soluk mb-3">Beden, renk gibi eksenler. Ürün varyantları bunlardan kurulur.</p>
 
-        <div v-for="e in eksenler" :key="e.uuid" class="border-b border-stone-100 py-2">
+        <div v-for="e in eksenler" :key="e.uuid" class="border-b border-kenar-soft py-2">
           <div class="flex items-center gap-2 text-sm">
             <strong>{{ e.name }}</strong>
-            <span class="text-xs text-stone-500">{{ e.degerler.length }} değer</span>
+            <span class="text-xs text-soluk">{{ e.degerler.length }} değer</span>
             <span class="ml-auto flex gap-2">
-              <button type="button" class="text-sm text-stone-600" @click="acikEksen = acikEksen === e.uuid ? null : e.uuid">
+              <button type="button" class="text-sm text-metin-2" @click="acikEksen = acikEksen === e.uuid ? null : e.uuid">
                 değerler
               </button>
-              <button type="button" class="text-sm text-red-700" @click="eksenSil(e)">sil</button>
+              <button type="button" class="text-sm text-tehlike" @click="eksenSil(e)">sil</button>
             </span>
           </div>
 
           <div v-if="acikEksen === e.uuid" class="mt-2 pl-3">
             <div v-for="d in e.degerler" :key="d.uuid" class="flex items-center gap-2 text-sm py-1">
-              <span v-if="d.swatch" class="inline-block w-4 h-4 rounded-full border border-stone-300" :style="{ background: d.swatch }" />
+              <span v-if="d.swatch" class="inline-block w-4 h-4 rounded-full border border-kenar-kontrol" :style="{ background: d.swatch }" />
               <span>{{ d.value }}</span>
-              <button type="button" class="ml-auto text-red-700 text-xs" @click="degerSil(e, d)">sil</button>
+              <button type="button" class="ml-auto text-tehlike text-xs" @click="degerSil(e, d)">sil</button>
             </div>
 
             <div class="flex gap-2 mt-2">
-              <input v-model="deger.value" placeholder="Değer" class="flex-1 rounded-lg border border-stone-300 px-2 py-1 text-sm">
+              <input v-model="deger.value" placeholder="Değer" class="flex-1 rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
               <!-- ⚠️ Renk kutusu yalnızca #rrggbb: serbest metin CSS'e girerdi. -->
-              <input v-model="deger.swatch" placeholder="#rrggbb" class="w-28 rounded-lg border border-stone-300 px-2 py-1 text-sm">
-              <button type="button" class="rounded-lg border border-stone-300 px-3 text-sm" @click="degerEkle(e)">Ekle</button>
+              <input v-model="deger.swatch" placeholder="#rrggbb" class="w-28 rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
+              <button type="button" class="rounded-lg border border-kenar-kontrol px-3 text-sm" @click="degerEkle(e)">Ekle</button>
             </div>
           </div>
         </div>
 
-        <form class="border-t border-stone-200 pt-4 mt-3 flex gap-2" @submit.prevent="eksenEkle">
-          <input v-model="eksen.name" placeholder="Eksen adı (Beden, Renk…)" class="flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm">
-          <button type="submit" class="rounded-lg bg-orange-600 text-white px-4 py-2 text-sm font-semibold">Ekle</button>
+        <form class="border-t border-kenar pt-4 mt-3 flex gap-2" @submit.prevent="eksenEkle">
+          <input v-model="eksen.name" placeholder="Eksen adı (Beden, Renk…)" class="flex-1 rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">
+          <button type="submit" class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold">Ekle</button>
         </form>
       </div>
     </div>

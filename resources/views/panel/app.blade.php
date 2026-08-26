@@ -20,6 +20,31 @@
 
     <title inertia>Panel</title>
 
+    {{--
+        ⚠️ TEMA BETİĞİ CSS'TEN ÖNCE VE SENKRON (4.6AE) — vitrindeki
+        kararın aynısı (4.6AB). Sonra gelseydi panel önce açık temayla
+        boyanır, sonra koyuya atlardı.
+
+        ⚠️ ANAHTAR VİTRİNDEN AYRI (`tikmarka-panel-tema`): panel BİZİM
+        aracımız, vitrin markanın sitesi (4C). Aynı anahtar paylaşılsaydı
+        personelin vitrinde yaptığı seçim paneli de değiştirirdi — üstelik
+        `localStorage` köken başına olduğu için aynı marka alan adında
+        ikisi çakışırdı.
+
+        ⚠️ `try/catch`: gizli sekmede `localStorage` istisna fırlatabiliyor
+        ve korunmasaydı sayfadaki DİĞER betikler de çalışmazdı.
+    --}}
+    <script>
+        (function () {
+            try {
+                var secim = localStorage.getItem('tikmarka-panel-tema')
+                if (secim === 'koyu' || secim === 'acik') {
+                    document.documentElement.setAttribute('data-tema', secim)
+                }
+            } catch (e) {}
+        })()
+    </script>
+
     @vite(['resources/js/panel.js'])
     @inertiaHead
 </head>

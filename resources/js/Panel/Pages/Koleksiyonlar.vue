@@ -81,18 +81,18 @@ const turAdi = { manual: 'Elle seçilen', rule: 'Kurallı (otomatik)' }
   <PanelDuzeni>
     <h1 class="text-2xl font-bold mb-6">Koleksiyonlar</h1>
 
-    <div v-if="koleksiyonlar.length === 0" class="rounded-xl bg-white border border-stone-200 p-10 text-center text-stone-600 mb-6">
+    <div v-if="koleksiyonlar.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2 mb-6">
       Henüz koleksiyon yok.
     </div>
 
-    <table v-else class="w-full bg-white rounded-xl border border-stone-200 overflow-hidden mb-6">
-      <thead class="bg-stone-50 text-left text-sm text-stone-600">
+    <table v-else class="w-full bg-yuzey rounded-xl border border-kenar overflow-hidden mb-6">
+      <thead class="bg-zemin text-left text-sm text-metin-2">
         <tr><th class="p-3">Koleksiyon</th><th class="p-3">Tür</th><th class="p-3">Ürün</th><th class="p-3">Durum</th><th /></tr>
       </thead>
       <tbody>
-        <tr v-for="k in koleksiyonlar" :key="k.uuid" class="border-t border-stone-100">
+        <tr v-for="k in koleksiyonlar" :key="k.uuid" class="border-t border-kenar-soft">
           <td class="p-3">
-            <Link :href="`/yonetim/koleksiyonlar/${k.uuid}`" class="font-medium hover:text-orange-600">{{ k.title }}</Link>
+            <Link :href="`/yonetim/koleksiyonlar/${k.uuid}`" class="font-medium hover:text-vurgu-metin">{{ k.title }}</Link>
           </td>
           <td class="p-3 text-sm">{{ turAdi[k.type] ?? k.type }}</td>
           <!-- ⚠️ Kurallıda bu sayı SORGUDAN geliyor: tabloya bakılsaydı
@@ -100,43 +100,43 @@ const turAdi = { manual: 'Elle seçilen', rule: 'Kurallı (otomatik)' }
           <td class="p-3 text-sm">{{ k.urun_sayisi }}</td>
           <td class="p-3 text-sm">{{ k.is_active ? 'Yayında' : 'Kapalı' }}</td>
           <td class="p-3 text-right">
-            <button type="button" class="text-red-700 text-sm" @click="sil(k)">sil</button>
+            <button type="button" class="text-tehlike text-sm" @click="sil(k)">sil</button>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <form class="rounded-xl bg-white border border-stone-200 p-5 max-w-lg" @submit.prevent="ekle">
+    <form class="rounded-xl bg-yuzey border border-kenar p-5 max-w-lg" @submit.prevent="ekle">
       <h2 class="font-semibold text-sm mb-3">Koleksiyon ekle</h2>
 
-      <input v-model="form.title" placeholder="Başlık" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm mb-2">
+      <input v-model="form.title" placeholder="Başlık" class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mb-2">
 
-      <select v-model="form.type" class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm mb-2" @change="turDegisti">
+      <select v-model="form.type" class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mb-2" @change="turDegisti">
         <option v-for="t in turler" :key="t.deger" :value="t.deger">{{ t.ad }}</option>
       </select>
 
       <!-- ⚠️ KURAL DÜZENLEYİCİ OLUŞTURMA FORMUNDA: kurallı koleksiyon
            kuralsız oluşturulamıyor (2D). Ayrıntı sayfasına bırakmak
            "hiç oluşturulamaz" demekti. -->
-      <div v-if="form.type === 'rule'" class="rounded-lg bg-stone-50 border border-stone-200 p-3 mb-3">
-        <p class="text-xs text-stone-600 mb-2">
+      <div v-if="form.type === 'rule'" class="rounded-lg bg-zemin border border-kenar p-3 mb-3">
+        <p class="text-xs text-metin-2 mb-2">
           Üyeler otomatik hesaplanır. <strong>En az bir koşul</strong> gerekli.
         </p>
 
         <label class="block text-sm mb-2">
           Koşullardan
-          <select v-model="form.rules.match" class="ml-1 rounded-lg border border-stone-300 px-2 py-1">
+          <select v-model="form.rules.match" class="ml-1 rounded-lg border border-kenar-kontrol px-2 py-1">
             <option v-for="e in eslesmeler" :key="e" :value="e">{{ e === 'all' ? 'hepsi' : 'herhangi biri' }}</option>
           </select>
           sağlanmalı
         </label>
 
         <div v-for="(k, i) in form.rules.conditions" :key="i" class="flex gap-2 mb-2 items-center">
-          <select v-model="k.field" class="rounded-lg border border-stone-300 px-2 py-1 text-sm" @change="alanDegisti(k)">
+          <select v-model="k.field" class="rounded-lg border border-kenar-kontrol px-2 py-1 text-sm" @change="alanDegisti(k)">
             <option v-for="a in kuralAlanlari" :key="a.alan" :value="a.alan">{{ a.ad }}</option>
           </select>
 
-          <select v-model="k.op" class="rounded-lg border border-stone-300 px-2 py-1 text-sm">
+          <select v-model="k.op" class="rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
             <option v-for="o in islecler(k.field)" :key="o.deger" :value="o.deger">{{ o.ad }}</option>
           </select>
 
@@ -145,21 +145,21 @@ const turAdi = { manual: 'Elle seçilen', rule: 'Kurallı (otomatik)' }
             kategoriyi adıyla tanıyor: kutu bırakıldığında marka "Giyim"
             yazıyor, kural kaydediliyor ve koleksiyon vitrinde 404 veriyordu.
           -->
-          <select v-if="k.field === 'category'" v-model="k.value" class="flex-1 rounded-lg border border-stone-300 px-2 py-1 text-sm">
+          <select v-if="k.field === 'category'" v-model="k.value" class="flex-1 rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
             <option value="">— kategori seçin —</option>
             <option v-for="c in kategoriler" :key="c.slug" :value="c.slug">{{ '— '.repeat(c.derinlik) + c.ad }}</option>
           </select>
 
-          <input v-else v-model="k.value" :placeholder="k.field === 'price' ? 'örn. 250' : 'değer'" class="flex-1 rounded-lg border border-stone-300 px-2 py-1 text-sm">
-          <button type="button" class="text-red-700 text-sm" @click="kosulSil(i)">sil</button>
+          <input v-else v-model="k.value" :placeholder="k.field === 'price' ? 'örn. 250' : 'değer'" class="flex-1 rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
+          <button type="button" class="text-tehlike text-sm" @click="kosulSil(i)">sil</button>
         </div>
 
-        <button type="button" class="rounded-lg border border-stone-300 px-3 py-1 text-sm" @click="kosulEkle">Koşul ekle</button>
+        <button type="button" class="rounded-lg border border-kenar-kontrol px-3 py-1 text-sm" @click="kosulEkle">Koşul ekle</button>
       </div>
 
-      <p v-for="(h, alan) in form.errors" :key="alan" class="text-sm text-red-700 mb-1">{{ h }}</p>
+      <p v-for="(h, alan) in form.errors" :key="alan" class="text-sm text-tehlike mb-1">{{ h }}</p>
 
-      <button type="submit" class="rounded-lg bg-orange-600 text-white px-4 py-2 text-sm font-semibold">Ekle</button>
+      <button type="submit" class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold">Ekle</button>
     </form>
   </PanelDuzeni>
 </template>

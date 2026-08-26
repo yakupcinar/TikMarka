@@ -20,16 +20,16 @@ function gonder() {
 <template>
   <Head title="Şifremi unuttum" />
 
-  <div class="min-h-screen grid place-items-center bg-stone-100 text-stone-900">
-    <form class="w-full max-w-sm bg-white rounded-xl border border-stone-200 p-6" @submit.prevent="gonder">
+  <div class="min-h-screen grid place-items-center bg-yuzey-2 text-metin">
+    <form class="w-full max-w-sm bg-yuzey rounded-xl border border-kenar p-6" @submit.prevent="gonder">
       <h1 class="text-xl font-bold mb-1">Şifremi unuttum</h1>
-      <p class="text-sm text-stone-500 mb-5">
+      <p class="text-sm text-soluk mb-5">
         Personel hesabınızın e-posta adresini girin; sıfırlama bağlantısını gönderelim.
       </p>
 
       <!-- ⚠️ Başarı mesajı hesap OLSA DA OLMASA DA aynı: hangi
            e-postaların bu markada çalıştığı sızdırılmamalı. -->
-      <p v-if="bildirim.mesaj" class="mb-4 rounded-lg bg-green-100 border border-green-300 px-3 py-2 text-sm">
+      <p v-if="bildirim.mesaj" class="mb-4 rounded-lg bg-basari-zemin border border-basari-kenar px-3 py-2 text-sm">
         {{ bildirim.mesaj }}
       </p>
 
@@ -39,21 +39,21 @@ function gonder() {
           v-model="form.email"
           type="email"
           autocomplete="username"
-          class="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2"
+          class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2"
           required
         >
       </label>
 
-      <p v-if="form.errors.email" class="mb-3 text-sm text-red-700">{{ form.errors.email }}</p>
+      <p v-if="form.errors.email" class="mb-3 text-sm text-tehlike">{{ form.errors.email }}</p>
 
       <button
         type="submit"
-        class="w-full rounded-lg bg-orange-600 text-white py-2 font-semibold disabled:opacity-60"
+        class="w-full rounded-lg bg-vurgu text-white py-2 font-semibold disabled:opacity-60"
         :disabled="form.processing"
       >{{ form.processing ? 'Gönderiliyor…' : 'Sıfırlama bağlantısı gönder' }}</button>
 
       <p class="mt-4 text-sm text-center">
-        <Link href="/yonetim/giris" class="text-stone-600 hover:text-orange-600">Giriş ekranına dön</Link>
+        <Link href="/yonetim/giris" class="text-metin-2 hover:text-vurgu-metin">Giriş ekranına dön</Link>
       </p>
     </form>
   </div>

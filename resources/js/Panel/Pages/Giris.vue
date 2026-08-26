@@ -21,10 +21,10 @@ function gonder() {
 <template>
   <Head title="Giriş" />
 
-  <div class="min-h-screen grid place-items-center bg-stone-100 text-stone-900">
-    <form class="w-full max-w-sm bg-white rounded-xl border border-stone-200 p-6" @submit.prevent="gonder">
+  <div class="min-h-screen grid place-items-center bg-yuzey-2 text-metin">
+    <form class="w-full max-w-sm bg-yuzey rounded-xl border border-kenar p-6" @submit.prevent="gonder">
       <h1 class="text-xl font-bold mb-1">Panel girişi</h1>
-      <p class="text-sm text-stone-500 mb-5">Mağazanızı yönetmek için giriş yapın.</p>
+      <p class="text-sm text-soluk mb-5">Mağazanızı yönetmek için giriş yapın.</p>
 
       <label class="block text-sm mb-3">
         E-posta
@@ -32,7 +32,7 @@ function gonder() {
           v-model="form.email"
           type="email"
           autocomplete="username"
-          class="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2"
+          class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2"
           required
         >
       </label>
@@ -43,7 +43,7 @@ function gonder() {
           v-model="form.password"
           type="password"
           autocomplete="current-password"
-          class="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2"
+          class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2"
           required
         >
       </label>
@@ -51,18 +51,18 @@ function gonder() {
       <!-- ⚠️ Hata mesajı SUNUCUDAN geliyor: "kullanıcı yok" ile "parola
            yanlış" ayrımı yapılmıyor, yoksa hangi e-postaların panele
            erişimi olduğu tek tek öğrenilebilirdi. -->
-      <p v-if="form.errors.email" class="mb-3 text-sm text-red-700">{{ form.errors.email }}</p>
+      <p v-if="form.errors.email" class="mb-3 text-sm text-tehlike">{{ form.errors.email }}</p>
 
       <button
         type="submit"
-        class="w-full rounded-lg bg-orange-600 text-white py-2 font-semibold disabled:opacity-60"
+        class="w-full rounded-lg bg-vurgu text-white py-2 font-semibold disabled:opacity-60"
         :disabled="form.processing"
       >{{ form.processing ? 'Giriş yapılıyor…' : 'Giriş yap' }}</button>
 
       <!-- ⚠️ Şifresini unutan personelin ÖNCEDEN hiçbir yolu yoktu:
            tek çözüm geliştiricinin elle bcrypt hash yazmasıydı. -->
       <p class="mt-4 text-sm text-center">
-        <Link href="/yonetim/sifremi-unuttum" class="text-stone-600 hover:text-orange-600">Şifremi unuttum</Link>
+        <Link href="/yonetim/sifremi-unuttum" class="text-metin-2 hover:text-vurgu-metin">Şifremi unuttum</Link>
       </p>
     </form>
   </div>

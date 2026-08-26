@@ -84,64 +84,64 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
 
   <PanelDuzeni>
     <div class="flex items-center gap-3 mb-6">
-      <Link href="/yonetim/siparisler" class="text-sm text-stone-600 hover:text-orange-600">← Siparişler</Link>
+      <Link href="/yonetim/siparisler" class="text-sm text-metin-2 hover:text-vurgu-metin">← Siparişler</Link>
       <h1 class="text-2xl font-bold">{{ siparis.order_number }}</h1>
-      <span class="text-stone-500">{{ para(siparis.grand_total) }}</span>
+      <span class="text-soluk">{{ para(siparis.grand_total) }}</span>
     </div>
 
-    <div v-if="siparis.stock_shortfall" class="mb-4 rounded-lg bg-red-100 border border-red-300 px-4 py-3 text-sm">
+    <div v-if="siparis.stock_shortfall" class="mb-4 rounded-lg bg-tehlike-zemin border border-tehlike-kenar px-4 py-3 text-sm">
       ⚠ Bu siparişte stok açığı var — sipariş alındı ama stok yetmiyor.
     </div>
 
     <div class="grid grid-cols-3 gap-6">
       <div class="col-span-2 space-y-6">
-        <div class="rounded-xl bg-white border border-stone-200 p-5">
+        <div class="rounded-xl bg-yuzey border border-kenar p-5">
           <h2 class="font-semibold mb-3">Ürünler</h2>
           <table class="w-full text-sm">
-            <tr v-for="s in kalanlar" :key="s.id" class="border-b border-stone-100">
+            <tr v-for="s in kalanlar" :key="s.id" class="border-b border-kenar-soft">
               <td class="py-2">
-                {{ s.title }} <code class="text-stone-500">{{ s.sku }}</code>
+                {{ s.title }} <code class="text-soluk">{{ s.sku }}</code>
               </td>
               <td class="py-2">{{ s.quantity }} adet</td>
               <!-- ⚠️ SEVK EDİLEN ayrı gösteriliyor: kısmi sevkiyatta marka
                    neyin gittiğini bilmeden ikinci paketi hazırlayamaz. -->
-              <td class="py-2 text-stone-600">{{ s.shipped }} sevk edildi</td>
+              <td class="py-2 text-metin-2">{{ s.shipped }} sevk edildi</td>
               <td class="py-2 text-right">{{ para(s.line_total) }}</td>
             </tr>
           </table>
         </div>
 
         <div v-if="kargolayabilir && odendi && kalanlar.some((s) => s.kalan > 0)"
-             class="rounded-xl bg-white border border-stone-200 p-5">
+             class="rounded-xl bg-yuzey border border-kenar p-5">
           <h2 class="font-semibold mb-1">Siparişi tamamla</h2>
-          <p class="text-sm text-stone-600 mb-3">
+          <p class="text-sm text-metin-2 mb-3">
             Kalan tüm satırlar tek pakette sevk edilir ve sipariş teslim edildi olarak kapanır.
             Kargo firması takip etmek istersen aşağıdaki paket bölümünü kullan.
           </p>
-          <button type="button" class="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-semibold" @click="tamamla">
+          <button type="button" class="rounded-lg bg-basari-dugme text-white px-4 py-2 text-sm font-semibold" @click="tamamla">
             Siparişi tamamla
           </button>
         </div>
 
-        <div v-if="kargolayabilir" class="rounded-xl bg-white border border-stone-200 p-5">
+        <div v-if="kargolayabilir" class="rounded-xl bg-yuzey border border-kenar p-5">
           <h2 class="font-semibold mb-3">Yeni paket</h2>
 
-          <p v-if="kalanlar.every((s) => s.kalan <= 0)" class="text-sm text-stone-600">
+          <p v-if="kalanlar.every((s) => s.kalan <= 0)" class="text-sm text-metin-2">
             Bu siparişin tamamı sevk edildi.
           </p>
 
           <template v-else>
             <div v-for="s in kalanlar.filter((x) => x.kalan > 0)" :key="s.id" class="flex items-center gap-3 mb-2 text-sm">
               <span class="flex-1">{{ s.title }}</span>
-              <span class="text-stone-500">kalan {{ s.kalan }}</span>
+              <span class="text-soluk">kalan {{ s.kalan }}</span>
               <input v-model="paket.adetler[s.id]" type="number" min="0" :max="s.kalan"
-                     class="w-20 rounded-lg border border-stone-300 px-2 py-1">
+                     class="w-20 rounded-lg border border-kenar-kontrol px-2 py-1">
             </div>
 
             <div class="flex gap-2 mt-3">
-              <input v-model="paket.carrier" placeholder="Kargo firması" class="rounded-lg border border-stone-300 px-3 py-2 text-sm">
-              <input v-model="paket.tracking_number" placeholder="Takip no" class="rounded-lg border border-stone-300 px-3 py-2 text-sm">
-              <button type="button" class="rounded-lg bg-orange-600 text-white px-4 py-2 text-sm font-semibold" @click="paketOlustur">
+              <input v-model="paket.carrier" placeholder="Kargo firması" class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">
+              <input v-model="paket.tracking_number" placeholder="Takip no" class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">
+              <button type="button" class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold" @click="paketOlustur">
                 Paket oluştur
               </button>
             </div>
@@ -156,10 +156,10 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
           ⚠️ Ödenmemiş siparişte hiç gösterilmiyor: geri verilecek para yok
           ve servis zaten reddediyor.
         -->
-        <div v-if="iadeEdebilir && odendi" class="rounded-xl bg-white border border-stone-200 p-5">
+        <div v-if="iadeEdebilir && odendi" class="rounded-xl bg-yuzey border border-kenar p-5">
           <div class="flex items-center justify-between">
             <h2 class="font-semibold">İade</h2>
-            <button type="button" class="text-sm text-orange-700" @click="iadeFormu = !iadeFormu">
+            <button type="button" class="text-sm text-vurgu-metin" @click="iadeFormu = !iadeFormu">
               {{ iadeFormu ? 'vazgeç' : 'İade talebi aç' }}
             </button>
           </div>
@@ -167,39 +167,39 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
           <template v-if="iadeFormu">
             <div v-for="s in siparis.items" :key="s.id" class="flex items-center gap-3 mt-3 text-sm">
               <span class="flex-1">{{ s.title }}</span>
-              <span class="text-stone-500">{{ s.quantity }} adet</span>
+              <span class="text-soluk">{{ s.quantity }} adet</span>
               <input v-model="iade.adetler[s.id]" type="number" min="0" :max="s.quantity"
-                     class="w-20 rounded-lg border border-stone-300 px-2 py-1">
+                     class="w-20 rounded-lg border border-kenar-kontrol px-2 py-1">
             </div>
 
             <input v-model="iade.reason" placeholder="Sebep (zorunlu)"
-                   class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm mt-3">
+                   class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mt-3">
 
-            <p class="text-xs text-stone-500 mt-2">
+            <p class="text-xs text-soluk mt-2">
               Bu talep cayma değil, marka tarafından açılan iadedir — 14 günlük cayma süresine takılmaz.
             </p>
 
-            <button type="button" class="rounded-lg bg-orange-600 text-white px-4 py-2 text-sm font-semibold mt-3" @click="iadeAc">
+            <button type="button" class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold mt-3" @click="iadeAc">
               Talebi aç
             </button>
           </template>
         </div>
 
-        <div class="rounded-xl bg-white border border-stone-200 p-5">
+        <div class="rounded-xl bg-yuzey border border-kenar p-5">
           <h2 class="font-semibold mb-3">Paketler</h2>
 
-          <p v-if="siparis.fulfillments.length === 0" class="text-sm text-stone-600">Henüz paket yok.</p>
+          <p v-if="siparis.fulfillments.length === 0" class="text-sm text-metin-2">Henüz paket yok.</p>
 
-          <div v-for="p in siparis.fulfillments" :key="p.uuid" class="border-b border-stone-100 py-3 text-sm">
+          <div v-for="p in siparis.fulfillments" :key="p.uuid" class="border-b border-kenar-soft py-3 text-sm">
             <div class="flex items-center gap-3">
               <span class="font-medium">{{ paketDurumu[p.status] ?? p.status }}</span>
-              <span v-if="p.carrier" class="text-stone-600">{{ p.carrier }}</span>
-              <code v-if="p.tracking_number" class="text-stone-500">{{ p.tracking_number }}</code>
+              <span v-if="p.carrier" class="text-metin-2">{{ p.carrier }}</span>
+              <code v-if="p.tracking_number" class="text-soluk">{{ p.tracking_number }}</code>
 
               <span v-if="kargolayabilir" class="ml-auto flex gap-2">
-                <button v-if="p.status === 'pending'" type="button" class="rounded border border-stone-300 px-2 py-1" @click="kargoyaVer(p.uuid)">Kargoya ver</button>
-                <button v-if="p.status === 'shipped'" type="button" class="rounded border border-stone-300 px-2 py-1" @click="teslimEt(p.uuid)">Teslim edildi</button>
-                <button v-if="p.status !== 'cancelled' && p.status !== 'delivered'" type="button" class="rounded border border-red-300 text-red-700 px-2 py-1" @click="paketIptal(p.uuid)">İptal</button>
+                <button v-if="p.status === 'pending'" type="button" class="rounded border border-kenar-kontrol px-2 py-1" @click="kargoyaVer(p.uuid)">Kargoya ver</button>
+                <button v-if="p.status === 'shipped'" type="button" class="rounded border border-kenar-kontrol px-2 py-1" @click="teslimEt(p.uuid)">Teslim edildi</button>
+                <button v-if="p.status !== 'cancelled' && p.status !== 'delivered'" type="button" class="rounded border border-tehlike-kenar text-tehlike px-2 py-1" @click="paketIptal(p.uuid)">İptal</button>
               </span>
             </div>
           </div>
@@ -207,28 +207,28 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
       </div>
 
       <aside class="space-y-6">
-        <div class="rounded-xl bg-white border border-stone-200 p-5 text-sm">
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 text-sm">
           <h2 class="font-semibold mb-3">Teslimat</h2>
           <p>{{ siparis.shipping_address.full_name }}</p>
-          <p class="text-stone-600">{{ siparis.shipping_address.phone }}</p>
-          <p class="text-stone-600">{{ siparis.shipping_address.line1 }}</p>
-          <p class="text-stone-600">{{ siparis.shipping_address.district }} / {{ siparis.shipping_address.city }}</p>
+          <p class="text-metin-2">{{ siparis.shipping_address.phone }}</p>
+          <p class="text-metin-2">{{ siparis.shipping_address.line1 }}</p>
+          <p class="text-metin-2">{{ siparis.shipping_address.district }} / {{ siparis.shipping_address.city }}</p>
         </div>
 
-        <div class="rounded-xl bg-white border border-stone-200 p-5 text-sm">
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 text-sm">
           <h2 class="font-semibold mb-3">Tutarlar</h2>
           <div class="flex justify-between py-1"><span>Ürünler</span><span>{{ para(siparis.items_total) }}</span></div>
           <div class="flex justify-between py-1"><span>Kargo</span><span>{{ para(siparis.shipping_total) }}</span></div>
           <!-- ⚠️ KDV bilgi amaçlı: tahsil edilen tutarın İÇİNDE (§8.2). -->
-          <div class="flex justify-between py-1 text-stone-500"><span>KDV (dâhil)</span><span>{{ para(siparis.tax_total) }}</span></div>
-          <div class="flex justify-between py-2 border-t border-stone-200 font-semibold"><span>Toplam</span><span>{{ para(siparis.grand_total) }}</span></div>
+          <div class="flex justify-between py-1 text-soluk"><span>KDV (dâhil)</span><span>{{ para(siparis.tax_total) }}</span></div>
+          <div class="flex justify-between py-2 border-t border-kenar font-semibold"><span>Toplam</span><span>{{ para(siparis.grand_total) }}</span></div>
         </div>
 
         <!-- ⚠️ Müşterinin ONAYLADIĞI sözleşme sürümü: "neyi kabul etti"
              sorusu sonradan tartışmasız cevaplanabilsin diye (1D-K2). -->
-        <div v-if="siparis.contract_version" class="rounded-xl bg-white border border-stone-200 p-5 text-sm">
+        <div v-if="siparis.contract_version" class="rounded-xl bg-yuzey border border-kenar p-5 text-sm">
           <h2 class="font-semibold mb-1">Sözleşme</h2>
-          <p class="text-stone-600">Onaylanan sürüm: v{{ siparis.contract_version }}</p>
+          <p class="text-metin-2">Onaylanan sürüm: v{{ siparis.contract_version }}</p>
         </div>
       </aside>
     </div>

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AD BİTTİ — tasarım yenilemesi başladı ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AE BİTTİ — panel koyu temaya kavuştu  ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7740,6 +7740,74 @@ düğme yazısı kırık       8.64           8.64
 ```
 
 **949 test.**
+
+---
+
+### 4.6AE — panelde koyu tema
+
+Vitrin 4.6AB'de koyu temaya kavuştu, **panel kavuşmadı**. Marka sahibi aynı
+tarayıcıda vitrini koyu, panelini beyaz görüyordu — gece çalışan biri için
+göze vuran fark bu.
+
+Panelde renkler 25 Vue dosyasında **sabit Tailwind sınıfı** olarak
+duruyordu (`bg-stone-50`, `text-stone-500`, `border-stone-200` … toplam
+**532 geçiş**). Sabit sınıfın koyu karşılığı yok; her birine `dark:` ikizi
+yazmak 532 karar daha demekti ve biri unutulduğunda **hata vermeden**
+okunmaz kalırdı. Bu yüzden vitrinle aynı yol seçildi: renk **belirteçten**
+okunur, belirteç temaya göre değişir.
+
+**54 belirteç** (`--p-*`) üç blokta tanımlı: `:root` (açık) · sistem
+tercihi · açık seçim (`[data-tema="koyu"]`). Tailwind'e `@theme inline`
+ile 29 anlamsal ad bağlandı (`bg-yuzey`, `text-metin`, `border-kenar` …);
+Vue dosyalarındaki 532 sınıf bunlara çevrildi.
+
+> ⚠️ **`@theme inline` ŞART, düz `@theme` DEĞİL.** Düz biçim değişkenin
+> **değerini kopyalıyor** — üretilen sınıf açık temanın rengini taşır ve
+> `data-tema` değişse bile **hiçbir şey olmaz**. `inline` ise değişkene
+> **referans** bırakır; çalışma anında tema değişimi ancak böyle işler.
+> Belirti sessiz: derleme başarılı, sayfa açılıyor, düğme çalışıyor —
+> yalnızca renk değişmiyor.
+
+⚠️ `text-white` **bağlama duyarlı** çevrildi. 532 geçişin çoğunda beyaz
+zaten doğru (koyu vurgu zemini üstünde); yalnızca `bg-stone-900` ile
+eşleşen **iki** tanesi `text-dugme-yazi` oldu. Toptan çeviri, koyu temada
+beyaz kalması gereken yerleri de döndürüp bozacaktı.
+
+**Vurgu rengi koyulaştırıldı: `#ea580c` → `#c2410c`.** Tarayıcıda ölçünce
+düğme yazısının kontrastı **3,56** çıktı — 4,5 eşiğinin altında ve bu
+**bloktan önce de öyleydi**, yani mevcut bir kusurdu; koyu tema onu
+görünür kıldı. Yeni değerle **5,18**.
+
+Tema düğmesi üst bara kondu (`aria-pressed`), seçim `localStorage`'da.
+⚠️ Anahtar **vitrinden ayrı** (`tikmarka-panel-tema` / `tikmarka-tema`):
+panel bizim arayüzümüz, vitrin markanın — birinin tercihi diğerini
+bağlamamalı. FOUC koruması vitrindeki gibi **senkron betik**, `@vite`'tan
+**önce**.
+
+**Beş kırma denemesi; üçü ilk turda düştü, ikisi DÜŞMEDİ.**
+
+> ⚠️ **DÜŞMEYEN İKİSİNİN KÖKÜ TEKTİ: İDDİA YORUMUN İÇİNİ OKUYORDU.**
+> `@theme inline` dosyada iki kez geçiyor — bir kez gerçek yönerge, bir kez
+> onu **anlatan yorum**. Deneme ilk eşleşmeyi (yorumu) değiştirdi, test de
+> ilk eşleşmeye baktı; yönerge bozulsa bile yorum testi ayakta tutuyordu.
+> `tikmarka-panel-tema` sıra iddiasında aynısı: ham metinde ilk geçiş
+> yorumdaydı, betik nereye taşınırsa taşınsın sıra değişmiyordu.
+> Yorumlar ayıklandıktan sonra **ikisi de düştü**.
+>
+> ⚠️ Bu tuzak 4.6AB'de bulunup düzeltilmişti (sabit renk taraması yorumları
+> okuyordu) ve **iki blok sonra tekrarlandı**. Ayıklama artık test
+> yardımcısında, tek yerde.
+
+DOĞRULANDI (gerçek tarayıcı, tünel üzerinden, `/yonetim/giris`):
+
+```
+                  açık    koyu
+gövde metni      16.74   16.03
+girdi kenarı      6.14    4.55
+düğme yazısı      5.18    5.18   (önce 3.56 — eşiğin altındaydı)
+```
+
+**955 test.**
 
 ---
 ---

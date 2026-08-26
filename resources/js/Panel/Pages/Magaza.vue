@@ -41,47 +41,47 @@ function kapat() {
   <PanelDuzeni>
     <div class="flex items-center gap-3 mb-6">
       <h1 class="text-2xl font-bold">Mağaza</h1>
-      <span class="rounded-full px-3 py-1 text-xs" :class="yayinda ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'">
+      <span class="rounded-full px-3 py-1 text-xs" :class="yayinda ? 'bg-basari-zemin text-basari' : 'bg-uyari-zemin text-uyari'">
         {{ yayinda ? 'Satışa açık' : 'Kapalı' }}
       </span>
     </div>
 
     <div class="grid grid-cols-3 gap-6">
-      <form class="col-span-2 rounded-xl bg-white border border-stone-200 p-5" @submit.prevent="kaydet">
+      <form class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5" @submit.prevent="kaydet">
         <h2 class="font-semibold mb-4">Bilgiler</h2>
 
         <label v-for="(ad, anahtar) in etiket" :key="anahtar" class="block text-sm mb-3">
           {{ ad }}
           <!-- ⚠️ Zorunlu alanlar İŞARETLİ: hangisinin sözleşmeye gireceğini
                marka bilmeden dolduramaz. -->
-          <span v-if="zorunlular.includes(anahtar)" class="text-red-600">*</span>
-          <input v-model="form[anahtar]" type="text" class="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2">
-          <span v-if="form.errors[anahtar]" class="text-red-700">{{ form.errors[anahtar] }}</span>
+          <span v-if="zorunlular.includes(anahtar)" class="text-tehlike">*</span>
+          <input v-model="form[anahtar]" type="text" class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2">
+          <span v-if="form.errors[anahtar]" class="text-tehlike">{{ form.errors[anahtar] }}</span>
         </label>
 
-        <p class="text-xs text-stone-500 mb-4">
-          <span class="text-red-600">*</span> işaretli alanlar mesafeli satış sözleşmesine giriyor.
+        <p class="text-xs text-soluk mb-4">
+          <span class="text-tehlike">*</span> işaretli alanlar mesafeli satış sözleşmesine giriyor.
         </p>
 
-        <button type="submit" class="rounded-lg bg-orange-600 text-white px-4 py-2 font-semibold disabled:opacity-60" :disabled="form.processing">
+        <button type="submit" class="rounded-lg bg-vurgu text-white px-4 py-2 font-semibold disabled:opacity-60" :disabled="form.processing">
           Kaydet
         </button>
       </form>
 
-      <aside class="rounded-xl bg-white border border-stone-200 p-5">
+      <aside class="rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold text-sm mb-3">Yayın durumu</h2>
 
         <!-- ⚠️ Eksikler TEK SEFERDE listeleniyor, ilk eksikte durulmuyor. -->
         <div v-if="eksikler.length" class="mb-4">
-          <p class="text-sm text-amber-800 mb-2">Yayına almak için eksikler:</p>
-          <ul class="text-sm text-stone-700 list-disc pl-5">
+          <p class="text-sm text-uyari mb-2">Yayına almak için eksikler:</p>
+          <ul class="text-sm text-metin-2 list-disc pl-5">
             <li v-for="e in eksikler" :key="e">{{ etiket[e] ?? e }}</li>
           </ul>
         </div>
 
         <template v-if="yayinda">
-          <p class="text-sm text-stone-600 mb-3">Mağazanız satışa açık.</p>
-          <button type="button" class="w-full rounded-lg border border-red-300 text-red-700 py-2 text-sm" @click="kapat">
+          <p class="text-sm text-metin-2 mb-3">Mağazanız satışa açık.</p>
+          <button type="button" class="w-full rounded-lg border border-tehlike-kenar text-tehlike py-2 text-sm" @click="kapat">
             Satışa kapat
           </button>
         </template>
@@ -90,7 +90,7 @@ function kapat() {
           <!-- ⚠️ Düğme eksik varken de GÖSTERİLİYOR ama sunucu reddediyor
                ve sebebini yazıyor. Gizlemek, markaya neden açamadığını
                söylemeden yolu kapatmak olurdu. -->
-          <button type="button" class="w-full rounded-lg bg-orange-600 text-white py-2 text-sm font-semibold" @click="yayinla">
+          <button type="button" class="w-full rounded-lg bg-vurgu text-white py-2 text-sm font-semibold" @click="yayinla">
             Yayına al
           </button>
         </template>

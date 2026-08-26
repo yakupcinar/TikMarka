@@ -11,9 +11,9 @@ const durumAdi = {
   received: 'Teslim alındı', completed: 'Tamamlandı',
 }
 const durumRengi = {
-  requested: 'bg-amber-100 text-amber-800', approved: 'bg-blue-100 text-blue-800',
-  rejected: 'bg-stone-200 text-stone-700', received: 'bg-indigo-100 text-indigo-800',
-  completed: 'bg-green-100 text-green-800',
+  requested: 'bg-uyari-zemin text-uyari', approved: 'bg-bilgi-zemin text-bilgi',
+  rejected: 'bg-yuzey-3 text-metin-2', received: 'bg-bilgi-zemin text-bilgi',
+  completed: 'bg-basari-zemin text-basari',
 }
 </script>
 
@@ -23,18 +23,18 @@ const durumRengi = {
   <PanelDuzeni>
     <h1 class="text-2xl font-bold mb-6">İade talepleri</h1>
 
-    <div v-if="talepler.data.length === 0" class="rounded-xl bg-white border border-stone-200 p-10 text-center text-stone-600">
+    <div v-if="talepler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2">
       İade talebi yok.
     </div>
 
-    <table v-else class="w-full bg-white rounded-xl border border-stone-200 overflow-hidden">
-      <thead class="bg-stone-50 text-left text-sm text-stone-600">
+    <table v-else class="w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
+      <thead class="bg-zemin text-left text-sm text-metin-2">
         <tr><th class="p-3">Sipariş</th><th class="p-3">Tür</th><th class="p-3">Ürün</th><th class="p-3">Durum</th><th class="p-3">Tarih</th></tr>
       </thead>
       <tbody>
-        <tr v-for="t in talepler.data" :key="t.uuid" class="border-t border-stone-100">
+        <tr v-for="t in talepler.data" :key="t.uuid" class="border-t border-kenar-soft">
           <td class="p-3">
-            <Link :href="`/yonetim/iadeler/${t.uuid}`" class="font-medium hover:text-orange-600">{{ t.order_number }}</Link>
+            <Link :href="`/yonetim/iadeler/${t.uuid}`" class="font-medium hover:text-vurgu-metin">{{ t.order_number }}</Link>
           </td>
           <!-- ⚠️ CAYMA mı AYIPLI mı: kargo bedelinin geri verilip
                verilmeyeceğini bu belirliyor (2B-K1). -->

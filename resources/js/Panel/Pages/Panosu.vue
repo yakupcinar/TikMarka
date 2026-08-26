@@ -17,16 +17,16 @@ const izinler = computed(() => sayfa.props.auth?.permissions ?? [])
     <!-- ⚠️ 4C İSKELET: sayaç ve özetler kendi bloklarında gelecek
          (4D katalog, 4E sipariş). Sahte veri gösterilmiyor — çalışıyor
          gibi görünen boş bir pano, eksik olduğu belli olandan kötüdür. -->
-    <p class="text-stone-600 mb-6">
+    <p class="text-metin-2 mb-6">
       Panel iskeleti ayakta. Ürün ve sipariş ekranları sıradaki bloklarda geliyor.
     </p>
 
-    <div class="rounded-xl bg-white border border-stone-200 p-5">
+    <div class="rounded-xl bg-yuzey border border-kenar p-5">
       <h2 class="font-semibold mb-2">Yetkileriniz</h2>
-      <p v-if="kullanici?.is_owner" class="text-sm text-stone-600 mb-2">
+      <p v-if="kullanici?.is_owner" class="text-sm text-metin-2 mb-2">
         Mağaza sahibisiniz — bütün yetkilere sahipsiniz.
       </p>
-      <ul class="text-sm text-stone-600 grid grid-cols-2 gap-x-6">
+      <ul class="text-sm text-metin-2 grid grid-cols-2 gap-x-6">
         <li v-for="izin in izinler" :key="izin"><code>{{ izin }}</code></li>
       </ul>
     </div>

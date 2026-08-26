@@ -6,13 +6,47 @@
  | adresi elle yazarsa yine sunucudaki `izin:` middleware'i durduruyor.
  | Buradaki filtre yalnızca kullanamayacağı bir bağlantıyı göstermemek için.
  */
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { Link, usePage, router } from '@inertiajs/vue3'
 
 const sayfa = usePage()
 
 const kullanici = computed(() => sayfa.props.auth?.user ?? null)
 const izinler = computed(() => sayfa.props.auth?.permissions ?? [])
+
+/*
+| TEMA DEĞİŞTİRME (4.6AE)
+|
+| ⚠️ Seçim `localStorage`'da, sunucuda DEĞİL: panelin teması personelin
+| kendi tercihi, markanın ayarı değil. Ayara konsaydı bir personelin
+| seçimi bütün ekibi etkilerdi.
+|
+| ⚠️ Anahtar vitrininkinden AYRI — gerekçesi `panel/app.blade.php`'de.
+*/
+const koyuMu = ref(false)
+
+function temaHesapla() {
+  const secim = document.documentElement.getAttribute('data-tema')
+
+  /*
+  | ⚠️ Seçim yoksa SİSTEM tercihi soruluyor. `false` varsayılsaydı gece
+  | modundaki makinede düğme "koyuya geç" der ama panel zaten koyu
+  | olurdu — ilk tıklama açığa geçirirdi.
+  */
+  return secim ? secim === 'koyu' : window.matchMedia?.('(prefers-color-scheme: dark)').matches === true
+}
+
+onMounted(() => { koyuMu.value = temaHesapla() })
+
+function temaDegistir() {
+  const yeni = temaHesapla() ? 'acik' : 'koyu'
+
+  document.documentElement.setAttribute('data-tema', yeni)
+
+  try { localStorage.setItem('tikmarka-panel-tema', yeni) } catch (e) { /* gizli sekme */ }
+
+  koyuMu.value = yeni === 'koyu'
+}
 const marka = computed(() => sayfa.props.marka?.ad ?? 'Panel')
 const bildirim = computed(() => sayfa.props.bildirim ?? {})
 
@@ -64,11 +98,11 @@ function cikisYap() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-stone-100 text-stone-900">
-    <header class="bg-white border-b border-stone-200">
+  <div class="min-h-screen bg-yuzey-2 text-metin">
+    <header class="bg-yuzey border-b border-kenar">
       <div class="mx-auto max-w-6xl px-5 py-3 flex items-center gap-6">
         <Link href="/yonetim" class="font-black tracking-tight">
-          {{ marka }} <span class="text-orange-600">Panel</span>
+          {{ marka }} <span class="text-vurgu-metin">Panel</span>
         </Link>
 
         <nav class="flex gap-4 text-sm">
@@ -76,15 +110,35 @@ function cikisYap() {
             v-for="madde in gorunenMenu"
             :key="madde.yol"
             :href="madde.yol"
-            class="hover:text-orange-600"
+            class="hover:text-vurgu-metin"
           >{{ madde.ad }}</Link>
         </nav>
 
         <div class="ml-auto flex items-center gap-3 text-sm">
-          <span v-if="kullanici" class="text-stone-600">{{ kullanici.name }}</span>
+          <span v-if="kullanici" class="text-metin-2">{{ kullanici.name }}</span>
+
+          <!--
+            TEMA DÜĞMESİ (4.6AE)
+
+            ⚠️ FORM DEĞİL `type="button"`: tema seçimi sunucuyu
+            ilgilendirmiyor. Form olsaydı her tıklama sayfayı yeniden
+            yükler ve personel doldurduğu ürün formunu kaybederdi.
+
+            ⚠️ `aria-pressed` ŞART: düğme iki durumlu ve durum yalnızca
+            simgeyle anlatılsaydı ekran okuyucu kullanan personel hangi
+            temada olduğunu bilemezdi.
+          -->
           <button
             type="button"
-            class="rounded-lg border border-stone-300 px-3 py-1 hover:bg-stone-50"
+            class="rounded-full border border-kenar-kontrol w-8 h-8 leading-none hover:bg-zemin"
+            :aria-pressed="koyuMu ? 'true' : 'false'"
+            aria-label="Koyu temayı aç/kapat"
+            title="Koyu tema"
+            @click="temaDegistir"
+          >{{ koyuMu ? '☀' : '☾' }}</button>
+          <button
+            type="button"
+            class="rounded-lg border border-kenar-kontrol px-3 py-1 hover:bg-zemin"
             @click="cikisYap"
           >Çıkış</button>
         </div>
@@ -92,15 +146,15 @@ function cikisYap() {
     </header>
 
     <main class="mx-auto max-w-6xl px-5 py-8">
-      <p v-if="!yazabilir" class="mb-4 rounded-lg bg-sky-50 border border-sky-300 px-4 py-3 text-sm">
+      <p v-if="!yazabilir" class="mb-4 rounded-lg bg-bilgi-zemin border border-bilgi-kenar px-4 py-3 text-sm">
         <strong>Salt okunur yetki.</strong>
         Her şeyi görebilirsiniz ama değişiklik kaydedemezsiniz.
       </p>
 
-      <p v-if="bildirim.mesaj" class="mb-4 rounded-lg bg-green-100 border border-green-300 px-4 py-3">
+      <p v-if="bildirim.mesaj" class="mb-4 rounded-lg bg-basari-zemin border border-basari-kenar px-4 py-3">
         {{ bildirim.mesaj }}
       </p>
-      <p v-if="bildirim.hata" class="mb-4 rounded-lg bg-red-100 border border-red-300 px-4 py-3">
+      <p v-if="bildirim.hata" class="mb-4 rounded-lg bg-tehlike-zemin border border-tehlike-kenar px-4 py-3">
         {{ bildirim.hata }}
       </p>
 

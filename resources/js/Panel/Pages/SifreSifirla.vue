@@ -31,11 +31,11 @@ function gonder() {
 <template>
   <Head title="Yeni şifre" />
 
-  <div class="min-h-screen grid place-items-center bg-stone-100 text-stone-900">
-    <form class="w-full max-w-sm bg-white rounded-xl border border-stone-200 p-6" @submit.prevent="gonder">
+  <div class="min-h-screen grid place-items-center bg-yuzey-2 text-metin">
+    <form class="w-full max-w-sm bg-yuzey rounded-xl border border-kenar p-6" @submit.prevent="gonder">
       <h1 class="text-xl font-bold mb-5">Yeni şifre belirleyin</h1>
 
-      <p v-if="bildirim.hata" class="mb-4 rounded-lg bg-red-100 border border-red-300 px-3 py-2 text-sm">
+      <p v-if="bildirim.hata" class="mb-4 rounded-lg bg-tehlike-zemin border border-tehlike-kenar px-3 py-2 text-sm">
         {{ bildirim.hata }}
       </p>
 
@@ -46,17 +46,17 @@ function gonder() {
         gövdesinde zaten gidiyor. Jeton BU adrese üretildi, değiştirilirse
         eşleşmez.
       -->
-      <p v-if="form.email" class="mb-3 text-sm text-stone-600">
-        Hesap: <strong class="text-stone-900">{{ form.email }}</strong>
+      <p v-if="form.email" class="mb-3 text-sm text-metin-2">
+        Hesap: <strong class="text-metin">{{ form.email }}</strong>
       </p>
 
       <label class="block text-sm mb-3">
-        Yeni şifre <span class="text-stone-500">(en az 8 karakter)</span>
+        Yeni şifre <span class="text-soluk">(en az 8 karakter)</span>
         <input
           v-model="form.password"
           type="password"
           autocomplete="new-password"
-          class="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2"
+          class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2"
           required
           autofocus
         >
@@ -68,16 +68,16 @@ function gonder() {
           v-model="form.password_confirmation"
           type="password"
           autocomplete="new-password"
-          class="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2"
+          class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2"
           required
         >
       </label>
 
-      <p v-for="(mesaj, alan) in form.errors" :key="alan" class="mb-3 text-sm text-red-700">{{ mesaj }}</p>
+      <p v-for="(mesaj, alan) in form.errors" :key="alan" class="mb-3 text-sm text-tehlike">{{ mesaj }}</p>
 
       <button
         type="submit"
-        class="w-full rounded-lg bg-orange-600 text-white py-2 font-semibold disabled:opacity-60"
+        class="w-full rounded-lg bg-vurgu text-white py-2 font-semibold disabled:opacity-60"
         :disabled="form.processing"
       >{{ form.processing ? 'Güncelleniyor…' : 'Şifreyi güncelle' }}</button>
     </form>

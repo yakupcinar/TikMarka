@@ -21,9 +21,9 @@ function ara() {
 }
 
 const durumRengi = {
-  active: 'bg-green-100 text-green-800',
-  draft: 'bg-stone-200 text-stone-700',
-  archived: 'bg-amber-100 text-amber-800',
+  active: 'bg-basari-zemin text-basari',
+  draft: 'bg-yuzey-3 text-metin-2',
+  archived: 'bg-uyari-zemin text-uyari',
 }
 
 const durumAdi = { active: 'Yayında', draft: 'Taslak', archived: 'Arşiv' }
@@ -46,25 +46,25 @@ function para(deger) {
           v-model="kelime"
           type="search"
           placeholder="Ürün ara"
-          class="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+          class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm"
         >
-        <button type="submit" class="rounded-lg border border-stone-300 px-3 py-2 text-sm bg-white">Ara</button>
+        <button type="submit" class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm bg-yuzey">Ara</button>
       </form>
 
       <Link
         href="/yonetim/urunler/yeni"
-        class="rounded-lg bg-orange-600 text-white px-4 py-2 text-sm font-semibold"
+        class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold"
       >Yeni ürün</Link>
     </div>
 
     <!-- ⚠️ Boş liste "hata" gibi görünmemeli: yeni marka için NORMAL durum. -->
-    <div v-if="urunler.data.length === 0" class="rounded-xl bg-white border border-stone-200 p-10 text-center text-stone-600">
+    <div v-if="urunler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2">
       <p v-if="arama">“{{ arama }}” için ürün bulunamadı.</p>
       <p v-else>Henüz ürün yok. İlk ürününüzü ekleyin.</p>
     </div>
 
-    <table v-else class="w-full bg-white rounded-xl border border-stone-200 overflow-hidden">
-      <thead class="bg-stone-50 text-left text-sm text-stone-600">
+    <table v-else class="w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
+      <thead class="bg-zemin text-left text-sm text-metin-2">
         <tr>
           <th class="p-3">Ürün</th>
           <th class="p-3">Durum</th>
@@ -74,9 +74,9 @@ function para(deger) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="urun in urunler.data" :key="urun.uuid" class="border-t border-stone-100">
+        <tr v-for="urun in urunler.data" :key="urun.uuid" class="border-t border-kenar-soft">
           <td class="p-3">
-            <Link :href="`/yonetim/urunler/${urun.uuid}`" class="font-medium hover:text-orange-600">
+            <Link :href="`/yonetim/urunler/${urun.uuid}`" class="font-medium hover:text-vurgu-metin">
               {{ urun.title }}
             </Link>
           </td>
@@ -87,7 +87,7 @@ function para(deger) {
           </td>
           <!-- ⚠️ Varyantsız ürün SATILAMAZ; sayı sıfırsa uyarı veriyoruz. -->
           <td class="p-3 text-sm">
-            <span v-if="urun.variant_count === 0" class="text-amber-700">yok — satılamaz</span>
+            <span v-if="urun.variant_count === 0" class="text-uyari">yok — satılamaz</span>
             <span v-else>{{ urun.variant_count }}</span>
           </td>
           <td class="p-3 text-sm">{{ urun.stock }}</td>
@@ -101,8 +101,8 @@ function para(deger) {
         v-for="bag in urunler.links"
         :key="bag.label"
         :href="bag.url ?? ''"
-        class="rounded border border-stone-300 px-3 py-1 bg-white"
-        :class="{ 'bg-orange-600 text-white border-orange-600': bag.active, 'opacity-40 pointer-events-none': !bag.url }"
+        class="rounded border border-kenar-kontrol px-3 py-1 bg-yuzey"
+        :class="{ 'bg-vurgu text-white border-vurgu': bag.active, 'opacity-40 pointer-events-none': !bag.url }"
         v-html="bag.label"
       />
     </div>

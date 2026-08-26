@@ -3161,3 +3161,53 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       DOĞRULANDI (gerçek panel): liste sipariş/harcama ile · ayrıntıda
       özet + 14 sipariş + favori + başarısız ödeme · password izi YOK ·
       ret gerekçesi alanı YOK
+
+4.6AD ✅ OKUNABİLİRLİK: MARKA RENGİ, BAĞLANTILAR, KART DİLİ — 949 test
+      İLK KEZ TASARIM GÖREREK ÇALIŞILDI (ngrok tüneli → tarayıcı aracı).
+      4.6A ve 4.6AB'de "tarayıcıda doğrulanamadı" notu bunun eksikliğiydi.
+
+      SORUN: hiçbir kural YANLIŞ değildi, EKSİKTİ.
+        fiyat marka renginde → koyu temada kontrast 2.02
+        bağlantılar 1.72 · her çizgi 3:1'in ALTINDA (arama kutusu 1.43)
+
+      ✅ BrandPalette (app/Domain/Settings) — marka renginin OKUNUR
+        varyantını SUNUCUDA hesaplıyor: hedefe doğru 20 adım karıştırıp
+        4.5:1'i geçen ilk adımı seçiyor
+      ✅ fiyat NORMAL METİN RENGİNDE (kullanıcı kararı) → 17.49 / 16.03
+      ✅ genel `a { color: var(--baglanti) }` kuralı
+      ✅ KONTROL SINIRI ile AYRAÇ ayrıldı: --kenar-koyu (3:1) / --kenar
+      ✅ kart ÇERÇEVESİZ — sakin D2C dili
+
+      8 kırma denemesi, 8'i de düştü
+      ⚠️ 4.6AB'nin bir testi burada kırıldı ve TESTİN KENDİSİ düzeltildi
+        (`--marka` alt dizisi arıyordu, meşru `--marka-metin` onu düşürdü)
+
+      DOĞRULANDI (gerçek tarayıcı, iki tema): fiyat 2.02→17.49/16.03 ·
+      bağlantı 1.72→4.96/7.14 · düğme yazısı kırık→8.64
+
+4.6AE ✅ PANELDE KOYU TEMA — 955 test
+      Vitrin 4.6AB'de koyu temaya kavuştu, PANEL KAVUŞMADI — marka sahibi
+      aynı tarayıcıda vitrini koyu, panelini beyaz görüyordu.
+
+      SORUN: renk 25 Vue dosyasında SABİT Tailwind sınıfı (532 geçiş).
+        Her birine `dark:` ikizi yazmak 532 karar demekti ve biri
+        unutulduğunda HATA VERMEDEN okunmaz kalırdı.
+
+      ✅ 54 belirteç (--p-*) üç blokta: :root · sistem tercihi · seçim
+      ✅ @theme inline ile 29 anlamsal ad; 532 sınıf bunlara çevrildi
+        ⚠️ DÜZ @theme DEĞERİ KOPYALIYOR → tema değişince HİÇBİR ŞEY olmaz
+      ✅ text-white BAĞLAMA DUYARLI çevrildi (yalnızca 2 tanesi)
+      ✅ tema düğmesi (aria-pressed) + FOUC koruması @vite'tan ÖNCE
+      ✅ anahtar VİTRİNDEN AYRI: tikmarka-panel-tema
+
+      ⚠️ MEVCUT KUSUR GÖRÜNÜR OLDU: düğme yazısı 3.56 ölçüldü — bloktan
+        ÖNCE de öyleydi. Vurgu #ea580c → #c2410c, sonuç 5.18
+
+      5 kırma denemesi; 3'ü ilk turda düştü, İKİSİ DÜŞMEDİ
+      ⚠️ KÖKÜ TEKTİ: İDDİA YORUMUN İÇİNİ OKUYORDU. `@theme inline` dosyada
+        iki kez geçiyor (yönerge + onu ANLATAN yorum); deneme ve test ikisi
+        de ilk eşleşmeye baktı. Yorumlar ayıklandıktan sonra ikisi de düştü
+      ⚠️ Aynı tuzak 4.6AB'de düzeltilmişti, İKİ BLOK SONRA tekrarlandı
+
+      DOĞRULANDI (gerçek tarayıcı, /yonetim/giris): gövde 16.74/16.03 ·
+      girdi kenarı 6.14/4.55 · düğme yazısı 5.18 (önce 3.56)

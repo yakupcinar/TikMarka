@@ -30,49 +30,49 @@ const durumAdi = { pending: 'Bekleyen', approved: 'Onaylı', rejected: 'Reddedil
 
       <!-- ⚠️ Bekleyen sayısı her sekmede görünüyor: marka onay kuyruğunu
            unutmamalı, yoksa vitrinde hiç yorum çıkmaz. -->
-      <span v-if="bekleyen > 0" class="rounded-full bg-amber-100 text-amber-800 px-3 py-1 text-xs">
+      <span v-if="bekleyen > 0" class="rounded-full bg-uyari-zemin text-uyari px-3 py-1 text-xs">
         {{ bekleyen }} yorum onay bekliyor
       </span>
 
-      <select class="ml-auto rounded-lg border border-stone-300 px-3 py-2 text-sm" :value="durum" @change="suz($event.target.value)">
+      <select class="ml-auto rounded-lg border border-kenar-kontrol px-3 py-2 text-sm" :value="durum" @change="suz($event.target.value)">
         <option v-for="(ad, d) in durumAdi" :key="d" :value="d">{{ ad }}</option>
       </select>
     </div>
 
-    <div v-if="yorumlar.data.length === 0" class="rounded-xl bg-white border border-stone-200 p-10 text-center text-stone-600">
+    <div v-if="yorumlar.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2">
       Bu durumda yorum yok.
     </div>
 
-    <div v-for="y in yorumlar.data" :key="y.uuid" class="rounded-xl bg-white border border-stone-200 p-5 mb-4">
+    <div v-for="y in yorumlar.data" :key="y.uuid" class="rounded-xl bg-yuzey border border-kenar p-5 mb-4">
       <div class="flex items-center gap-3 mb-2">
-        <span class="text-amber-500">{{ '★'.repeat(y.rating) }}<span class="text-stone-300">{{ '★'.repeat(5 - y.rating) }}</span></span>
+        <span class="text-uyari">{{ '★'.repeat(y.rating) }}<span class="text-soluk-2">{{ '★'.repeat(5 - y.rating) }}</span></span>
         <strong v-if="y.title">{{ y.title }}</strong>
-        <span class="text-xs text-stone-500">{{ y.product }}</span>
+        <span class="text-xs text-soluk">{{ y.product }}</span>
         <!-- ⚠️ Panelde TAM AD, vitrinde kısaltılmış (2E). -->
-        <span class="text-xs text-stone-500">· {{ y.customer }} · {{ y.created_at }}</span>
+        <span class="text-xs text-soluk">· {{ y.customer }} · {{ y.created_at }}</span>
       </div>
 
-      <p class="text-sm text-stone-700 mb-3">{{ y.body }}</p>
+      <p class="text-sm text-metin-2 mb-3">{{ y.body }}</p>
 
-      <p v-if="y.moderation_note" class="text-xs text-stone-500 mb-2">Not: {{ y.moderation_note }}</p>
+      <p v-if="y.moderation_note" class="text-xs text-soluk mb-2">Not: {{ y.moderation_note }}</p>
 
       <div v-if="y.status === 'pending'" class="flex gap-2 items-center">
-        <button type="button" class="rounded-lg bg-orange-600 text-white px-4 py-2 text-sm font-semibold" @click="onayla(y)">
+        <button type="button" class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold" @click="onayla(y)">
           Onayla
         </button>
-        <input v-model="not[y.uuid]" placeholder="Ret gerekçesi (isteğe bağlı)" class="flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm">
-        <button type="button" class="rounded-lg border border-red-300 text-red-700 px-4 py-2 text-sm" @click="reddet(y)">
+        <input v-model="not[y.uuid]" placeholder="Ret gerekçesi (isteğe bağlı)" class="flex-1 rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">
+        <button type="button" class="rounded-lg border border-tehlike-kenar text-tehlike px-4 py-2 text-sm" @click="reddet(y)">
           Reddet
         </button>
       </div>
 
-      <span v-else class="text-xs rounded-full bg-stone-200 px-2 py-0.5">{{ durumAdi[y.status] }}</span>
+      <span v-else class="text-xs rounded-full bg-yuzey-3 px-2 py-0.5">{{ durumAdi[y.status] }}</span>
     </div>
 
     <div v-if="yorumlar.links.length > 3" class="mt-4 flex gap-1 text-sm">
       <a v-for="b in yorumlar.links" :key="b.label" :href="b.url ?? ''"
-         class="rounded border border-stone-300 px-3 py-1 bg-white"
-         :class="{ 'bg-orange-600 text-white border-orange-600': b.active, 'opacity-40 pointer-events-none': !b.url }"
+         class="rounded border border-kenar-kontrol px-3 py-1 bg-yuzey"
+         :class="{ 'bg-vurgu text-white border-vurgu': b.active, 'opacity-40 pointer-events-none': !b.url }"
          v-html="b.label" />
     </div>
   </PanelDuzeni>

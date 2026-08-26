@@ -168,14 +168,17 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 
 * ~~Panelde Müşteri sekmesi~~ → **4.6AC'de kapandı** (`customer.view` izni Faz 1'den beri tanımlıydı ama hiçbir rota kullanmıyordu — o da düzeldi)
 
-* ~~Mobil-tablet uyumu ve dark mode~~ → **4.6AB'de kapandı (VİTRİN)**
+* ~~Mobil-tablet uyumu ve dark mode~~ → **4.6AB'de (vitrin) ve 4.6AE'de (panel) kapandı**
 
-> ⚠️ **Panel dâhil değil**: ayrı sistem (Tailwind) ve vitrinin temasından
-> bilerek bağımsız. Panelin koyu teması ve mobil uyumu, aşağıdaki
-> **tasarım yenilemesi** maddesine ait.
+> ⚠️ Panel ayrı bir sistem (Tailwind) ve vitrinin temasından bilerek
+> bağımsız — bu yüzden ayrı blokta yapıldı. Tema seçimi de ayrı
+> saklanıyor: panel bizim arayüzümüz, vitrin markanın.
 >
-> ⚠️ Görünümün kendisi tarayıcıda denenmeli — araç yerel sertifikalı
-> adrese ulaşamadığı için görsel doğrulama yapılamadı.
+> ✅ **Görsel doğrulama artık yapılıyor.** 4.6AB'de "araç yerel sertifikalı
+> adrese ulaşamıyor" diye yapılamamıştı; **ngrok tüneli** bunu çözdü ve
+> 4.6AD/4.6AE'de renkler tarayıcıda tek tek ölçüldü. Ölçüm, görsel
+> kararları ilk kez **sınanabilir sayıya** çevirdi — bloktan önce var olan
+> bir kusur (düğme yazısı 3,56) böyle bulundu.
 
 * Lazy Loading (Tembel Yükleme): Ana sayfada çok fazla ürün listeleneceği için aşağı kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını uçurur.
 
@@ -282,6 +285,8 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Varyant seçicisi yalnızca bir düzendeydi (`vitrinli` markalar düz liste görüyordu) | Ürün sayfası → **eksen kutucukları** her iki düzende de | 4.6A.1 |
 | Vitrin koyu tema ve mobil uyumu yoktu | Üst barın sağında **☾/☀ düğmesi** · sistem tercihi de okunuyor · telefon/tablet kırılma noktaları | 4.6AB |
 | Ürün sayfasının altında öneri yoktu | **Benzer ürünler** (kategori → marka → en yeniler) ve **Çok satanlar** (ödenmiş siparişlerden) | 4.6E |
+| Fiyat ve bağlantılar marka renginde, koyu temada okunmuyordu (kontrast 2,02) | Marka renginin **okunur varyantı** sunucuda hesaplanıyor · fiyat normal metin renginde · her çizgi WCAG eşiğinde | 4.6AD |
+| Panelde koyu tema yoktu (renk 25 dosyada **532 sabit sınıf**) | Panel üst barında **☾/☀ düğmesi** · sistem tercihi de okunuyor · renkler belirteçten geliyor | 4.6AE |
 | Panelde müşteri sekmesi yoktu (`customer.view` izni ölüydü) | Panel → **Müşteriler** → müşteri → siparişler, favoriler, başarısız ödemeler · salt okunur | 4.6AC |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |
 
