@@ -2,6 +2,10 @@
 
 > Bu belge **ne olduğunu** anlatır, **neden** öyle olduğunu değil.
 > Gerekçeler `pre-setup.md`'de (M-1…M-4), veri modeli `domain-model.md`'de.
+>
+> ⚠️ Konteynerlerin ne işe yaradığını bilmiyorsan önce
+> **`mimari-ogretici.md`** — aynı mimariyi sıfırdan, her kutunun neden
+> ayrı olduğunu ve nerede ısırdığını anlatıyor.
 
 ## 0. Bir cümlede
 

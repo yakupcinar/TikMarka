@@ -10,6 +10,7 @@ marka başına ayrı **şema** (`tenant_<uuid>`), merkez veriler `public` şemas
 | `PLAN.md` | Yol haritası + **şu an neredeyiz**. Her madde gerekçesiyle yazılı. |
 | `docs/summary.md` | Tek sayfalık özet — hızlı bağlam için buradan başla. |
 | `docs/mimari.md` | **Kuşbakışı mimari** — konteynerler, yüzeyler, dış servisler, istek akışı. |
+| `docs/mimari-ogretici.md` | Aynı mimari **sıfırdan**: her kutu ne, neden ayrı, nasıl ısırdı. |
 | `docs/pre-setup.md` | Mimari kararlar (M-1…M-4) ve **neden** öyle olduğu. |
 | `docs/domain-model.md` | Veri modeli, tablo tablo. |
 
