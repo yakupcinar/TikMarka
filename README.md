@@ -296,6 +296,7 @@ veya dağıtım için izin gerekir.
 | Ürün sayfasının altında öneri yoktu | **Benzer ürünler** (kategori → marka → en yeniler) ve **Çok satanlar** (ödenmiş siparişlerden) | 4.6E |
 | Fiyat ve bağlantılar marka renginde, koyu temada okunmuyordu (kontrast 2,02) | Marka renginin **okunur varyantı** sunucuda hesaplanıyor · fiyat normal metin renginde · her çizgi WCAG eşiğinde | 4.6AD |
 | Panel menüsü 14 maddeyle **masaüstünde bile 289px taşıyordu**, telefonda tablolar sayfayı yatay kaydırıyordu | Menü **yan menüye** taşındı (gruplu, etkin sayfa işaretli) · dar ekranda çekmece · 14 tablo kaydırma kabında | 4.6AF |
+| Vitrinde **12 farklı yazı boyutu** ve 6 yarıçap dolaşıyordu | Ölçek **6 basamağa** indi (12·14·16·20·24·32), yarıçap panelle aynı 3 basamağa · ürün adı 16px · yazı tipi markanın kaldı | 4.6AH |
 | Panelde hiyerarşi yoktu: her şey 14px, gölge/odak stili/geçiş yok, 4 farklı yarıçap | Asıl veri **16px**, sütun başlığı etiket, tutarlar hizalı · 3 yarıçap basamağı · açık temada gölge, koyu temada yüzey basamağı · yazılmış odak halkası | 4.6AG |
 | Panelde sayfalama düğmelerinde **`pagination.next`** yazıyordu (Türkçe çeviri dosyası hiç yoktu) | Düğmelerde **« Önceki / Sonraki »** | 4.6AF.1 |
 | Panel telefonda kullanılamıyordu: 14 sayfanın 5'i yatay kayıyor, ızgaralar içeriği 118px'e sıkıştırıyordu | 375px'te **14 sayfanın 14'ü** temiz · ızgaralar mobilde alt alta, masaüstünde 2–3 sütun | 4.6AF.1 |

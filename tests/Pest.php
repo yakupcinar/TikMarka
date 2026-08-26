@@ -897,3 +897,23 @@ function panelSayfalari(): array
         ),
     ));
 }
+
+/**
+ * Vitrini açık, adı belli bir marka kurar.
+ *
+ * ⚠️ BURADA OLMAK ZORUNDA. İlk hâli `VitrinTest.php`'de tanımlıydı ve
+ * `VitrinOlcekTest.php` onu kullanınca "tanımsız fonksiyon" ile düştü —
+ * dosya yükleme sırasına bağlı, tüm süitte görünmeyen sessiz bağımlılık.
+ * `panelSayfalari()` ile aynı hikâye, iki blok arayla.
+ */
+function vitrinliMarka(string $alanAdi = 'marka-a.test', string $ad = 'Ada Kozmetik'): void
+{
+    markaKur($alanAdi);
+    magazayiHazirla();
+
+    // ⚠️ `magazayiHazirla()` name'i "Test Markası" yapıyor — sonra yazılmalı.
+    app(SettingsService::class)
+        ->yaz(SettingGroup::Store, 'name', $ad);
+
+    app(StorePublication::class)->yayinla();
+}

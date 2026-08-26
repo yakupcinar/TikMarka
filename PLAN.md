@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AG BİTTİ — görsel dil sistemi kuruldu ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AH BİTTİ — ölçek iki yüzeyde de aynı ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -8014,6 +8014,67 @@ satır dolgusu      p-3 — DEĞİŞMEDİ
 ```
 
 **972 test.**
+
+---
+
+### 4.6AH — aynı ölçek vitrine
+
+4.6AG panelde kuruldu; vitrin ayrı bir sistem (ham CSS, marka yazı tipi,
+iki düzen) olduğu için ayrı blokta yapıldı.
+
+**Sorun panelin TERSİYDİ, sonuç aynı.** Panelde ölçek YOKTU (225 kullanım
+tek boyutta); vitrinde **fazla vardı**:
+
+```
+yazı boyutu   12 · 13 · 14 · 15 · 16 · 17 · 18 · 20 · 24 · 26 · 28 · 34
+yarıçap        6 ·  8 · 10 · 12 · 999 · 50%
+```
+
+On iki boyut ve altı yarıçap. Biri her şeyi eşitliyor, öteki hiçbir şeyi;
+ikisinde de hiyerarşi okunmuyor.
+
+Ölçek **altı basamağa** indi (12 · 14 · 16 · 20 · 24 · 32), yarıçap
+panelle **aynı üç basamağa** (6/10/14). 26 boyut ve 20 yarıçap değeri
+belirtece bağlandı; kural gövdelerinde tek bir sabit piksel kalmadı.
+
+⚠️ **YAZI TİPİNE DOKUNULMADI.** `--yazi` marka ayarından geliyor (4-K5);
+sistemleşen şey yalnızca boyut ve yarıçap. Marka serif de seçse sans da
+seçse ölçek aynı çalışıyor.
+
+⚠️ **`999px` ÖLÇEĞE SOKULMADI.** Hap biçimi bir basamak değil, "tam
+yuvarlak" demenin yolu; ölçeğe sokulsaydı rozet boyutuna göre değişirdi.
+
+**Derinlik seçici uygulandı — ve bir karar korundu.**
+
+> ⚠️ Ürün kartı 4.6AD'de **bilerek** çerçevesiz bırakılmıştı (sakin D2C
+> dili). Derinlik eklerken en kolay hata her kaba gölge dağıtmak olurdu
+> ve o karar **sessizce geri alınırdı**. Gölge yalnızca gerçekten
+> yükseltilmiş yüzeyde: üst bar, ödeme özeti, adres kartı. Kartın
+> gölgesiz kaldığını ölçen ayrı bir test var.
+
+Odak halkası vitrinde **zaten yazılıydı** — panelde eksik olan oydu,
+burada eksik olan geçişti. Geçiş katmanı ve `prefers-reduced-motion`
+koruması eklendi.
+
+**Yedi kırma denemesi, yedisi de düştü** (sabit boyut · sabit yarıçap ·
+koyu temanın bir bloğunda gölgeyi açık bırak · karta gölge koy · hareket
+korumasını kaldır · `:focus`e düşür · belirteci sil).
+
+⚠️ **Test yardımcısı ikinci kez ısırdı.** `vitrinliMarka()` başka test
+dosyasında tanımlıydı; `tests/Pest.php`'ye taşındı — `panelSayfalari()`
+ile aynı hikâye, bir blok arayla. Kural yazılı olmasına rağmen iki kez
+tekrarlandı.
+
+DOĞRULANDI (gerçek vitrin, iki tema, **iki düzen**):
+
+```
+ölçek        12 · 14 · 16 · 20 · 24 · 32     yarıçap  6 · 10 · 14
+kural gövdesinde sabit boyut  0              sabit yarıçap  0 (999px hariç)
+gölge        açık: var · koyu: none          kart: gölgesiz
+ürün adı     15px → 16px                     geçiş: 0.15s
+```
+
+**979 test.**
 
 ---
 ---

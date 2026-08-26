@@ -113,6 +113,42 @@
             --yildiz: #ca8a04;
             --baglanti: #c2410c;
             --golge: rgba(0, 0, 0, .08);
+
+            /*
+            | ── ÖLÇEK (4.6AH) ────────────────────────────────────────
+            |
+            | ★ ÖLÇÜLEN DURUM: vitrinde ON İKİ farklı yazı boyutu ve
+            | ALTI farklı yarıçap dolaşıyordu. Panelin sorununun TERSİ:
+            | orada ölçek yoktu (her şey 14px), burada fazla vardı —
+            | ikisi de aynı sonuca çıkıyor, hiyerarşi okunmuyor.
+            |
+            | Altı basamak: 12 · 14 · 16 · 20 · 24 · 32.
+            |
+            | ⚠️ AİLE DEĞİL BOYUT. Yazı tipi (`--yazi`) MARKA AYARINDAN
+            | geliyor (4-K5) ve ona dokunulmuyor; sistemleşen şey yalnızca
+            | boyut ve yarıçap. Marka serif de seçse sans da seçse ölçek
+            | aynı çalışıyor.
+            */
+            --boyut-xs: 12px;
+            --boyut-sm: 14px;
+            --boyut-md: 16px;
+            --boyut-lg: 20px;
+            --boyut-xl: 24px;
+            --boyut-2xl: 32px;
+
+            /* Yarıçap: rolü belirliyor, boyutu değil — panelle aynı ölçek. */
+            --r-sm: 6px;
+            --r-md: 10px;
+            --r-lg: 14px;
+
+            /*
+            | ⚠️ GÖLGE KONTRASTLA GÖRÜNÜR — koyu temada `none`.
+            | Koyu zeminde koyu gölge yok hükmünde; orada derinlik
+            | YÜZEY AÇIKLIĞIYLA anlatılıyor (`--yuzey`, `--yuzey-2`).
+            */
+            --golge-1: 0 1px 2px rgb(28 25 23 / .06), 0 1px 3px rgb(28 25 23 / .04);
+            --golge-2: 0 2px 4px rgb(28 25 23 / .06), 0 4px 12px rgb(28 25 23 / .08);
+            --golge-3: 0 8px 24px rgb(28 25 23 / .12);
         }
 
         /*
@@ -159,6 +195,11 @@
                 --yildiz: #facc15;
                 --baglanti: #fb923c;
                 --golge: rgba(0, 0, 0, .4);
+
+                /* ⚠️ Koyu temada gölge YOK — derinlik yüzey açıklığıyla. */
+                --golge-1: none;
+                --golge-2: none;
+                --golge-3: none;
             }
         }
 
@@ -185,6 +226,11 @@
             --yildiz: #facc15;
             --baglanti: #fb923c;
             --golge: rgba(0, 0, 0, .4);
+
+                /* ⚠️ Koyu temada gölge YOK — derinlik yüzey açıklığıyla. */
+                --golge-1: none;
+                --golge-2: none;
+                --golge-3: none;
         }
 
         * { box-sizing: border-box; }
@@ -224,6 +270,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            box-shadow: var(--golge-1);
         }
 
         header .kapsa {
@@ -235,7 +282,7 @@
         }
 
         .logo {
-            font-size: 20px;
+            font-size: var(--boyut-lg);
             font-weight: 800;
             color: var(--marka-metin);
             text-decoration: none;
@@ -248,7 +295,7 @@
         .ara input {
             padding: 8px 12px;
             border: 1px solid var(--kenar-koyu);
-            border-radius: 8px;
+            border-radius: var(--r-md);
             font: inherit;
             min-width: 200px;
         }
@@ -265,7 +312,7 @@
             */
             color: var(--marka-uzeri);
             border: 0;
-            border-radius: 8px;
+            border-radius: var(--r-md);
             padding: 8px 16px;
             font: inherit;
             cursor: pointer;
@@ -281,7 +328,7 @@
             color: var(--marka-uzeri);
             border-radius: 999px;
             padding: 1px 8px;
-            font-size: 13px;
+            font-size: var(--boyut-sm);
             margin-left: 4px;
         }
 
@@ -320,7 +367,7 @@
             flex-direction: column;
         }
 
-        .kart img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--yuzey); display: block; border-radius: 10px; }
+        .kart img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--yuzey); display: block; border-radius: var(--r-md); }
 
         /*
         | ⚠️ GÖRSELSİZ ÜRÜN için gerçek bir yer tutucu. Önce boş bir SVG
@@ -333,12 +380,12 @@
             place-items: center;
             background: linear-gradient(135deg, var(--yuzey), var(--kenar));
             color: var(--soluk-2);
-            font-size: 13px;
+            font-size: var(--boyut-sm);
         }
         /* ⚠️ Yatay iç boşluk KALKTI: kartın çerçevesi yok, metni görselin
            kenarına hizalamak gerekiyor. Kalsaydı metin içeri kaçık dururdu. */
         .kart .govde { padding: 10px 0 0; display: flex; flex-direction: column; gap: 3px; }
-        .kart .ad { font-weight: 600; font-size: 15px; }
+        .kart .ad { font-weight: 600; font-size: var(--boyut-md); }
                 /* ⚠️ FİYAT MARKA RENGİNDE DEĞİL (4.6AD — kullanıcı kararı).
            Ölçüldü: Trendyol, Hepsiburada ve Shopify Dawn'ın üçü de fiyatı
            nötr renkte yazıyor. Marka renginde yazıldığında koyu temada
@@ -350,6 +397,31 @@
 
         /* GÖRSEL İYİLEŞTİRME (4.5F) — yeni yapı değil, mevcut yapının cilası */
         .kart { transition: opacity .15s; }
+
+        /*
+        | ── ETKİLEŞİM (4.6AH) ────────────────────────────────────────
+        |
+        | Vitrinde iki geçiş vardı (`.kart` ve `.dugme`); geri kalan her
+        | kontrol anlık zıplıyordu. Odak halkası zaten yazılıydı — panelde
+        | eksik olan oydu, burada eksik olan geçişti.
+        |
+        | ⚠️ `all` YAZILMIYOR: yerleşim özellikleri de animasyona girer ve
+        | liste kayarken sürüklenir. Yalnızca etkileşimde değişenler.
+        |
+        | ⚠️ `prefers-reduced-motion` ŞART: hareket duyarlılığı olan
+        | müşteri için animasyon rahatsızlık değil ENGEL.
+        */
+        a, button, input, select, textarea, summary {
+            transition: background-color .15s cubic-bezier(.2, 0, .2, 1),
+                        border-color .15s cubic-bezier(.2, 0, .2, 1),
+                        color .15s cubic-bezier(.2, 0, .2, 1),
+                        box-shadow .15s cubic-bezier(.2, 0, .2, 1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            a, button, input, select, textarea, summary,
+            .kart, .dugme { transition-duration: .01ms; }
+        }
                 /* ⚠️ Gölge de BELİRTEÇTEN: koyu zeminde siyah gölge görünmüyor,
            daha koyu ve geniş olması gerekiyor. Sabit `rgb(0 0 0 / .08)`
            bırakılsaydı koyu temada kartların yükselme etkisi kaybolurdu
@@ -382,15 +454,15 @@
 
         /* ÜRÜN SAYFASI */
         .urun { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 32px 0; }
-        .urun-gorsel { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--yuzey); }
+        .urun-gorsel { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-lg); background: var(--yuzey); }
         .bos-gorsel { display: grid; place-items: center; color: var(--soluk-2); }
         .marka-adi { color: var(--soluk); margin-top: -8px; }
-        .fiyat-buyuk { font-size: 28px; font-weight: 800; color: var(--metin); }
+        .fiyat-buyuk { font-size: var(--boyut-2xl); font-weight: 800; color: var(--metin); }
         .ekle-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin: 20px 0; }
-        .ekle-form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
-        .ekle-form input, .ekle-form select { padding: 8px; border: 1px solid var(--kenar-koyu); border-radius: 8px; font: inherit; }
+        .ekle-form label { display: flex; flex-direction: column; gap: 4px; font-size: var(--boyut-sm); }
+        .ekle-form input, .ekle-form select { padding: 8px; border: 1px solid var(--kenar-koyu); border-radius: var(--r-md); font: inherit; }
         .ekle-form input[type=number] { width: 80px; }
-        .dugme.buyuk { padding: 12px 24px; font-size: 16px; font-weight: 600; }
+        .dugme.buyuk { padding: 12px 24px; font-size: var(--boyut-md); font-weight: 600; }
         .aciklama { margin-top: 24px; color: var(--metin-2); }
 
         /* SEPET */
@@ -405,12 +477,12 @@
         /* VARYANT SEÇİCİSİ (4.6A) */
         .varyant-secici { margin: 16px 0; }
         .eksen { margin-bottom: 12px; }
-        .eksen-ad { display: block; font-size: 14px; color: var(--metin-2); margin-bottom: 6px; }
+        .eksen-ad { display: block; font-size: var(--boyut-sm); color: var(--metin-2); margin-bottom: 6px; }
         .kutucuklar { display: flex; flex-wrap: wrap; gap: 8px; }
         .kutucuk {
             display: inline-flex; align-items: center; gap: 6px;
             border: 1px solid var(--kenar-koyu); background: var(--zemin); color: var(--metin);
-            border-radius: 8px; padding: 8px 14px; font: inherit; cursor: pointer;
+            border-radius: var(--r-md); padding: 8px 14px; font: inherit; cursor: pointer;
         }
         .kutucuk.secili { border-color: var(--metin); box-shadow: inset 0 0 0 1px var(--metin); }
 
@@ -431,19 +503,19 @@
         .sepet-tablo td { border-bottom: 1px solid var(--kenar); padding: 14px 8px; vertical-align: top; }
         .sepet-tablo tr.olu { opacity: .55; }
         .satir-form { display: flex; gap: 6px; }
-        .satir-form input { width: 64px; padding: 6px; border: 1px solid var(--kenar-koyu); border-radius: 6px; font: inherit; }
-        .satir-form button, .sil { padding: 6px 10px; border: 1px solid var(--kenar-koyu); background: var(--zemin); border-radius: 6px; cursor: pointer; font: inherit; }
+        .satir-form input { width: 64px; padding: 6px; border: 1px solid var(--kenar-koyu); border-radius: var(--r-sm); font: inherit; }
+        .satir-form button, .sil { padding: 6px 10px; border: 1px solid var(--kenar-koyu); background: var(--zemin); border-radius: var(--r-sm); cursor: pointer; font: inherit; }
         .sil { color: var(--tehlike-metin); }
-        .uyari { color: var(--uyari-metin); font-size: 13px; margin-top: 4px; }
+        .uyari { color: var(--uyari-metin); font-size: var(--boyut-sm); margin-top: 4px; }
         .kupon-form { display: flex; gap: 8px; align-items: center; margin: 20px 0; flex-wrap: wrap; }
-        .kupon-form input { padding: 8px 12px; border: 1px solid var(--kenar-koyu); border-radius: 8px; font: inherit; }
-        .ipucu { color: var(--soluk); font-size: 13px; }
+        .kupon-form input { padding: 8px 12px; border: 1px solid var(--kenar-koyu); border-radius: var(--r-md); font: inherit; }
+        .ipucu { color: var(--soluk); font-size: var(--boyut-sm); }
 
         /* ── Tema düğmesi (4.6AB) ────────────────────────────────── */
         .tema-dugme {
             border: 1px solid var(--kenar-koyu); background: var(--zemin); color: var(--metin);
             border-radius: 999px; width: 36px; height: 36px; cursor: pointer;
-            font: inherit; font-size: 15px; line-height: 1; flex: none;
+            font: inherit; font-size: var(--boyut-md); line-height: 1; flex: none;
         }
 
         /* ⚠️ İki simge de basılıyor, biri gizleniyor: JavaScript'in metni
@@ -464,28 +536,28 @@
         .oneri .izgara { padding-top: 16px; }
 
         /* ── Kategori gezinme (4.6B) ─────────────────────────────── */
-        .kirinti { font-size: 13px; color: var(--soluk); margin: 0 0 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .kirinti { font-size: var(--boyut-sm); color: var(--soluk); margin: 0 0 12px; display: flex; gap: 6px; flex-wrap: wrap; }
         .kirinti a { color: var(--metin-2); }
         .kategori-agaci { list-style: none; padding: 0; margin: 16px 0 0; }
         .kategori-agaci li { padding: 7px 0; border-bottom: 1px solid var(--yuzey); }
         .alt-kategoriler { list-style: none; padding: 0; margin: 0 0 20px; display: flex; gap: 8px; flex-wrap: wrap; }
         .alt-kategoriler a {
             display: inline-block; padding: 6px 12px; border: 1px solid var(--kenar-koyu);
-            border-radius: 999px; text-decoration: none; font-size: 14px;
+            border-radius: 999px; text-decoration: none; font-size: var(--boyut-sm);
         }
 
         /* ── Favoriler (4.6D) ────────────────────────────────────── */
         .favori-form { margin: 12px 0; }
-        .favori { padding: 8px 14px; border: 1px solid var(--kenar-koyu); border-radius: 6px; background: var(--zemin); cursor: pointer; font: inherit; }
+        .favori { padding: 8px 14px; border: 1px solid var(--kenar-koyu); border-radius: var(--r-sm); background: var(--zemin); cursor: pointer; font: inherit; }
         .favori-dolu { border-color: var(--tehlike); color: var(--tehlike); }
         .favori-listesi { list-style: none; padding: 0; margin: 16px 0 0; }
         .favori-satir { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--yuzey); flex-wrap: wrap; }
-        .favori-gorsel { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; }
+        .favori-gorsel { width: 64px; height: 64px; object-fit: cover; border-radius: var(--r-sm); }
         .favori-bilgi { flex: 1; min-width: 160px; }
 
         /* ── Yorumlar (4.6C) ─────────────────────────────────────── */
         .yorumlar { margin-top: 40px; border-top: 1px solid var(--kenar); padding-top: 24px; }
-        .yorum-ozet { font-size: 18px; margin: 0 0 16px; }
+        .yorum-ozet { font-size: var(--boyut-lg); margin: 0 0 16px; }
         .yorum-listesi { list-style: none; padding: 0; margin: 0 0 24px; }
         .yorum { border-bottom: 1px solid var(--yuzey); padding: 14px 0; }
         .yorum-bas { margin: 0 0 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
@@ -494,70 +566,70 @@
         .yorum-baslik, .yorum-metin { margin: 0 0 6px; }
         .yorum-metin { white-space: pre-line; }
         .yorum-form { display: grid; gap: 8px; max-width: 520px; }
-        .yorum-form label { font-weight: 600; font-size: 14px; }
+        .yorum-form label { font-weight: 600; font-size: var(--boyut-sm); }
         .yorum-form input, .yorum-form select, .yorum-form textarea {
-            padding: 8px 10px; border: 1px solid var(--kenar-koyu); border-radius: 6px; font: inherit; width: 100%;
+            padding: 8px 10px; border: 1px solid var(--kenar-koyu); border-radius: var(--r-sm); font: inherit; width: 100%;
         }
-        .yorum-form button { justify-self: start; padding: 8px 16px; border: 0; border-radius: 6px; background: var(--metin); color: var(--zemin); cursor: pointer; font: inherit; }
+        .yorum-form button { justify-self: start; padding: 8px 16px; border: 0; border-radius: var(--r-sm); background: var(--metin); color: var(--zemin); cursor: pointer; font: inherit; }
 
         /* ⚠️ Ödemeden vazgeçme (4.6Z) — iframe'in ALTINDA ve sade tutuluyor:
            kart formunun yanında dikkat çeken bir düğme, ödemeye devam etmek
            isteyen müşteriyi tereddüde düşürürdü. */
         .odeme-vazgec { margin-top: 16px; }
-        .engel-kutusu { background: var(--uyari-zemin); border: 1px solid var(--uyari-kenar); border-radius: 10px; padding: 14px 18px; margin: 20px 0; }
+        .engel-kutusu { background: var(--uyari-zemin); border: 1px solid var(--uyari-kenar); border-radius: var(--r-md); padding: 14px 18px; margin: 20px 0; }
 
         /* BİLDİRİMLER */
-        .bildirim { padding: 12px 18px; border-radius: 10px; margin: 16px 0; }
+        .bildirim { padding: 12px 18px; border-radius: var(--r-md); margin: 16px 0; }
         .bildirim.iyi { background: var(--basari-zemin); border: 1px solid var(--basari-kenar); }
         .bildirim.kotu { background: var(--hata-zemin); border: 1px solid var(--hata-kenar); }
 
         /* ÖDEME */
         .odeme-form { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; padding: 24px 0; align-items: start; }
-        .odeme-form h2 { font-size: 17px; margin: 24px 0 8px; }
-        .odeme-form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; margin-bottom: 12px; }
+        .odeme-form h2 { font-size: var(--boyut-lg); margin: 24px 0 8px; }
+        .odeme-form label { display: flex; flex-direction: column; gap: 4px; font-size: var(--boyut-sm); margin-bottom: 12px; }
         .odeme-form input[type=text], .odeme-form input[type=email], .odeme-form input[type=tel] {
-            padding: 9px 12px; border: 1px solid var(--kenar-koyu); border-radius: 8px; font: inherit;
+            padding: 9px 12px; border: 1px solid var(--kenar-koyu); border-radius: var(--r-md); font: inherit;
         }
         .ikili { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .odeme-sag { background: var(--zemin); border: 1px solid var(--kenar); border-radius: 12px; padding: 20px; position: sticky; top: 90px; }
+        .odeme-sag { background: var(--zemin); border: 1px solid var(--kenar); border-radius: var(--r-lg); padding: 20px; position: sticky; top: 90px; box-shadow: var(--golge-1); }
         .ozet { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-        .ozet td { padding: 6px 0; border-bottom: 1px solid var(--yuzey); font-size: 14px; }
+        .ozet td { padding: 6px 0; border-bottom: 1px solid var(--yuzey); font-size: var(--boyut-sm); }
         .ozet .sag { text-align: right; white-space: nowrap; }
         .onay { flex-direction: row !important; align-items: flex-start; gap: 8px; margin: 16px 0; }
         .onay input { margin-top: 4px; }
 
         /* "VİTRİNLİ" DÜZENİ (4G) — yalnızca yerleşim farkı, ayrı tema değil */
         .karsilama { padding: 48px 0 8px; text-align: center; }
-        .karsilama h1 { font-size: 34px; margin: 0 0 8px; }
+        .karsilama h1 { font-size: var(--boyut-2xl); margin: 0 0 8px; }
         .karsilama p { color: var(--soluk); margin: 0; }
         .urun-genis { grid-template-columns: 1fr; max-width: 720px; margin: 0 auto; }
 
         /* MÜŞTERİ HESABI (4.5D) */
         .hesap { max-width: 900px; margin: 0 auto; padding: 24px 0; }
         .hesap-dar { max-width: 460px; margin: 0 auto; padding: 24px 0; }
-        .hesap-dar label, .hesap-adres label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; margin-bottom: 12px; }
-        .hesap-dar input { padding: 9px 12px; border: 1px solid var(--kenar-koyu); border-radius: 8px; font: inherit; }
+        .hesap-dar label, .hesap-adres label { display: flex; flex-direction: column; gap: 4px; font-size: var(--boyut-sm); margin-bottom: 12px; }
+        .hesap-dar input { padding: 9px 12px; border: 1px solid var(--kenar-koyu); border-radius: var(--r-md); font: inherit; }
         .hesap-bas { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .hesap-cikis { margin-left: auto; }
         .onay-satiri { flex-direction: row !important; align-items: flex-start; gap: 8px; }
-        .adres-kart { border: 1px solid var(--kenar); border-radius: 10px; padding: 14px; margin-bottom: 12px; background: var(--zemin); }
-        .adres-baslik { display: inline-block; background: var(--yuzey); border-radius: 999px; padding: 1px 10px; font-size: 12px; margin-bottom: 4px; }
+        .adres-kart { border: 1px solid var(--kenar); border-radius: var(--r-md); padding: 14px; margin-bottom: 12px; background: var(--zemin); box-shadow: var(--golge-1); }
+        .adres-baslik { display: inline-block; background: var(--yuzey); border-radius: 999px; padding: 1px 10px; font-size: var(--boyut-xs); margin-bottom: 4px; }
 
         /* YASAL METİN (4.5A) */
         .yasal { max-width: 760px; margin: 0 auto; padding: 32px 0; }
-        .yasal h1 { font-size: 26px; }
-        .yasal-surum { color: var(--soluk); font-size: 14px; margin-top: -8px; }
+        .yasal h1 { font-size: var(--boyut-xl); }
+        .yasal-surum { color: var(--soluk); font-size: var(--boyut-sm); margin-top: -8px; }
         .yasal-metin { margin-top: 20px; color: var(--metin-2); }
         .yasal-liste { line-height: 2.2; }
         footer a { color: inherit; }
 
         /* GÖMÜLÜ ÖDEME (4.5-K1) */
         .odeme-gomulu { max-width: 760px; margin: 0 auto; padding: 24px 0; }
-        .odeme-cercevesi { width: 100%; min-height: 640px; border: 1px solid var(--kenar); border-radius: 12px; background: var(--zemin); }
+        .odeme-cercevesi { width: 100%; min-height: 640px; border: 1px solid var(--kenar); border-radius: var(--r-lg); background: var(--zemin); }
 
         /* SONUÇ */
         .sonuc { padding: 56px 0; text-align: center; }
-        .siparis-no { font-size: 17px; }
+        .siparis-no { font-size: var(--boyut-lg); }
 
         /*
         | ── MOBİL VE TABLET (4.6AB) ──────────────────────────────────
@@ -614,7 +686,7 @@
 
             .yorum-form { max-width: none; }
             .favori-gorsel { width: 48px; height: 48px; }
-            .fiyat-buyuk { font-size: 24px; }
+            .fiyat-buyuk { font-size: var(--boyut-xl); }
 
             /* ⚠️ Dokunma hedefi: 36px'lik düğme parmakla ıskalanıyor. */
             .tema-dugme { width: 40px; height: 40px; }
@@ -625,7 +697,7 @@
             margin-top: 48px;
             padding: 24px 0;
             color: var(--soluk);
-            font-size: 14px;
+            font-size: var(--boyut-sm);
         }
     </style>
 </head>

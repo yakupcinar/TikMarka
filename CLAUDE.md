@@ -972,6 +972,26 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   tipografi büyüdü, **dolgu büyümedi**. Kararı ölçen test var — yoksa
   ileride biri sessizce geri alır.
 
+- **ÖLÇEĞİN YOKLUĞU İLE FAZLALIĞI AYNI SONUCU VERİR: hiyerarşi okunmaz.**
+  Panelde 225 kullanım tek boyuttaydı (4.6AG), vitrinde **on iki** farklı
+  boyut ve **altı** yarıçap vardı (4.6AH). Biri her şeyi eşitliyor, öteki
+  hiçbir şeyi. İkisinde de çözüm aynı: sayılı basamak, ve basamağı öğenin
+  **rolü** seçiyor, boyutu değil.
+  ⚠️ `999px` (hap) ölçeğe SOKULMAZ — o bir basamak değil, "tam yuvarlak"
+  demenin yolu; sokulursa rozet boyutuna göre değişir.
+- **DERİNLİK EKLERKEN "HER KABA GÖLGE" ÖNCEKİ BİR KARARI SESSİZCE GERİ
+  ALIR.** Ürün kartı 4.6AD'de bilerek çerçevesiz bırakılmıştı (sakin D2C
+  dili); 4.6AH'de gölge dağıtılsaydı o karar kaybolurdu ve kimse fark
+  etmezdi. Gölge yalnızca **gerçekten yükseltilmiş** yüzeye (sticky bar,
+  özet paneli, açılır liste). Korunacak kararın kendi testi olmalı.
+- **`tests/Pest.php`'YE TAŞIMA KURALI YAZILI OLMASINA RAĞMEN İKİ KEZ
+  TEKRARLANDI** (`panelSayfalari()` 4.6AG · `vitrinliMarka()` 4.6AH).
+  Yeni bir test dosyası açarken kullanacağın her yardımcının **nerede
+  tanımlı olduğuna** bak; tek dosyada duruyorsa önce taşı, sonra kullan.
+  ⚠️ Taşırken tam nitelikli ad kullanılıyorsa sınıfın gerçek ad alanını
+  doğrula: `SettingGroup` `App\Domain\Settings` değil **`App\Enums`**
+  altında ve yanlış yazıldığında 14 test birden düşüyor.
+
 ## Yapı
 
 ```

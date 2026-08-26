@@ -4,7 +4,6 @@ use App\Domain\Cart\CartService;
 use App\Domain\Catalog\ProductService;
 use App\Domain\Catalog\VariantService;
 use App\Domain\Settings\SettingsService;
-use App\Domain\Settings\StorePublication;
 use App\Domain\Settings\ThemeSettings;
 use App\Enums\ProductStatus;
 use App\Enums\SettingGroup;
@@ -30,18 +29,6 @@ use App\Models\ProductVariant;
 | ⚠️ Ayrıca HTML/JSON ayrımını ölçen testlerde de `getJson` olmaz:
 | başlığı otomatik eklediği için ölçülecek şeyi ortadan kaldırır (2E).
 */
-
-/** Vitrini açık, adı belli bir marka kurar. */
-function vitrinliMarka(string $alanAdi = 'marka-a.test', string $ad = 'Ada Kozmetik'): void
-{
-    markaKur($alanAdi);
-    magazayiHazirla();
-
-    // ⚠️ `magazayiHazirla()` name'i "Test Markası" yapıyor — sonra yazılmalı.
-    app(SettingsService::class)->yaz(SettingGroup::Store, 'name', $ad);
-
-    app(StorePublication::class)->yayinla();
-}
 
 /** Satılabilir ürün — vitrinde görünmesi için Active olmak ZORUNDA. */
 function vitrinUrunu(string $baslik, string $sku, ProductStatus $durum = ProductStatus::Active): Product

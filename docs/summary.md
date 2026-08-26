@@ -3319,3 +3319,38 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       DOĞRULANDI (gerçek panel, iki tema): kart 14px · düğme 10px ·
       gölge açık var/koyu none · sipariş no 16px/500 · başlık 12px büyük
       harf · odak halkası 2px, açık 5.18 koyu 6.70 · satır dolgusu p-3
+
+4.6AH ✅ AYNI ÖLÇEK VİTRİNE — 979 test
+      Vitrin ayrı sistem (ham CSS, marka yazı tipi, iki düzen).
+
+      SORUN PANELİN TERSİYDİ, SONUÇ AYNI:
+        panelde ölçek YOK (225 kullanım tek boyutta)
+        vitrinde FAZLA: 12 yazı boyutu · 6 yarıçap
+        biri her şeyi eşitliyor, öteki hiçbir şeyi
+
+      ✅ ölçek 6 basamağa: 12 · 14 · 16 · 20 · 24 · 32
+      ✅ yarıçap panelle AYNI 3 basamak: 6 / 10 / 14
+      ✅ 26 boyut + 20 yarıçap belirtece bağlandı; kural gövdesinde
+        tek sabit piksel kalmadı
+      ⚠ YAZI TİPİNE DOKUNULMADI — --yazi marka ayarından (4-K5).
+        Sistemleşen boyut ve yarıçap; marka serif de seçse çalışır
+      ⚠ 999px ÖLÇEĞE SOKULMADI — hap biçimi basamak değil, "tam
+        yuvarlak" demenin yolu; sokulsaydı rozet boyutuna göre değişirdi
+
+      ⚠ DERİNLİK SEÇİCİ UYGULANDI, BİR KARAR KORUNDU: ürün kartı
+        4.6AD'de BİLEREK çerçevesizdi. Her kaba gölge dağıtmak o kararı
+        SESSİZCE geri alırdı. Gölge yalnızca gerçekten yükseltilmiş
+        yüzeyde (üst bar, ödeme özeti, adres kartı) — kartın gölgesiz
+        kaldığını ölçen ayrı test var
+      ⚠ Odak halkası vitrinde ZATEN yazılıydı; panelde eksik olan oydu,
+        burada eksik olan geçişti
+
+      7 kırma denemesi, 7'si de düştü
+
+      ⚠ TEST YARDIMCISI İKİNCİ KEZ ISIRDI: vitrinliMarka() başka
+        dosyadaydı → tests/Pest.php. panelSayfalari() ile aynı hikâye,
+        bir blok arayla; kural yazılı olmasına rağmen tekrarlandı
+
+      DOĞRULANDI (gerçek vitrin, iki tema, İKİ DÜZEN): sabit boyut 0 ·
+      sabit yarıçap 0 (999px hariç) · gölge açık var/koyu none · kart
+      gölgesiz · ürün adı 15→16px · geçiş 0.15s
