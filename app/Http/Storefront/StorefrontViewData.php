@@ -3,6 +3,7 @@
 namespace App\Http\Storefront;
 
 use App\Domain\Catalog\ProductQuery;
+use App\Domain\Settings\BrandPalette;
 use App\Domain\Settings\StoreTimezone;
 use App\Domain\Settings\ThemeSettings;
 use App\Models\ProductCollection;
@@ -29,6 +30,7 @@ class StorefrontViewData
         private readonly CartResolver $coz,
         private readonly StoreTimezone $saatDilimi,
         private readonly ProductQuery $urunler,
+        private readonly BrandPalette $palet,
     ) {}
 
     public function compose(View $gorunum): void
@@ -52,6 +54,26 @@ class StorefrontViewData
 
         $gorunum->with([
             'tema' => $goruntu,
+
+            /*
+            | ★ OKUNUR MARKA RENGİ (4.6AD) — tema başına AYRI.
+            |
+            | ⚠️ Marka rengi metin olarak kullanıldığında okunmayabiliyor:
+            | ölçüldü, `#743467` koyu zeminde 2.02 kontrast veriyordu
+            | (gereken 4.5). Hesap CSS'te YAPILAMAZ — `color-mix()`
+            | karıştırıyor ama "okunur olana kadar" diyemiyor.
+            |
+            | ⚠️ İKİ DEĞER birden gönderiliyor çünkü sunucu hangi temanın
+            | görüneceğini BİLMİYOR: seçim tarayıcıda (`data-tema`) ya da
+            | işletim sisteminde. Tek değer gönderilseydi öteki temada
+            | yanlış olurdu.
+            */
+            'markaOkunurAcik' => $this->palet->okunur($goruntu['renk'], '#ffffff'),
+            'markaOkunurKoyu' => $this->palet->okunur($goruntu['renk'], '#1c1917'),
+
+            // ⚠️ Marka rengi ÜZERİNE yazılacak metin: açık bir marka
+            // rengi seçilirse beyaz yazı okunmaz olurdu.
+            'markaUzeri' => $this->palet->uzeri($goruntu['renk']),
             'sepetAdedi' => $this->sepetAdedi(),
 
             /*

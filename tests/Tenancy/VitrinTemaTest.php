@@ -145,7 +145,15 @@ it('★★★ MARKA RENGI KORUNUYOR — koyu tema onu EZMIYOR', function () {
 
     preg_match('/:root\[data-tema="koyu"\]\s*\{(.*?)\}/s', $html, $eslesme);
 
-    expect($eslesme[1] ?? '')->not->toContain('--marka');
+    /*
+    | ⚠️ İDDİA `--marka:` (İKİ NOKTAYLA), yalnızca `--marka` DEĞİL.
+    |
+    | İlk hâli alt dizi arıyordu ve 4.6AD'de kırıldı: koyu blok artık
+    | meşru olarak `--marka-metin` taşıyor (marka renginden TÜRETİLMİŞ
+    | okunur varyant). Ölçülmek istenen şey "marka rengi ezilmiyor mu"
+    | idi; alt dizi araması onunla aynı şey değil.
+    */
+    expect($eslesme[1] ?? '')->not->toContain('--marka:');
 });
 
 it('★★★ TEMA DUGMESI sayfada ve IKI DURUMLU', function () {

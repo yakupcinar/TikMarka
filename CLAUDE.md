@@ -825,6 +825,31 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   koş; boş çıktı **başarı değil, hata belirtisidir**.
 
 
+- **TASARIMI GÖRMEK İÇİN NGROK TÜNELİ AÇ — tarayıcı aracı `.localhost`'a
+  ULAŞAMIYOR.** Yerel sertifikalı adres reddediliyor; 4.6A ve 4.6AB'de
+  "tarayıcıda doğrulanamadı" diye kaydedilen şey buydu. `make kaldir`
+  (ya da `docker compose --profile tunel up -d ngrok`) sonrası tarayıcı
+  sayfayı açıyor, ekran görüntüsü alınabiliyor ve **hesaplanmış stiller**
+  okunabiliyor — yani kontrast ölçülebiliyor. ⚠️ İş bitince KAPAT:
+  `docker compose --profile tunel stop ngrok`, yoksa makine internete
+  açık kalır. ⚠️ ngrok ücretsiz planda ilk açılışta bir uyarı sayfası
+  gösteriyor; `ngrok-skip-browser-warning` başlığı ya da bir tıklama
+  gerekiyor.
+- **RENK BELİRTECE ÇEVİRİRKEN TARAYICI VARSAYILANLARI TARAMAYA GİRMEZ.**
+  4.6AB'de "kural gövdesinde sabit renk kalmadı" testi yeşildi ama genel
+  bir `a { color }` kuralı **hiç yoktu**: stillenmemiş bağlantılar
+  tarayıcının varsayılan mavisine düşüyordu (`#0000ee`) — koyu temada
+  kontrast **1.72**. ⚠️ Belirti sinsi: hiçbir kural YANLIŞ değil, EKSİK.
+  Yazılmış renkleri taramak yetmiyor; **temel öğelerin (bağlantı, form
+  kontrolü) kendi kuralı var mı** diye ayrıca bak.
+- **KONTROL SINIRI ile AYRAÇ AYNI BELİRTEÇ OLMAZ.** WCAG 1.4.11 form
+  kontrolünün sınırı için **3:1 zorunlu** tutuyor; dekoratif ayraç sakin
+  kalabilir. Tek belirteç kullanılırsa ya kontroller görünmez ya ayraçlar
+  gürültülü olur. 4.6AD'de ölçüldü: tasarımdaki **her** çizgi 3:1'in
+  altındaydı, arama kutusunun sınırı 1.43'tü — az gören müşteri kutuyu
+  bulamıyordu.
+
+
 ## Yapı
 
 ```

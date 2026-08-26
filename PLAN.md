@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AC BİTTİ — iyileştirme listesi 12/13 ───────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AD BİTTİ — tasarım yenilemesi başladı ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7635,6 +7635,111 @@ sekizi düştü; düşmeyen tek test HTTP isteği atmayan yapısal testti.
 `errno=35` hatasıyla bozulmuştu; komut **boş çıktı** verdi ve ben onu
 `tail -2` ile borulayıp geçtiğini varsaydım. Biçimlenmemiş üç dosya böyle
 commit edildi. Ders: **boş çıktı başarı değil, hata belirtisidir.**
+
+---
+### 4.6AD — okunabilirlik: marka rengi, bağlantılar ve kart dili
+
+**★ BU BLOKTA İLK KEZ TASARIMI GÖREREK ÇALIŞTIM.** 4.6A ve 4.6AB'de
+"tarayıcıda doğrulanamadı" diye kaydedilmişti; araç yerel sertifikalı
+adrese ulaşamıyor. Çözüm yeni bir araç değil **ngrok tüneli** çıktı:
+tünel açıkken tarayıcı sayfayı açıyor, ekran görüntüsü alınabiliyor ve
+**hesaplanmış stiller okunabiliyor**. Bu bloktaki her karar ölçümle
+verildi.
+
+⚠️ Tünel açıkken makine internete açık — iş bitince `docker compose
+--profile tunel stop ngrok`.
+
+**⚠️⚠️ KULLANICININ BİLDİRDİĞİ İKİ KUSUR DA GERÇEKTİ — VE SEBEPLERİ
+FARKLIYDI.**
+
+**1. "Koyu modda mavi yazılar görünmüyor."** İlk tahminim marka moruydu;
+ölçünce **iki ayrı kusur** çıktı:
+
+```
+ürün fiyatı (marka rengi #743467)  → 2.02   (gereken 4.5)
+kategori bağlantıları (#0000ee)    → 1.72   ← TARAYICI VARSAYILANI
+düğme yazısı (--zemin, koyu temada) → okunmuyordu
+```
+
+> ⚠️ İkinci satır asıl bulgu: **genel bir `a { color }` kuralı YOKTU**,
+> yani stillenmemiş her bağlantı tarayıcının varsayılan mavisine
+> düşüyordu. Açık zeminde 9.0 ile sorunsuz, koyu zeminde 1.72.
+>
+> ⚠️ **Belirti sinsiydi: hiçbir kural yanlış değildi, EKSİKTİ.** 4.6AB'de
+> renkler belirtece çevrilirken yalnızca YAZILMIŞ renkler tarandı;
+> tarayıcı varsayılanı taramaya hiç girmedi. "Kural gövdesinde sabit renk
+> kalmadı" testi bu yüzden yeşil kalıyordu.
+
+**2. "Açık modda kartın çizgisi belli olmuyor."** Ölçüm daha kötüsünü
+söyledi:
+
+```
+kart zemini / sayfa zemini  → 1.04
+kart çizgisi / kart zemini  → 1.26   (gereken 3.0)
+```
+
+Kart ne zeminden ayrışıyordu ne de çizgisi görünüyordu — "kart olmaya
+çalışan ama olamayan" bir şeydi.
+
+**✅ MARKA RENGİNDEN OKUNUR VARYANT TÜRETİLİYOR** (`BrandPalette`).
+
+> ⚠️ Hesap **CSS'te yapılamaz**: `color-mix()` karıştırıyor ama
+> "okunur olana kadar karıştır" diyemiyor — kontrast bir KOŞUL ve CSS onu
+> değerlendiremiyor. Sunucuda hesaplanıp belirteç olarak gönderiliyor.
+>
+> ⚠️ **İki değer birden gönderiliyor** çünkü sunucu hangi temanın
+> görüneceğini bilmiyor: seçim tarayıcıda ya da işletim sisteminde.
+>
+> ⚠️ `--marka` **ezilmiyor** — markanın seçtiği renk olarak kalıyor
+> (düğme zemini, vurgu). Türetilen değer yalnızca metin gerektiğinde.
+
+**★ BU, GÖRSEL BİR KARARIN ÖLÇÜLEBİLİR HÂLE GELDİĞİ İLK YER.** Rengin
+ekranda nasıl durduğu test edilemez ama **kontrast oranı bir sayı** ve
+WCAG eşiği bir kural. Testler dokuz zor renkle koşuyor (saf siyah, saf
+beyaz, parlak sarı, koyu mavi…) — yalnızca varsayılanla koşulsaydı hiçbir
+şey ölçülmezdi, varsayılan zaten okunur.
+
+**✅ FİYAT NÖTR RENGE ALINDI** (kullanıcı kararı, ölçümle destekli):
+Trendyol, Hepsiburada ve Shopify Dawn'ın **üçü de** fiyatı nötr yazıyor.
+Fiyat bir vurgu değil, okunması gereken bir bilgi.
+
+**✅ KART ÇERÇEVESİZ** (kullanıcı kararı: "A — sakin D2C").
+
+> ⚠️ Rakip ölçümü yön verdi ama **doğrudan kopyalanmadı**: Trendyol ve
+> Hepsiburada **pazaryeri**, biz D2C'yiz. Onların yoğun, rozetli arayüzü
+> çok satıcılı katalogda mantıklı; tek markalı vitrinde ucuz görünür.
+> Analoğumuz Shopify Dawn: kart çerçevesiz, zeminsiz, yarıçapsız; gövde
+> 15px/27px (≈1.8 satır aralığı).
+>
+> ⚠️ Yarıçap görsele taşındı, boşluk 20 → 28px, satır aralığı 1.6 → 1.7.
+
+**✅ AYRAÇ ile KONTROL KENARI AYRILDI** — ve bunu da tarayıcı ölçümü
+yazdırdı: **tasarımdaki her çizgi 3:1'in altındaydı.** Arama kutusunun
+sınırı açık temada 1.43, koyu temada 2.12; yani kontrolün sınırı pratikte
+yoktu ve az gören bir müşteri kutuyu bulamıyordu. WCAG 1.4.11 kontrol
+sınırı için 3:1 **zorunlu** tutuyor; ayraç dekoratif olduğu için sakin
+kalabiliyor. Değerler tarayıcıda tek tek denenerek seçildi.
+
+**Sekiz kırma denemesi, sekizi de düştü** (karıştırma yönünü sabitle ·
+"zaten okunur" kısayolunu kaldır · `uzeri()`'yi sabit beyaz yap · iki
+temaya aynı değeri ver · fiyatı marka rengine döndür · genel `a` kuralını
+kaldır · kontrol kenarını silik değere döndür · karta çerçeve geri koy).
+
+⚠️ 4.6AB'nin bir testi bu blokta kırıldı ve **testin kendisi düzeltildi**:
+koyu blokta `--marka` alt dizisini arıyordu, oysa iddiası "marka rengi
+ezilmiyor"du. Artık `--marka:` (iki noktayla) arıyor — meşru
+`--marka-metin` onu düşürmüyor.
+
+DOĞRULANDI (gerçek tarayıcı, tünel üzerinden, iki temada):
+
+```
+             ÖNCE    SONRA (açık)   SONRA (koyu)
+fiyat        2.02       17.49          16.03
+bağlantı     1.72        4.96           7.14
+düğme yazısı kırık       8.64           8.64
+```
+
+**949 test.**
 
 ---
 ---

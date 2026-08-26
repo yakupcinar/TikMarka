@@ -70,11 +70,33 @@
             --marka: {{ $tema['renk'] }};
             --yazi: {{ $tema['yazi_tipi'] }};
 
+            /*
+            | ⚠️ OKUNUR MARKA RENGİ SUNUCUDA HESAPLANIYOR (4.6AD).
+            | `--marka` markanın seçtiği renk olarak KALIYOR (düğme zemini,
+            | vurgu); metin gerektiğinde bu türetilmiş değer kullanılıyor.
+            | Marka rengini ezmek marka kimliğini silmek olurdu.
+            */
+            --marka-metin: {{ $markaOkunurAcik ?? $tema['renk'] }};
+
+            /* ⚠️ Marka rengi ÜZERİNE yazılacak metin: açık bir marka
+               rengi seçilirse sabit beyaz yazı okunmaz olurdu. */
+            --marka-uzeri: {{ $markaUzeri ?? '#ffffff' }};
+
             --zemin: #ffffff;
             --yuzey: #f5f5f4;
             --yuzey-2: #fafaf9;
-            --kenar: #e7e5e4;
-            --kenar-koyu: #d6d3d1;
+            /*
+            | ⚠️ İKİ AYRI KENAR ve ayrım ÖLÇÜMLE bulundu (4.6AD):
+            |
+            |   `--kenar`       AYRAÇ  — görünür ama sakin olmalı
+            |   `--kenar-koyu`  KONTROL — WCAG 1.4.11'e göre ≥3:1 ZORUNLU
+            |
+            | Önce ikisi de 1.2–1.43 kontrasttaydı; yani arama kutusunun
+            | sınırı pratikte YOKTU. Az gören bir müşteri kutuyu bulamaz.
+            | Değerler tarayıcıda tek tek ölçülerek seçildi.
+            */
+            --kenar: #d0ccc9;
+            --kenar-koyu: #8f8a85;
             --metin: #1c1917;
             --metin-2: #57534e;
             --soluk: #78716c;
@@ -112,11 +134,15 @@
         */
         @media (prefers-color-scheme: dark) {
             :root:not([data-tema="acik"]) {
+                /* ⚠️ Okunur marka rengi TEMA BAŞINA ayrı: aynı marka rengi
+                   açık zeminde koyulaştırılıyor, koyu zeminde açılıyor. */
+                --marka-metin: {{ $markaOkunurKoyu ?? $tema['renk'] }};
+
                 --zemin: #1c1917;
                 --yuzey: #292524;
                 --yuzey-2: #232020;
-                --kenar: #44403c;
-                --kenar-koyu: #57534e;
+                --kenar: #5a5450;
+                --kenar-koyu: #7a746e;
                 --metin: #f5f5f4;
                 --metin-2: #d6d3d1;
                 --soluk: #a8a29e;
@@ -137,11 +163,12 @@
         }
 
         :root[data-tema="koyu"] {
+            --marka-metin: {{ $markaOkunurKoyu ?? $tema['renk'] }};
             --zemin: #1c1917;
             --yuzey: #292524;
             --yuzey-2: #232020;
-            --kenar: #44403c;
-            --kenar-koyu: #57534e;
+            --kenar: #5a5450;
+            --kenar-koyu: #7a746e;
             --metin: #f5f5f4;
             --metin-2: #d6d3d1;
             --soluk: #a8a29e;
@@ -167,8 +194,27 @@
             font-family: var(--yazi);
             color: var(--metin);
             background: var(--yuzey-2);
-            line-height: 1.6;
+            line-height: 1.7;   /* ⚠️ Dawn'da ölçüldü: 15/27 ≈ 1.8. Metin nefes alsın. */
         }
+
+        /*
+        | ── BAĞLANTI RENGİ (4.6AD) ───────────────────────────────────
+        |
+        | ⚠️ GENEL BİR `a` KURALI YOKTU ve bedeli koyu temada ölçüldü:
+        | stillenmemiş her bağlantı tarayıcının varsayılan mavisine
+        | (`#0000ee`) düşüyordu. Açık zeminde kontrast 9.0 — sorun yok;
+        | KOYU zeminde **1.72**. Yani kategori listesi, "giriş yapın"
+        | gibi bağlantılar koyu temada neredeyse görünmüyordu.
+        |
+        | ⚠️ Belirti sinsiydi: hiçbir kural yanlış değildi, EKSİKTİ.
+        | Renk belirteçlere çevrilirken (4.6AB) yalnızca YAZILMIŞ renkler
+        | tarandı; tarayıcı varsayılanı taramaya hiç girmedi.
+        |
+        | ⚠️ Kendi rengi olan bağlantılar (logo, üst menü, kart) bu kuralı
+        | zaten eziyor — özgüllükleri daha yüksek.
+        */
+        a { color: var(--baglanti); }
+        a:hover { text-decoration-thickness: 2px; }
 
         .kapsa { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
@@ -191,7 +237,7 @@
         .logo {
             font-size: 20px;
             font-weight: 800;
-            color: var(--marka);
+            color: var(--marka-metin);
             text-decoration: none;
         }
 
@@ -209,7 +255,15 @@
 
         .dugme {
             background: var(--marka);
-            color: var(--zemin);
+
+            /*
+            | ⚠️ `--zemin` DEĞİL `--marka-uzeri` (4.6AD). Önce zemin rengi
+            | kullanılıyordu ve bu KOYU TEMADA KIRILIYORDU: `--zemin`
+            | orada neredeyse siyah, marka rengi de koyu olunca düğme
+            | yazısı okunmaz hâle geliyordu. Yeni değer marka rengine
+            | karşı beyaz ve siyahtan hangisi okunursa onu veriyor.
+            */
+            color: var(--marka-uzeri);
             border: 0;
             border-radius: 8px;
             padding: 8px 16px;
@@ -223,7 +277,8 @@
 
         .sepet span {
             background: var(--marka);
-            color: var(--zemin);
+            /* ⚠️ Aynı gerekçe: sepet rozeti de marka zemini üzerinde. */
+            color: var(--marka-uzeri);
             border-radius: 999px;
             padding: 1px 8px;
             font-size: 13px;
@@ -233,22 +288,39 @@
         .izgara {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
+
+            /* ⚠️ Boşluk artırıldı: çerçeve kalkınca kartları ayıran tek
+               şey boşluk. Ölçüldü — Hepsiburada 24px kullanıyor. */
+            gap: 28px 20px;
             padding: 32px 0;
         }
 
+        /*
+        | ── ÜRÜN KARTI: ÇERÇEVESİZ (4.6AD) ───────────────────────────
+        |
+        | ⚠️ ÖNCE ÇERÇEVELİ VE ZEMİNLİYDİ ve ölçüm kusuru gösterdi:
+        |     kart zemini / sayfa zemini  → 1.04 kontrast
+        |     kart çizgisi / kart zemini  → 1.26 kontrast (gereken 3.0)
+        | Yani kart ne zeminden ayrışıyordu ne de çizgisi görünüyordu —
+        | "kart olmaya çalışan ama olamayan" bir şeydi.
+        |
+        | ⚠️ İki tutarlı çıkış vardı: çizgiyi GÖRÜNÜR yapmak ya da
+        | çerçeveyi tamamen KALDIRMAK. İkincisi seçildi (kullanıcı kararı)
+        | ve ölçümle destekleniyor: Hepsiburada kartları çizgisiz ve 24px
+        | boşlukla, Shopify Dawn tamamen çıplak. Tek markalı bir vitrinde
+        | ürün görseli konuşmalı, arayüz susmalı.
+        |
+        | ⚠️ Yarıçap GÖRSELE taşındı: kartın kendisinin sınırı olmadığı
+        | için köşe yuvarlatmanın tutunacağı yer görselin kendisi.
+        */
         .kart {
-            background: var(--zemin);
-            border: 1px solid var(--kenar);
-            border-radius: 12px;
-            overflow: hidden;
             text-decoration: none;
             color: inherit;
             display: flex;
             flex-direction: column;
         }
 
-        .kart img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--yuzey); display: block; }
+        .kart img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--yuzey); display: block; border-radius: 10px; }
 
         /*
         | ⚠️ GÖRSELSİZ ÜRÜN için gerçek bir yer tutucu. Önce boş bir SVG
@@ -263,19 +335,29 @@
             color: var(--soluk-2);
             font-size: 13px;
         }
-        .kart .govde { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+        /* ⚠️ Yatay iç boşluk KALKTI: kartın çerçevesi yok, metni görselin
+           kenarına hizalamak gerekiyor. Kalsaydı metin içeri kaçık dururdu. */
+        .kart .govde { padding: 10px 0 0; display: flex; flex-direction: column; gap: 3px; }
         .kart .ad { font-weight: 600; font-size: 15px; }
-        .kart .fiyat { color: var(--marka); font-weight: 700; }
+                /* ⚠️ FİYAT MARKA RENGİNDE DEĞİL (4.6AD — kullanıcı kararı).
+           Ölçüldü: Trendyol, Hepsiburada ve Shopify Dawn'ın üçü de fiyatı
+           nötr renkte yazıyor. Marka renginde yazıldığında koyu temada
+           2.02 kontrasta düşüyordu; ayrıca fiyat bir VURGU değil, okunması
+           gereken bir BİLGİ. */
+        .kart .fiyat { color: var(--metin); font-weight: 700; }
 
         .bos { padding: 64px 0; text-align: center; color: var(--soluk); }
 
         /* GÖRSEL İYİLEŞTİRME (4.5F) — yeni yapı değil, mevcut yapının cilası */
-        .kart { transition: box-shadow .15s, transform .15s; }
+        .kart { transition: opacity .15s; }
                 /* ⚠️ Gölge de BELİRTEÇTEN: koyu zeminde siyah gölge görünmüyor,
            daha koyu ve geniş olması gerekiyor. Sabit `rgb(0 0 0 / .08)`
            bırakılsaydı koyu temada kartların yükselme etkisi kaybolurdu
            ve bu SESSİZ bir kayıp olurdu — hata vermez, sadece düzleşir. */
-        .kart:hover { box-shadow: 0 6px 20px var(--golge); transform: translateY(-2px); }
+        /* ⚠️ Gölge ve yükselme KALKTI: gölgenin tutunacağı bir yüzey yok
+           artık. Yerine görselde hafif bir sönme — çerçevesiz kartta
+           dokunulabilirliği anlatmanın sade yolu. */
+        .kart:hover img { opacity: .88; }
         .dugme { transition: filter .15s; }
         .dugme:hover { filter: brightness(.93); }
         .dugme:disabled { opacity: .6; cursor: not-allowed; }
@@ -286,7 +368,12 @@
         | olduğunu göremez — erişilebilirlik kaybı.
         */
         a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
-            outline: 2px solid var(--marka);
+            /*
+            | ⚠️ Odak halkası OKUNUR marka renginde: ham marka rengi koyu
+            | temada zemine karışıyor ve klavyeyle gezen kullanıcı nerede
+            | olduğunu göremiyordu — halkanın varlık sebebi tam da bu.
+            */
+            outline: 2px solid var(--marka-metin);
             outline-offset: 2px;
         }
 
@@ -298,7 +385,7 @@
         .urun-gorsel { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--yuzey); }
         .bos-gorsel { display: grid; place-items: center; color: var(--soluk-2); }
         .marka-adi { color: var(--soluk); margin-top: -8px; }
-        .fiyat-buyuk { font-size: 28px; font-weight: 800; color: var(--marka); }
+        .fiyat-buyuk { font-size: 28px; font-weight: 800; color: var(--metin); }
         .ekle-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin: 20px 0; }
         .ekle-form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
         .ekle-form input, .ekle-form select { padding: 8px; border: 1px solid var(--kenar-koyu); border-radius: 8px; font: inherit; }
