@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AE BİTTİ — panel koyu temaya kavuştu  ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AF — panel yan menüde, mobil açıldı ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7808,6 +7808,89 @@ düğme yazısı      5.18    5.18   (önce 3.56 — eşiğin altındaydı)
 ```
 
 **955 test.**
+
+---
+
+### 4.6AF — panel görsel dili: yan menü, tablo, mobil
+
+Koyu tema geldi (4.6AE) ama panelin **yerleşimi** hiç ele alınmamıştı.
+Üç ölçüm, üçü de tahmini aştı:
+
+```
+menü tek satırda           988px
+başlığın ihtiyacı         1441px
+kapsayıcı (max-w-6xl)     1152px
+                        ─────────
+TAŞMA                      289px   ← MASAÜSTÜNDE, sahip rolünde
+```
+
+⚠️ Yani üst menü telefonda değil, **masaüstünde bile** taşıyordu. 14 madde
+yatayda ölçeklenmiyor; sahip bütün maddeleri gördüğü için en çok onu
+vuruyordu.
+
+⚠️ **13 tablonun 13'ünde** yatay kaydırma kabı yoktu: telefonda 5 sütunlu
+bir tablo **sayfanın tamamını** yatay kaydırıyordu.
+
+⚠️ Panelin tamamında **4 kırılma noktası** vardı (25 sayfa) — panel fiilen
+masaüstüne özeldi. (Vitrin 4.6AB'de ham medya sorgularıyla çözülmüştü.)
+
+**Menü yana taşındı.** Yatay menü madde sayısıyla ölçeklenmiyor, yan menü
+ölçekleniyor — ikas ve Shopify de bu yüzden yanda tutuyor. Maddeler
+gruplandı (Katalog · Satış · Ayarlar) ve **boş grup düşürülüyor**: yalnızca
+sipariş izni olan personel "Katalog" başlığını altı boş hâlde görmemeli.
+Dar ekranda çekmece (`aria-expanded` + `aria-controls`), yönlendirmeden
+sonra kendiliğinden kapanıyor.
+
+**Etkin sayfa vurgusu eklendi — daha önce hiç yoktu.** Personel hangi
+sayfada olduğunu yalnızca başlıktan anlayabiliyordu.
+⚠️ Kök yol tam eşleşme, geri kalanı önek: `/yonetim` her yolun öneki
+olduğu için Pano aksi hâlde **sürekli etkin** görünürdü.
+
+**14 tablo kaba alındı.** ⚠️ İlk sarmada `v-else` tablonun üstünde
+bırakıldı; sarmalayıcı araya girince `v-else` artık `v-if`'in komşusu
+değildi ve **Vue derlemesi patladı**. Koşul yönergeleri kaba taşındı ve
+bunu ölçen bir test yazıldı — koşulsuz bir tabloya sonradan `v-if`
+eklenirse aynı kırılma sessizce geri gelir.
+⚠️ `min-w-0` ana sütuna **şart**: flex çocuğunun varsayılan en küçük
+genişliği içeriği kadardır, konmazsa kap hiç daralmaz ve kaydırma kabı
+**işe yaramaz**.
+
+**Etkin madde işareti ölçümle iki kez değişti.**
+
+> ⚠️ **Doğrudan gerilim var:** zemin görünür oldukça üstündeki turuncu
+> metnin kontrastı DÜŞÜYOR. Açık temada en açık tonda bile **4,47** —
+> eşiğin altında. Bu yüzden etkin madde turuncu METİNLE değil, **güçlü
+> metin + vurgu çubuğuyla** işaretleniyor.
+>
+> ⚠️ İkinci ölçüm ikinci kusuru buldu: çubuk `--p-vurgu` kullanıyordu ve
+> o belirteç **iki temada da aynı** (düğme zemini olduğu için beyaz yazıyı
+> taşımak zorunda) — koyu temada çubuk/zemin **1,99**'a düşüyordu.
+> `--p-vurgu-metin` temaya uyuyor.
+
+**Sekiz kırma denemesi; yedisi ilk turda düştü, biri DÜŞMEDİ.**
+
+> ⚠️ Düşmeyen deneme, etkin zemini **ölçümde reddedilen** değere geri
+> döndürüyordu (yüzeyle kontrastı 1,04 — yani zemin görünmüyor). Testler
+> zemini yüzeye karşı **hiç ölçmüyordu**: yani değeri değiştirmeme yol
+> açan kusuru ölçmüyorlardı. İddia eklendikten sonra düştü.
+> Bu 4.6AE'deki dersin tekrarı: **kırma denemesi tutmuyorsa testi suçla.**
+
+DOĞRULANDI (gerçek tarayıcı, tünel, iki temada):
+
+```
+                        açık    koyu
+etkin madde metni      13.32    9.43
+etkin çubuk / zemin     3.94    4.54   (önce koyuda 1.99)
+etkin zemin / yüzey     1.31    1.47   (önce koyuda 1.04)
+en uzun etiket         105px          (kullanılabilir 232px)
+```
+
+⏳ **Yerleşimin kendisi (çekmece, yan menü, dar ekranda tablo) henüz
+tarayıcıda görülmedi** — panel giriş gerektiriyor ve parola alanına parola
+yazılmıyor. Renk ve genişlik ölçümleri giriş sayfası üzerinden yapıldı;
+yerleşim doğrulaması bir sonraki adım.
+
+**963 test.**
 
 ---
 ---

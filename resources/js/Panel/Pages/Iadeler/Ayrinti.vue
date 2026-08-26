@@ -39,12 +39,14 @@ const durumAdi = {
     <div class="grid grid-cols-3 gap-6">
       <div class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-3">İade edilen ürünler</h2>
-        <table class="w-full text-sm mb-4">
-          <tr v-for="(s, i) in talep.items" :key="i" class="border-b border-kenar-soft">
-            <td class="py-2">{{ s.title }} <code class="text-soluk">{{ s.sku }}</code></td>
-            <td class="py-2 text-right">{{ s.quantity }} adet</td>
-          </tr>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="min-w-[42rem] w-full text-sm mb-4">
+            <tr v-for="(s, i) in talep.items" :key="i" class="border-b border-kenar-soft">
+              <td class="py-2">{{ s.title }} <code class="text-soluk">{{ s.sku }}</code></td>
+              <td class="py-2 text-right">{{ s.quantity }} adet</td>
+            </tr>
+          </table>
+        </div>
 
         <p class="text-sm"><strong>Tür:</strong> {{ talep.is_withdrawal ? 'Cayma hakkı' : 'Ayıplı ürün' }}</p>
         <p v-if="talep.reason" class="text-sm mt-1"><strong>Müşteri notu:</strong> {{ talep.reason }}</p>

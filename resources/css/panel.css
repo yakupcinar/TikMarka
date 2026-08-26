@@ -57,6 +57,20 @@
     --p-vurgu-metin: #c2410c;
 
     /*
+    | ⚠️ ETKİN MENÜ ZEMİNİ AYRI BELİRTEÇ. Vurgunun kendisi kullanılsaydı
+    | (koyu turuncu) üstündeki metin beyaz olmak zorunda kalır ve menüde
+    | tek bir madde reklam panosu gibi parlardı. Burada istenen "neredeyim"
+    | işareti — sakin bir zemin, okunur metin.
+    |
+    | ⚠️ DEĞER ÖLÇÜLEREK SEÇİLDİ ve ilk seçim YANLIŞTI. Doğrudan gerilim
+    | var: zemin görünür oldukça üstündeki turuncu metnin kontrastı
+    | DÜŞÜYOR — açık temada en açık tonda bile 4,47'de kalıyordu, yani
+    | eşiğin altında. Bu yüzden etkin madde turuncu METİNLE değil, güçlü
+    | metin + vurgu ÇUBUĞUYLA işaretleniyor: metin 13,32 · çubuk 3,94.
+    */
+    --p-vurgu-zemin: #f9dbc8;
+
+    /*
     | ⚠️ BİRİNCİL DÜĞME TERS ÇEVRİLİYOR: açık temada koyu zemin + beyaz
     | yazı, koyu temada açık zemin + koyu yazı. Sabit bırakılsaydı koyu
     | temada neredeyse siyah düğme, neredeyse siyah zeminde kaybolurdu.
@@ -108,6 +122,7 @@
            turuncusu açılıyor, yoksa koyu zeminde okunmuyor. */
         --p-vurgu: #c2410c;
         --p-vurgu-metin: #fb923c;
+        --p-vurgu-zemin: #5c3820;
 
         --p-dugme: #f5f5f4;
         --p-dugme-yazi: #1c1917;
@@ -148,6 +163,7 @@
 
     --p-vurgu: #c2410c;
     --p-vurgu-metin: #fb923c;
+    --p-vurgu-zemin: #5c3820;
 
     --p-dugme: #f5f5f4;
     --p-dugme-yazi: #1c1917;
@@ -187,6 +203,7 @@
 
     --color-vurgu: var(--p-vurgu);
     --color-vurgu-metin: var(--p-vurgu-metin);
+    --color-vurgu-zemin: var(--p-vurgu-zemin);
 
     --color-dugme: var(--p-dugme);
     --color-dugme-yazi: var(--p-dugme-yazi);

@@ -42,35 +42,37 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
       Henüz sipariş yok.
     </div>
 
-    <table v-else class="w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
-      <thead class="bg-zemin text-left text-sm text-metin-2">
-        <tr>
-          <th class="p-3">Sipariş</th><th class="p-3">Tarih</th><th class="p-3">Ödeme</th>
-          <th class="p-3">Kargo</th><th class="p-3">Tutar</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="s in siparisler.data" :key="s.uuid" class="border-t border-kenar-soft">
-          <td class="p-3">
-            <Link :href="`/yonetim/siparisler/${s.uuid}`" class="font-medium hover:text-vurgu-metin">
-              {{ s.order_number }}
-            </Link>
-            <!-- ⚠️ STOK AÇIĞI LİSTEDE görünüyor: yalnızca ayrıntıda olsaydı
-                 marka onu ancak siparişi açınca fark ederdi. -->
-            <div v-if="s.stock_shortfall" class="text-xs text-tehlike">⚠ stok açığı</div>
-            <div class="text-xs text-soluk">{{ s.email }}</div>
-          </td>
-          <td class="p-3 text-sm">{{ tarih(s.placed_at) }}</td>
-          <td class="p-3">
-            <span class="rounded-full px-2 py-0.5 text-xs" :class="odemeRengi[s.payment_status]">
-              {{ odemeAdi[s.payment_status] ?? s.payment_status }}
-            </span>
-          </td>
-          <td class="p-3 text-sm">{{ kargoAdi[s.fulfillment_status] ?? s.fulfillment_status }}</td>
-          <td class="p-3 text-sm">{{ para(s.grand_total) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto" v-else>
+      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
+        <thead class="bg-zemin text-left text-sm text-metin-2">
+          <tr>
+            <th class="p-3">Sipariş</th><th class="p-3">Tarih</th><th class="p-3">Ödeme</th>
+            <th class="p-3">Kargo</th><th class="p-3">Tutar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="s in siparisler.data" :key="s.uuid" class="border-t border-kenar-soft">
+            <td class="p-3">
+              <Link :href="`/yonetim/siparisler/${s.uuid}`" class="font-medium hover:text-vurgu-metin">
+                {{ s.order_number }}
+              </Link>
+              <!-- ⚠️ STOK AÇIĞI LİSTEDE görünüyor: yalnızca ayrıntıda olsaydı
+                   marka onu ancak siparişi açınca fark ederdi. -->
+              <div v-if="s.stock_shortfall" class="text-xs text-tehlike">⚠ stok açığı</div>
+              <div class="text-xs text-soluk">{{ s.email }}</div>
+            </td>
+            <td class="p-3 text-sm">{{ tarih(s.placed_at) }}</td>
+            <td class="p-3">
+              <span class="rounded-full px-2 py-0.5 text-xs" :class="odemeRengi[s.payment_status]">
+                {{ odemeAdi[s.payment_status] ?? s.payment_status }}
+              </span>
+            </td>
+            <td class="p-3 text-sm">{{ kargoAdi[s.fulfillment_status] ?? s.fulfillment_status }}</td>
+            <td class="p-3 text-sm">{{ para(s.grand_total) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div v-if="siparisler.links.length > 3" class="mt-4 flex gap-1 text-sm">
       <Link v-for="b in siparisler.links" :key="b.label" :href="b.url ?? ''"

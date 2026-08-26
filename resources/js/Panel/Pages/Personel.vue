@@ -52,21 +52,23 @@ function rolSil(r) {
       <div class="rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-3">Personel</h2>
 
-        <table class="w-full text-sm mb-5">
-          <tr v-for="k in personel" :key="k.uuid" class="border-b border-kenar-soft">
-            <td class="py-2">
-              {{ k.name }}
-              <!-- ⚠️ SAHİP çıkarılamıyor (1A.3); sebebi görünür olmalı,
-                   yoksa "neden silemiyorum" sorusu doğar. -->
-              <span v-if="k.is_owner" class="text-xs rounded-full bg-yuzey-3 px-2 py-0.5">sahip</span>
-              <div class="text-xs text-soluk">{{ k.email }}</div>
-            </td>
-            <td class="py-2 text-xs text-metin-2">{{ k.roles.join(', ') || '—' }}</td>
-            <td class="py-2 text-right">
-              <button v-if="!k.is_owner" type="button" class="text-tehlike text-sm" @click="personelCikar(k)">çıkar</button>
-            </td>
-          </tr>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="min-w-[42rem] w-full text-sm mb-5">
+            <tr v-for="k in personel" :key="k.uuid" class="border-b border-kenar-soft">
+              <td class="py-2">
+                {{ k.name }}
+                <!-- ⚠️ SAHİP çıkarılamıyor (1A.3); sebebi görünür olmalı,
+                     yoksa "neden silemiyorum" sorusu doğar. -->
+                <span v-if="k.is_owner" class="text-xs rounded-full bg-yuzey-3 px-2 py-0.5">sahip</span>
+                <div class="text-xs text-soluk">{{ k.email }}</div>
+              </td>
+              <td class="py-2 text-xs text-metin-2">{{ k.roles.join(', ') || '—' }}</td>
+              <td class="py-2 text-right">
+                <button v-if="!k.is_owner" type="button" class="text-tehlike text-sm" @click="personelCikar(k)">çıkar</button>
+              </td>
+            </tr>
+          </table>
+        </div>
 
         <form class="border-t border-kenar pt-4" @submit.prevent="personelEkle">
           <h3 class="text-sm font-semibold mb-2">Personel ekle</h3>
@@ -94,22 +96,24 @@ function rolSil(r) {
       <div class="rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-3">Roller</h2>
 
-        <table class="w-full text-sm mb-5">
-          <tr v-for="r in roller" :key="r.id" class="border-b border-kenar-soft">
-            <td class="py-2">
-              {{ r.name }}
-              <!-- ⚠️ SİSTEM ROLÜ silinemiyor / adı değişmiyor (1A.6). -->
-              <span v-if="r.is_system" class="text-xs rounded-full bg-yuzey-3 px-2 py-0.5">sistem</span>
-              <div class="text-xs text-soluk">{{ r.permissions.length }} izin · {{ r.staff_count }} personel</div>
-            </td>
-            <td class="py-2 text-right whitespace-nowrap">
-              <button type="button" class="text-sm text-metin-2 mr-2" @click="rolDuzenle(r)">düzenle</button>
-              <!-- ⚠️ Kullanımdaki rol silinemiyor: silinseydi o roldeki
-                   personel SESSİZCE yetkisiz kalırdı. -->
-              <button v-if="!r.is_system && r.staff_count === 0" type="button" class="text-sm text-tehlike" @click="rolSil(r)">sil</button>
-            </td>
-          </tr>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="min-w-[42rem] w-full text-sm mb-5">
+            <tr v-for="r in roller" :key="r.id" class="border-b border-kenar-soft">
+              <td class="py-2">
+                {{ r.name }}
+                <!-- ⚠️ SİSTEM ROLÜ silinemiyor / adı değişmiyor (1A.6). -->
+                <span v-if="r.is_system" class="text-xs rounded-full bg-yuzey-3 px-2 py-0.5">sistem</span>
+                <div class="text-xs text-soluk">{{ r.permissions.length }} izin · {{ r.staff_count }} personel</div>
+              </td>
+              <td class="py-2 text-right whitespace-nowrap">
+                <button type="button" class="text-sm text-metin-2 mr-2" @click="rolDuzenle(r)">düzenle</button>
+                <!-- ⚠️ Kullanımdaki rol silinemiyor: silinseydi o roldeki
+                     personel SESSİZCE yetkisiz kalırdı. -->
+                <button v-if="!r.is_system && r.staff_count === 0" type="button" class="text-sm text-tehlike" @click="rolSil(r)">sil</button>
+              </td>
+            </tr>
+          </table>
+        </div>
 
         <form class="border-t border-kenar pt-4" @submit.prevent="rolKaydet">
           <h3 class="text-sm font-semibold mb-2">{{ duzenlenen ? 'Rolü düzenle' : 'Rol ekle' }}</h3>

@@ -409,29 +409,31 @@ function urunSil() {
           Varyant yok — bu ürün satılamaz.
         </p>
 
-        <table v-else class="w-full text-sm mb-4">
-          <tr v-for="v in urun.variants" :key="v.uuid" class="border-b border-kenar-soft">
-            <td class="py-2">
-              <code>{{ v.sku }}</code>
-              <!-- ⚠️ Seçenekler GÖRÜNÜYOR: "Kırmızı / M" yazmadan marka
-                   hangi satırın hangi varyant olduğunu ayırt edemezdi. -->
-              <span v-if="Object.keys(v.options ?? {}).length" class="ml-2 text-metin-2">
-                {{ Object.values(v.options).join(' / ') }}
-              </span>
-            </td>
-            <td class="py-2">{{ Number(v.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) }} TL</td>
-            <td class="py-2">
-              {{ v.stock }}
-              <!-- ⚠️ BAĞLI stok ayrı gösteriliyor: ödemesi süren siparişlerin
-                   rezervesi. Sadece toplam gösterilseydi marka "stok var"
-                   sanıp satamadığı ürünü anlamazdı. -->
-              <span v-if="v.committed > 0" class="text-soluk">({{ v.committed }} bağlı)</span>
-            </td>
-            <td class="py-2 text-right">
-              <button type="button" class="text-tehlike" @click="varyantSil(v.uuid)">sil</button>
-            </td>
-          </tr>
-        </table>
+        <div class="overflow-x-auto" v-else>
+          <table class="min-w-[42rem] w-full text-sm mb-4">
+            <tr v-for="v in urun.variants" :key="v.uuid" class="border-b border-kenar-soft">
+              <td class="py-2">
+                <code>{{ v.sku }}</code>
+                <!-- ⚠️ Seçenekler GÖRÜNÜYOR: "Kırmızı / M" yazmadan marka
+                     hangi satırın hangi varyant olduğunu ayırt edemezdi. -->
+                <span v-if="Object.keys(v.options ?? {}).length" class="ml-2 text-metin-2">
+                  {{ Object.values(v.options).join(' / ') }}
+                </span>
+              </td>
+              <td class="py-2">{{ Number(v.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) }} TL</td>
+              <td class="py-2">
+                {{ v.stock }}
+                <!-- ⚠️ BAĞLI stok ayrı gösteriliyor: ödemesi süren siparişlerin
+                     rezervesi. Sadece toplam gösterilseydi marka "stok var"
+                     sanıp satamadığı ürünü anlamazdı. -->
+                <span v-if="v.committed > 0" class="text-soluk">({{ v.committed }} bağlı)</span>
+              </td>
+              <td class="py-2 text-right">
+                <button type="button" class="text-tehlike" @click="varyantSil(v.uuid)">sil</button>
+              </td>
+            </tr>
+          </table>
+        </div>
 
         <div class="border-t border-kenar pt-4">
           <h3 class="text-sm font-semibold mb-2">Varyant ekle</h3>

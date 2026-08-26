@@ -97,18 +97,20 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
       <div class="col-span-2 space-y-6">
         <div class="rounded-xl bg-yuzey border border-kenar p-5">
           <h2 class="font-semibold mb-3">Ürünler</h2>
-          <table class="w-full text-sm">
-            <tr v-for="s in kalanlar" :key="s.id" class="border-b border-kenar-soft">
-              <td class="py-2">
-                {{ s.title }} <code class="text-soluk">{{ s.sku }}</code>
-              </td>
-              <td class="py-2">{{ s.quantity }} adet</td>
-              <!-- ⚠️ SEVK EDİLEN ayrı gösteriliyor: kısmi sevkiyatta marka
-                   neyin gittiğini bilmeden ikinci paketi hazırlayamaz. -->
-              <td class="py-2 text-metin-2">{{ s.shipped }} sevk edildi</td>
-              <td class="py-2 text-right">{{ para(s.line_total) }}</td>
-            </tr>
-          </table>
+          <div class="overflow-x-auto">
+            <table class="min-w-[42rem] w-full text-sm">
+              <tr v-for="s in kalanlar" :key="s.id" class="border-b border-kenar-soft">
+                <td class="py-2">
+                  {{ s.title }} <code class="text-soluk">{{ s.sku }}</code>
+                </td>
+                <td class="py-2">{{ s.quantity }} adet</td>
+                <!-- ⚠️ SEVK EDİLEN ayrı gösteriliyor: kısmi sevkiyatta marka
+                     neyin gittiğini bilmeden ikinci paketi hazırlayamaz. -->
+                <td class="py-2 text-metin-2">{{ s.shipped }} sevk edildi</td>
+                <td class="py-2 text-right">{{ para(s.line_total) }}</td>
+              </tr>
+            </table>
+          </div>
         </div>
 
         <div v-if="kargolayabilir && odendi && kalanlar.some((s) => s.kalan > 0)"

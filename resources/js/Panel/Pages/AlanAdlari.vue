@@ -58,13 +58,15 @@ function sil(d) {
           Aşağıdaki kayıtlardan <strong>birini</strong> DNS panelinize ekleyin, sonra “Kontrol et” deyin.
         </p>
 
-        <table class="w-full text-sm">
-          <tr v-for="(k, tur) in d.talimat" :key="tur" class="border-b border-kenar-soft">
-            <td class="py-2 font-mono">{{ k.type }}</td>
-            <td class="py-2 font-mono text-metin-2">{{ k.name }}</td>
-            <td class="py-2 font-mono break-all">{{ k.value }}</td>
-          </tr>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="min-w-[42rem] w-full text-sm">
+            <tr v-for="(k, tur) in d.talimat" :key="tur" class="border-b border-kenar-soft">
+              <td class="py-2 font-mono">{{ k.type }}</td>
+              <td class="py-2 font-mono text-metin-2">{{ k.name }}</td>
+              <td class="py-2 font-mono break-all">{{ k.value }}</td>
+            </tr>
+          </table>
+        </div>
 
         <p class="text-xs text-soluk mt-2">
           DNS değişikliğinin yayılması birkaç saat sürebilir.

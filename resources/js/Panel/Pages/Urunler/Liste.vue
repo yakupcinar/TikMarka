@@ -63,38 +63,40 @@ function para(deger) {
       <p v-else>Henüz ürün yok. İlk ürününüzü ekleyin.</p>
     </div>
 
-    <table v-else class="w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
-      <thead class="bg-zemin text-left text-sm text-metin-2">
-        <tr>
-          <th class="p-3">Ürün</th>
-          <th class="p-3">Durum</th>
-          <th class="p-3">Varyant</th>
-          <th class="p-3">Stok</th>
-          <th class="p-3">Fiyat</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="urun in urunler.data" :key="urun.uuid" class="border-t border-kenar-soft">
-          <td class="p-3">
-            <Link :href="`/yonetim/urunler/${urun.uuid}`" class="font-medium hover:text-vurgu-metin">
-              {{ urun.title }}
-            </Link>
-          </td>
-          <td class="p-3">
-            <span class="rounded-full px-2 py-0.5 text-xs" :class="durumRengi[urun.status]">
-              {{ durumAdi[urun.status] }}
-            </span>
-          </td>
-          <!-- ⚠️ Varyantsız ürün SATILAMAZ; sayı sıfırsa uyarı veriyoruz. -->
-          <td class="p-3 text-sm">
-            <span v-if="urun.variant_count === 0" class="text-uyari">yok — satılamaz</span>
-            <span v-else>{{ urun.variant_count }}</span>
-          </td>
-          <td class="p-3 text-sm">{{ urun.stock }}</td>
-          <td class="p-3 text-sm">{{ para(urun.min_price) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto" v-else>
+      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
+        <thead class="bg-zemin text-left text-sm text-metin-2">
+          <tr>
+            <th class="p-3">Ürün</th>
+            <th class="p-3">Durum</th>
+            <th class="p-3">Varyant</th>
+            <th class="p-3">Stok</th>
+            <th class="p-3">Fiyat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="urun in urunler.data" :key="urun.uuid" class="border-t border-kenar-soft">
+            <td class="p-3">
+              <Link :href="`/yonetim/urunler/${urun.uuid}`" class="font-medium hover:text-vurgu-metin">
+                {{ urun.title }}
+              </Link>
+            </td>
+            <td class="p-3">
+              <span class="rounded-full px-2 py-0.5 text-xs" :class="durumRengi[urun.status]">
+                {{ durumAdi[urun.status] }}
+              </span>
+            </td>
+            <!-- ⚠️ Varyantsız ürün SATILAMAZ; sayı sıfırsa uyarı veriyoruz. -->
+            <td class="p-3 text-sm">
+              <span v-if="urun.variant_count === 0" class="text-uyari">yok — satılamaz</span>
+              <span v-else>{{ urun.variant_count }}</span>
+            </td>
+            <td class="p-3 text-sm">{{ urun.stock }}</td>
+            <td class="p-3 text-sm">{{ para(urun.min_price) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div v-if="urunler.links.length > 3" class="mt-4 flex gap-1 text-sm">
       <Link

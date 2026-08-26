@@ -40,21 +40,23 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
         <h2 class="font-semibold mb-1">Kategoriler</h2>
         <p class="text-xs text-soluk mb-3">Ürünler tek bir kategoriye bağlanır.</p>
 
-        <table class="w-full text-sm mb-4">
-          <tr v-for="k in kategoriler" :key="k.uuid" class="border-b border-kenar-soft">
-            <!-- ⚠️ Girinti DERİNLİKTEN çiziliyor: `ltree` yolu zaten sıralı
-                 geliyor, ağacı istemcide kurmaya gerek yok. -->
-            <td class="py-2" :style="{ paddingLeft: (k.derinlik * 18) + 'px' }">
-              {{ k.name }}
-              <span class="text-xs text-soluk">{{ k.urun_sayisi }} ürün</span>
-            </td>
-            <td class="py-2 text-right">
-              <!-- ⚠️ Ürünü olan kategori silinemiyor; düğme gizlenmiyor,
-                   sunucu sebebini yazıyor. -->
-              <button type="button" class="text-tehlike text-sm" @click="kategoriSil(k)">sil</button>
-            </td>
-          </tr>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="min-w-[42rem] w-full text-sm mb-4">
+            <tr v-for="k in kategoriler" :key="k.uuid" class="border-b border-kenar-soft">
+              <!-- ⚠️ Girinti DERİNLİKTEN çiziliyor: `ltree` yolu zaten sıralı
+                   geliyor, ağacı istemcide kurmaya gerek yok. -->
+              <td class="py-2" :style="{ paddingLeft: (k.derinlik * 18) + 'px' }">
+                {{ k.name }}
+                <span class="text-xs text-soluk">{{ k.urun_sayisi }} ürün</span>
+              </td>
+              <td class="py-2 text-right">
+                <!-- ⚠️ Ürünü olan kategori silinemiyor; düğme gizlenmiyor,
+                     sunucu sebebini yazıyor. -->
+                <button type="button" class="text-tehlike text-sm" @click="kategoriSil(k)">sil</button>
+              </td>
+            </tr>
+          </table>
+        </div>
 
         <form class="border-t border-kenar pt-4" @submit.prevent="kategoriEkle">
           <input v-model="kategori.name" placeholder="Kategori adı" class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mb-2">

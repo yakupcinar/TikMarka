@@ -93,22 +93,24 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
 
     <p v-if="siparisler.length === 0" class="text-soluk">Bu müşterinin siparişi yok.</p>
 
-    <table v-else class="mt-2 w-full text-sm">
-      <tbody>
-        <tr v-for="s in siparisler" :key="s.uuid" class="border-t border-kenar-soft">
-          <td class="py-3">
-            <Link :href="`/yonetim/siparisler/${s.uuid}`" class="font-medium hover:underline">{{ s.numara }}</Link>
-            <!-- ⚠️ Ürün adları SİPARİŞ SATIRINDAN (kopya): ürün silinse
-                 bile müşterinin ne aldığı görünüyor (1D). -->
-            <div class="text-xs text-soluk">{{ s.urunler.join(' · ') }}</div>
-          </td>
-          <td class="text-soluk">{{ tarih(s.tarih) }}</td>
-          <td>{{ odemeAdi[s.odeme] ?? s.odeme }}</td>
-          <td class="text-right">{{ s.adet }} adet</td>
-          <td class="text-right font-medium">{{ para(s.tutar) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto" v-else>
+      <table class="min-w-[42rem] mt-2 w-full text-sm">
+        <tbody>
+          <tr v-for="s in siparisler" :key="s.uuid" class="border-t border-kenar-soft">
+            <td class="py-3">
+              <Link :href="`/yonetim/siparisler/${s.uuid}`" class="font-medium hover:underline">{{ s.numara }}</Link>
+              <!-- ⚠️ Ürün adları SİPARİŞ SATIRINDAN (kopya): ürün silinse
+                   bile müşterinin ne aldığı görünüyor (1D). -->
+              <div class="text-xs text-soluk">{{ s.urunler.join(' · ') }}</div>
+            </td>
+            <td class="text-soluk">{{ tarih(s.tarih) }}</td>
+            <td>{{ odemeAdi[s.odeme] ?? s.odeme }}</td>
+            <td class="text-right">{{ s.adet }} adet</td>
+            <td class="text-right font-medium">{{ para(s.tutar) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- ── FAVORİLER ───────────────────────────────────────────────── -->
     <h2 class="mt-8 text-lg font-semibold">Favoriler</h2>

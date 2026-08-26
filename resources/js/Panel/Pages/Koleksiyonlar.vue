@@ -85,26 +85,28 @@ const turAdi = { manual: 'Elle seçilen', rule: 'Kurallı (otomatik)' }
       Henüz koleksiyon yok.
     </div>
 
-    <table v-else class="w-full bg-yuzey rounded-xl border border-kenar overflow-hidden mb-6">
-      <thead class="bg-zemin text-left text-sm text-metin-2">
-        <tr><th class="p-3">Koleksiyon</th><th class="p-3">Tür</th><th class="p-3">Ürün</th><th class="p-3">Durum</th><th /></tr>
-      </thead>
-      <tbody>
-        <tr v-for="k in koleksiyonlar" :key="k.uuid" class="border-t border-kenar-soft">
-          <td class="p-3">
-            <Link :href="`/yonetim/koleksiyonlar/${k.uuid}`" class="font-medium hover:text-vurgu-metin">{{ k.title }}</Link>
-          </td>
-          <td class="p-3 text-sm">{{ turAdi[k.type] ?? k.type }}</td>
-          <!-- ⚠️ Kurallıda bu sayı SORGUDAN geliyor: tabloya bakılsaydı
-               hep 0 görünürdü. -->
-          <td class="p-3 text-sm">{{ k.urun_sayisi }}</td>
-          <td class="p-3 text-sm">{{ k.is_active ? 'Yayında' : 'Kapalı' }}</td>
-          <td class="p-3 text-right">
-            <button type="button" class="text-tehlike text-sm" @click="sil(k)">sil</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto" v-else>
+      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden mb-6">
+        <thead class="bg-zemin text-left text-sm text-metin-2">
+          <tr><th class="p-3">Koleksiyon</th><th class="p-3">Tür</th><th class="p-3">Ürün</th><th class="p-3">Durum</th><th /></tr>
+        </thead>
+        <tbody>
+          <tr v-for="k in koleksiyonlar" :key="k.uuid" class="border-t border-kenar-soft">
+            <td class="p-3">
+              <Link :href="`/yonetim/koleksiyonlar/${k.uuid}`" class="font-medium hover:text-vurgu-metin">{{ k.title }}</Link>
+            </td>
+            <td class="p-3 text-sm">{{ turAdi[k.type] ?? k.type }}</td>
+            <!-- ⚠️ Kurallıda bu sayı SORGUDAN geliyor: tabloya bakılsaydı
+                 hep 0 görünürdü. -->
+            <td class="p-3 text-sm">{{ k.urun_sayisi }}</td>
+            <td class="p-3 text-sm">{{ k.is_active ? 'Yayında' : 'Kapalı' }}</td>
+            <td class="p-3 text-right">
+              <button type="button" class="text-tehlike text-sm" @click="sil(k)">sil</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <form class="rounded-xl bg-yuzey border border-kenar p-5 max-w-lg" @submit.prevent="ekle">
       <h2 class="font-semibold text-sm mb-3">Koleksiyon ekle</h2>

@@ -882,6 +882,36 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   4.6AE'de düğme yazısının kontrastı 3,56 ölçüldü; değer **bloktan önce de**
   öyleydi. Koyu tema onu ortaya çıkardı, yaratmadı. Vurgu `#ea580c` → `#c2410c`.
 
+- **YATAY MENÜ MADDE SAYISIYLA ÖLÇEKLENMİYOR — ve taşma MASAÜSTÜNDE başlıyor.**
+  4.6AF'de ölçüldü: 14 madde tek satırda 988px, başlığın ihtiyacı 1441px,
+  kapsayıcı 1152px → **289px taşma**, üstelik en geniş ekranda. En çok sahip
+  rolünü vuruyor (bütün maddeleri gören tek rol o). Menü yana taşındı.
+  ⚠️ Belirti kolay kaçıyor: geliştirici genelde kısıtlı bir rolle bakıyor ve
+  eksik maddeler yüzünden menü **sığıyor** görünüyor.
+- **TABLOYU KABA ALMAK TEK BAŞINA YETMEZ — `min-w-0` da gerekir.** Flex
+  çocuğunun varsayılan en küçük genişliği İÇERİĞİ kadardır; ana sütuna
+  `min-w-0` konmazsa geniş tablo sütunu şişirir, `overflow-x-auto` kabı hiç
+  daralmaz ve **sayfanın tamamı** yatay kayar (4.6AF).
+- **TABLOYU SARARKEN KOŞUL YÖNERGESİ KABA TAŞINIR.** `<table v-else>` bir
+  `<div>` içine alınınca `v-else` artık `v-if`'in **komşusu değildir** ve Vue
+  derlemesi patlar (4.6AF). Derleme bu kez yakaladı; ama koşulsuz bir tabloya
+  sonradan `v-if` eklenirse aynı kırılma sessizce geri gelir — ölçen test
+  `<table>` etiketinde `v-if|v-else|v-for` arıyor.
+- **ETKİN/SEÇİLİ DURUMDA ZEMİN İLE ÜSTÜNDEKİ METİN TERS YÖNDE ÇEKİYOR.**
+  Zemin görünür oldukça vurgulu metnin kontrastı düşüyor. 4.6AF'de açık
+  temada en açık tonda bile **4,47** çıktı — eşiğin altında. Çözüm vurgulu
+  metinden vazgeçip **güçlü metin + vurgu çubuğu** kullanmak: metin 13,32,
+  çubuk 3,94 (WCAG 1.4.11 non-text eşiği).
+  ⚠️ Çubuk için `--p-vurgu` DEĞİL `--p-vurgu-metin`: birincisi düğme ZEMİNİ
+  olduğu için iki temada da aynı koyu turuncu ve koyu temada **1,99**'a
+  düşüyor. Vurgunun "zemin" ve "ön plan" biçimleri AYRI belirteçtir.
+- **PEKİŞTİRME AMAÇLI TİNT'İ DE ÖLÇ — WCAG sayı vermiyor diye ölçümsüz
+  kalmasın.** 4.6AF'de etkin maddenin zemini koyu temada yüzeyle **1,04**
+  kontrasttaydı, yani hiç görünmüyordu; durum çubukla anlatıldığı için
+  WCAG ihlali değildi ama **pekiştirme görünmüyorsa hiç yok demektir**.
+  Testler zemini yüzeye karşı hiç ölçmediği için eski değeri geri koymak
+  hiçbir testi düşürmüyordu.
+
 ## Yapı
 
 ```

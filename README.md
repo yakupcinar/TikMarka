@@ -286,6 +286,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Vitrin koyu tema ve mobil uyumu yoktu | Üst barın sağında **☾/☀ düğmesi** · sistem tercihi de okunuyor · telefon/tablet kırılma noktaları | 4.6AB |
 | Ürün sayfasının altında öneri yoktu | **Benzer ürünler** (kategori → marka → en yeniler) ve **Çok satanlar** (ödenmiş siparişlerden) | 4.6E |
 | Fiyat ve bağlantılar marka renginde, koyu temada okunmuyordu (kontrast 2,02) | Marka renginin **okunur varyantı** sunucuda hesaplanıyor · fiyat normal metin renginde · her çizgi WCAG eşiğinde | 4.6AD |
+| Panel menüsü 14 maddeyle **masaüstünde bile 289px taşıyordu**, telefonda tablolar sayfayı yatay kaydırıyordu | Menü **yan menüye** taşındı (gruplu, etkin sayfa işaretli) · dar ekranda çekmece · 14 tablo kaydırma kabında | 4.6AF |
 | Panelde koyu tema yoktu (renk 25 dosyada **532 sabit sınıf**) | Panel üst barında **☾/☀ düğmesi** · sistem tercihi de okunuyor · renkler belirteçten geliyor | 4.6AE |
 | Panelde müşteri sekmesi yoktu (`customer.view` izni ölüydü) | Panel → **Müşteriler** → müşteri → siparişler, favoriler, başarısız ödemeler · salt okunur | 4.6AC |
 | Ürün oluşturunca varyant sayfasına gitmiyor | `POST /yonetim/urunler` → `302 → /yonetim/urunler/{uuid}` — **ölçüldü, zaten doğruydu** | 4.5G |

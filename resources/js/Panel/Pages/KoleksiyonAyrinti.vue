@@ -137,15 +137,17 @@ function urunCikar(u) {
 
       <p v-if="uyeler.length === 0" class="text-sm text-metin-2">Bu koleksiyonda ürün yok.</p>
 
-      <table v-else class="w-full text-sm mb-4">
-        <tr v-for="u in uyeler" :key="u.uuid" class="border-b border-kenar-soft">
-          <td class="py-2">{{ u.title }}</td>
-          <td class="py-2 text-xs text-soluk">{{ u.status }}</td>
-          <td class="py-2 text-right">
-            <button v-if="koleksiyon.type === 'manual'" type="button" class="text-tehlike" @click="urunCikar(u)">çıkar</button>
-          </td>
-        </tr>
-      </table>
+      <div class="overflow-x-auto" v-else>
+        <table class="min-w-[42rem] w-full text-sm mb-4">
+          <tr v-for="u in uyeler" :key="u.uuid" class="border-b border-kenar-soft">
+            <td class="py-2">{{ u.title }}</td>
+            <td class="py-2 text-xs text-soluk">{{ u.status }}</td>
+            <td class="py-2 text-right">
+              <button v-if="koleksiyon.type === 'manual'" type="button" class="text-tehlike" @click="urunCikar(u)">çıkar</button>
+            </td>
+          </tr>
+        </table>
+      </div>
 
       <div v-if="koleksiyon.type === 'manual'" class="border-t border-kenar pt-4 flex gap-2">
         <select v-model="secilen" class="flex-1 rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">

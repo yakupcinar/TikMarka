@@ -3211,3 +3211,40 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
 
       DOĞRULANDI (gerçek tarayıcı, /yonetim/giris): gövde 16.74/16.03 ·
       girdi kenarı 6.14/4.55 · düğme yazısı 5.18 (önce 3.56)
+
+4.6AF ✅ PANEL GÖRSEL DİLİ: YAN MENÜ, TABLO, MOBİL — 963 test
+      ÜÇ ÖLÇÜM, ÜÇÜ DE TAHMİNİ AŞTI:
+        menü 988px · başlığın ihtiyacı 1441px · kapsayıcı 1152px
+        → 289px TAŞMA, üstelik MASAÜSTÜNDE (sahip 14 maddeyi görüyor)
+        13 tablonun 13'ünde yatay kaydırma kabı YOK → telefonda
+          SAYFANIN TAMAMI yatay kayıyordu
+        panelin tamamında 4 kırılma noktası (25 sayfa)
+
+      ✅ MENÜ YANA TAŞINDI — yatay menü madde sayısıyla ölçeklenmiyor
+        gruplandı (Katalog · Satış · Ayarlar), BOŞ GRUP DÜŞÜYOR
+        dar ekranda çekmece, yönlendirmede kendiliğinden kapanıyor
+      ✅ ETKİN SAYFA VURGUSU — daha önce HİÇ YOKTU
+        ⚠ kök tam eşleşme: /yonetim her yolun öneki, yoksa Pano
+          SÜREKLİ etkin görünürdü
+      ✅ 14 TABLO KABA ALINDI + main'e min-w-0
+        ⚠ ilk sarmada v-else tabloda kaldı → v-if zinciri KIRILDI,
+          Vue derlemesi patladı; yönergeler kaba taşındı ve ÖLÇÜLDÜ
+        ⚠ min-w-0 olmadan kap İŞE YARAMAZ (flex çocuğunun en küçük
+          genişliği içeriği kadar)
+
+      ⚠ ETKİN MADDE İŞARETİ ÖLÇÜMLE İKİ KEZ DEĞİŞTİ:
+        (1) zemin görünür oldukça turuncu metnin kontrastı DÜŞÜYOR —
+            açıkta en açık tonda bile 4,47 → turuncu metin yerine
+            GÜÇLÜ METİN + VURGU ÇUBUĞU
+        (2) çubuk --p-vurgu kullanıyordu, o belirteç İKİ TEMADA DA AYNI
+            (düğme zemini) → koyuda 1,99; --p-vurgu-metin temaya uyuyor
+
+      8 kırma denemesi; 7'si ilk turda düştü, BİRİ DÜŞMEDİ
+      ⚠ düşmeyen deneme etkin zemini ölçümde REDDEDİLEN değere
+        döndürüyordu (yüzeyle 1,04); testler zemini yüzeye karşı HİÇ
+        ölçmüyordu — yani değişikliğe yol açan kusuru ölçmüyorlardı
+
+      DOĞRULANDI (tarayıcı, iki tema): etkin metin 13.32/9.43 ·
+      çubuk/zemin 3.94/4.54 · zemin/yüzey 1.31/1.47
+      ⏳ YERLEŞİM (çekmece, yan menü, dar ekranda tablo) HENÜZ
+        TARAYICIDA GÖRÜLMEDİ — panel giriş gerektiriyor
