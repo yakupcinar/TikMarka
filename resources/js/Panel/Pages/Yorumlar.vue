@@ -25,7 +25,7 @@ const durumAdi = { pending: 'Bekleyen', approved: 'Onaylı', rejected: 'Reddedil
   <Head title="Yorumlar" />
 
   <PanelDuzeni>
-    <div class="flex items-center gap-4 mb-6">
+    <div class="flex flex-wrap items-center gap-4 mb-6">
       <h1 class="text-2xl font-bold">Yorumlar</h1>
 
       <!-- ⚠️ Bekleyen sayısı her sekmede görünüyor: marka onay kuyruğunu
@@ -69,7 +69,7 @@ const durumAdi = { pending: 'Bekleyen', approved: 'Onaylı', rejected: 'Reddedil
       <span v-else class="text-xs rounded-full bg-yuzey-3 px-2 py-0.5">{{ durumAdi[y.status] }}</span>
     </div>
 
-    <div v-if="yorumlar.links.length > 3" class="mt-4 flex gap-1 text-sm">
+    <div v-if="yorumlar.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
       <a v-for="b in yorumlar.links" :key="b.label" :href="b.url ?? ''"
          class="rounded border border-kenar-kontrol px-3 py-1 bg-yuzey"
          :class="{ 'bg-vurgu text-white border-vurgu': b.active, 'opacity-40 pointer-events-none': !b.url }"

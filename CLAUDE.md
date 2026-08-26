@@ -912,6 +912,33 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   Testler zemini yüzeye karşı hiç ölçmediği için eski değeri geri koymak
   hiçbir testi düşürmüyordu.
 
+- **ÇEVİRİSİ OLMAYAN ANAHTAR EKRANA HAM HÂLİYLE YAZILIR — ve bu SESSİZDİR.**
+  `lang/tr/pagination.php` hiç yoktu: marka panelinde sayfalama düğmesinde
+  **`pagination.next`** yazıyordu, dört sayfada birden. 4.6AF.1'de bulundu ve
+  **966 testin hiçbiri görmemişti**; gerçek tarayıcı koşusu gördü.
+  ⚠️ 4.6AA'daki `validation.uploaded` ile aynı aile ve orada da
+  "unutulursa hemen fark edilir" denmişti — fark edilmedi. Çerçevenin
+  hazır bir çeviri anahtarını (doğrulama, sayfalama, parola sıfırlama)
+  ilk kez kullandığında karşılığının `lang/tr/`'de olduğunu **gör**.
+- **KOŞULSUZ ÇOK SÜTUNLU IZGARA MOBİLDE İÇERİĞİ EZER — bedeli taşma değil
+  SIKIŞMA.** `grid-cols-2` kırılma noktası olmadan yazılınca 375px'te de iki
+  sütun kalıyor. 4.6AF.1'de ölçüldü: Personel'de iki tablo **118px'lik iki
+  sütuna** giriyordu. ⚠️ Yatay taşmayı ölçen tarama bunu **göremez** —
+  sıkışan içerik taşmıyor, sadece okunmuyor.
+  ⚠️ Ararken `grep -v "sm:\|md:\|lg:"` YETMEZ: aynı satırda meşru bir
+  `sm:grid-cols-4` varsa çıplak `grid-cols-2` elenir. Öneki **hemen soldan**
+  oku.
+- **`flex-1` DARALMAYA İZİN VERMEZ — `min-w-0` gerekir.** `min-w-0` ile aynı
+  aile (ana sütun, 4.6AF): flex çocuğunun varsayılan en küçük genişliği
+  içeriği kadardır, `flex-1` bunu değiştirmiyor. Girdi kendi içeriği kadar
+  yer kaplayıp satırı taşırıyor (4.6AF.1).
+- **YAPISAL TEST "KAP VAR MI"YI ÖLÇER, "EKRANDA NE OLUYOR"U DEĞİL.**
+  4.6AF'nin on bir testi yeşilken 375px'te 14 sayfanın 5'i hâlâ yatay
+  kayıyordu. Sözleşme testleri gerileme koruması; **yerleşimin kendisi
+  gerçek tarayıcıda, gerçek genişlikte gezilerek** doğrulanır. Panel giriş
+  gerektirdiği için bu adım atlanabiliyor — atlanırsa blok yarım kalır
+  ("bitti kaydı bittiğinin kanıtı değildir" kuralının yerleşim biçimi).
+
 ## Yapı
 
 ```

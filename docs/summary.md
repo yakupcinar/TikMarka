@@ -3248,3 +3248,35 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       çubuk/zemin 3.94/4.54 · zemin/yüzey 1.31/1.47
       ⏳ YERLEŞİM (çekmece, yan menü, dar ekranda tablo) HENÜZ
         TARAYICIDA GÖRÜLMEDİ — panel giriş gerektiriyor
+
+4.6AF.1 ✅ GERÇEK TARAYICI KOŞUSUNUN BULDUĞU BEŞ KUSUR — 966 test
+      Yerleşim doğrulaması ancak panelin İÇİNDE yapılabiliyordu (giriş
+      gerekiyor). Kullanıcı giriş yapınca 14 sayfa 375px'te gezildi.
+      4.6AF'nin ON BİR TESTİ YEŞİLKEN beş kusur çıktı — testler
+      "kap var mı"yı ölçüyordu, "ekranda ne oluyor"u değil.
+
+      1. sayfalama düğmesinde "pagination.next" YAZIYORDU     4 sayfa
+      2. sayfalama satırı taşıyordu (sarmıyor)                4 sayfa
+      3. başlık satırları taşıyordu (ml-auto + sarma yok)     3 sayfa
+      4. flex-1 girdi daralmıyordu (min-w-0 yok)              Katalog
+      5. 11 KOŞULSUZ ÇOK SÜTUNLU IZGARA                       8 sayfa
+
+      ⚠ 1. MADDE YENİ DEĞİL: lang/tr/pagination.php HİÇ YOKTU. Laravel
+        çeviri bulamayınca anahtarın kendisini basıyor. 4.6AA'daki
+        validation.uploaded ile AYNI AİLE — orada da "unutulursa hemen
+        fark edilir" denmişti, fark edilmedi. 963 testin hiçbiri görmedi.
+      ⚠ 5. MADDENİN BEDELİ TAŞMA DEĞİL SIKIŞMA: Personel'de iki tablo
+        375px'te 118px'lik iki sütuna giriyordu. Taşmayı ölçen tarama
+        bunu GÖREMEZDİ — sıkışan içerik taşmıyor.
+      ⚠ KENDİ grep'İM BİRİNİ KAÇIRDI, TEST YAKALADI: sm:grid-cols-4 ile
+        aynı satırdaki çıplak grid-cols-2 elenmişti; test öneki hemen
+        soldan okuyor.
+
+      4 kırma denemesi daha, 4'ü de düştü
+
+      DOĞRULANDI (gerçek panel, iki tema, iki genişlik):
+        375px  → 14 sayfanın 14'ü yatay kaymıyor · çekmece açılıp
+                 yönlendirmede kapanıyor · tablolar kendi kabında
+        1280px → yan menü sabit · ızgaralar 2/3 sütuna geri açılıyor
+        kontrast: etkin metin 13.32/9.43 · çubuk 3.94/4.54 ·
+                  grup başlığı 4.80 · pasif madde 7.63/10.18

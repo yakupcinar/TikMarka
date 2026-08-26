@@ -93,7 +93,7 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
       ⚠ Bu siparişte stok açığı var — sipariş alındı ama stok yetmiyor.
     </div>
 
-    <div class="grid grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="col-span-2 space-y-6">
         <div class="rounded-xl bg-yuzey border border-kenar p-5">
           <h2 class="font-semibold mb-3">Ürünler</h2>

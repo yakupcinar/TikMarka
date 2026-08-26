@@ -35,7 +35,7 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
   <PanelDuzeni>
     <h1 class="text-2xl font-bold mb-6">Katalog ayarları</h1>
 
-    <div class="grid grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-1">Kategoriler</h2>
         <p class="text-xs text-soluk mb-3">Ürünler tek bir kategoriye bağlanır.</p>
@@ -77,7 +77,7 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
         <p class="text-xs text-soluk mb-3">Beden, renk gibi eksenler. Ürün varyantları bunlardan kurulur.</p>
 
         <div v-for="e in eksenler" :key="e.uuid" class="border-b border-kenar-soft py-2">
-          <div class="flex items-center gap-2 text-sm">
+          <div class="flex flex-wrap items-center gap-2 text-sm">
             <strong>{{ e.name }}</strong>
             <span class="text-xs text-soluk">{{ e.degerler.length }} değer</span>
             <span class="ml-auto flex gap-2">
@@ -89,14 +89,14 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
           </div>
 
           <div v-if="acikEksen === e.uuid" class="mt-2 pl-3">
-            <div v-for="d in e.degerler" :key="d.uuid" class="flex items-center gap-2 text-sm py-1">
+            <div v-for="d in e.degerler" :key="d.uuid" class="flex flex-wrap items-center gap-2 text-sm py-1">
               <span v-if="d.swatch" class="inline-block w-4 h-4 rounded-full border border-kenar-kontrol" :style="{ background: d.swatch }" />
               <span>{{ d.value }}</span>
               <button type="button" class="ml-auto text-tehlike text-xs" @click="degerSil(e, d)">sil</button>
             </div>
 
-            <div class="flex gap-2 mt-2">
-              <input v-model="deger.value" placeholder="Değer" class="flex-1 rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
+            <div class="flex flex-wrap gap-2 mt-2">
+              <input v-model="deger.value" placeholder="Değer" class="min-w-0 flex-1 rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
               <!-- ⚠️ Renk kutusu yalnızca #rrggbb: serbest metin CSS'e girerdi. -->
               <input v-model="deger.swatch" placeholder="#rrggbb" class="w-28 rounded-lg border border-kenar-kontrol px-2 py-1 text-sm">
               <button type="button" class="rounded-lg border border-kenar-kontrol px-3 text-sm" @click="degerEkle(e)">Ekle</button>
@@ -105,7 +105,7 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
         </div>
 
         <form class="border-t border-kenar pt-4 mt-3 flex gap-2" @submit.prevent="eksenEkle">
-          <input v-model="eksen.name" placeholder="Eksen adı (Beden, Renk…)" class="flex-1 rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">
+          <input v-model="eksen.name" placeholder="Eksen adı (Beden, Renk…)" class="min-w-0 flex-1 rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">
           <button type="submit" class="rounded-lg bg-vurgu text-white px-4 py-2 text-sm font-semibold">Ekle</button>
         </form>
       </div>

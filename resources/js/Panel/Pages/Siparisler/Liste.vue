@@ -27,7 +27,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
   <Head title="Siparişler" />
 
   <PanelDuzeni>
-    <div class="flex items-center gap-4 mb-6">
+    <div class="flex flex-wrap items-center gap-4 mb-6">
       <h1 class="text-2xl font-bold">Siparişler</h1>
 
       <select class="ml-auto rounded-lg border border-kenar-kontrol px-3 py-2 text-sm" :value="durum ?? ''" @change="suz($event.target.value)">
@@ -74,7 +74,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
       </table>
     </div>
 
-    <div v-if="siparisler.links.length > 3" class="mt-4 flex gap-1 text-sm">
+    <div v-if="siparisler.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
       <Link v-for="b in siparisler.links" :key="b.label" :href="b.url ?? ''"
             class="rounded border border-kenar-kontrol px-3 py-1 bg-yuzey"
             :class="{ 'bg-vurgu text-white border-vurgu': b.active, 'opacity-40 pointer-events-none': !b.url }"

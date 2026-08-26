@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AF — panel yan menüde, mobil açıldı ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AF.1 BİTTİ — panel mobilde temiz    ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7885,12 +7885,54 @@ etkin zemin / yüzey     1.31    1.47   (önce koyuda 1.04)
 en uzun etiket         105px          (kullanılabilir 232px)
 ```
 
-⏳ **Yerleşimin kendisi (çekmece, yan menü, dar ekranda tablo) henüz
-tarayıcıda görülmedi** — panel giriş gerektiriyor ve parola alanına parola
-yazılmıyor. Renk ve genişlik ölçümleri giriş sayfası üzerinden yapıldı;
-yerleşim doğrulaması bir sonraki adım.
-
 **963 test.**
+
+---
+
+### 4.6AF.1 — gerçek tarayıcı koşusunun bulduğu beş kusur
+
+Yerleşim doğrulaması ancak panelin İÇİNDE yapılabiliyordu (giriş gerekiyor).
+Kullanıcı giriş yapınca 14 sayfa 375px'te tek tek gezildi. **4.6AF'nin on bir
+testi yeşilken beş kusur bulundu** — çünkü testler "kap var mı"yı ölçüyordu,
+"ekranda ne oluyor"u değil.
+
+| # | Bulunan | Nerede |
+|---|---|---|
+| 1 | Sayfalama düğmelerinde **`pagination.next`** yazıyordu | 4 sayfa |
+| 2 | Sayfalama satırı taşıyordu (sarmıyor) | 4 sayfa |
+| 3 | Başlık satırları taşıyordu (`ml-auto` + sarma yok) | 3 sayfa |
+| 4 | `flex-1` girdi daralmıyordu (`min-w-0` yok) | Katalog |
+| 5 | **11 koşulsuz çok sütunlu ızgara** | 8 sayfa |
+
+⚠️ **1. madde en sinsisi ve YENİ DEĞİL:** `lang/tr/pagination.php` hiç yoktu.
+Laravel çeviri bulamayınca anahtarın kendisini basıyor, yani marka panelinde
+düğmede **`pagination.previous`** yazıyordu. 4.6AA'daki `validation.uploaded`
+ile aynı aile — orada da "unutulursa hemen fark edilir" denmişti ve **fark
+edilmemişti**. 963 testin hiçbiri görmedi.
+
+⚠️ **5. maddenin bedeli taşma değil SIKIŞMA.** Personel'de iki tablo 375px'te
+**118px'lik iki sütuna** giriyordu. Taşmayı ölçen tarama bunu göremezdi:
+sıkışan içerik taşmıyor.
+
+⚠️ **Kendi `grep`'im bir tanesini kaçırdı, TEST yakaladı.** `sm:grid-cols-4`
+ile aynı satırda duran çıplak `grid-cols-2` elenmişti; test öneki hemen
+soldan okuyor.
+
+Dört kırma denemesi daha, dördü de düştü (koşulsuz ızgara · çeviri dosyasını
+sil · çeviriye anahtarın kendisini yaz · sayfalamadan `flex-wrap` kaldır).
+
+DOĞRULANDI (gerçek panel, iki tema, iki genişlik):
+
+```
+375px   14 sayfanın 14'ü yatay kaymıyor · çekmece açılıp yönlendirmede
+        kapanıyor · etkin madde takip ediyor · tablolar kendi kabında
+1280px  yan menü sabit · ızgaralar 2/3 sütuna geri açılıyor · kayma yok
+
+açık / koyu     etkin metin 13.32 / 9.43 · çubuk 3.94 / 4.54
+                grup başlığı 4.80 · pasif madde 7.63 / 10.18
+```
+
+**966 test.**
 
 ---
 ---

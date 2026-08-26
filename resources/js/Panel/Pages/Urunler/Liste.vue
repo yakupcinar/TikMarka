@@ -38,7 +38,7 @@ function para(deger) {
   <Head title="Ürünler" />
 
   <PanelDuzeni>
-    <div class="flex items-center gap-4 mb-6">
+    <div class="flex flex-wrap items-center gap-4 mb-6">
       <h1 class="text-2xl font-bold">Ürünler</h1>
 
       <form class="ml-auto flex gap-2" @submit.prevent="ara">
@@ -98,7 +98,7 @@ function para(deger) {
       </table>
     </div>
 
-    <div v-if="urunler.links.length > 3" class="mt-4 flex gap-1 text-sm">
+    <div v-if="urunler.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
       <Link
         v-for="bag in urunler.links"
         :key="bag.label"

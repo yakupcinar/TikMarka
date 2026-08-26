@@ -29,7 +29,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
   <Head title="Müşteriler" />
 
   <PanelDuzeni>
-    <div class="flex items-center gap-4 mb-6">
+    <div class="flex flex-wrap items-center gap-4 mb-6">
       <h1 class="text-2xl font-bold">Müşteriler</h1>
 
       <form class="ml-auto flex gap-2" @submit.prevent="suz">
@@ -88,7 +88,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
       </table>
     </div>
 
-    <div v-if="musteriler.last_page > 1" class="mt-6 flex gap-2">
+    <div v-if="musteriler.last_page > 1" class="mt-6 flex flex-wrap gap-2">
       <Link
         v-for="b in musteriler.links"
         :key="b.label"

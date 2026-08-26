@@ -46,7 +46,7 @@ function kapat() {
       </span>
     </div>
 
-    <div class="grid grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <form class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5" @submit.prevent="kaydet">
         <h2 class="font-semibold mb-4">Bilgiler</h2>
 

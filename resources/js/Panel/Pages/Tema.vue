@@ -40,7 +40,7 @@ function logoKaldir() { router.delete('/yonetim/tema/logo') }
   <PanelDuzeni>
     <h1 class="text-2xl font-bold mb-6">Tema</h1>
 
-    <div class="grid grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <form class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5" @submit.prevent="kaydet">
         <h2 class="font-semibold mb-4">Görünüm</h2>
 
@@ -90,7 +90,7 @@ function logoKaldir() { router.delete('/yonetim/tema/logo') }
                açardı. Boşken vitrin mağaza adını yazıyor. -->
           <p v-else class="text-sm text-metin-2 mb-3">Logo yok — vitrinde mağaza adı yazıyor.</p>
 
-          <input type="file" accept="image/jpeg,image/png,image/webp" class="text-sm" @change="logoYukle">
+          <input type="file" accept="image/jpeg,image/png,image/webp" class="max-w-full text-sm" @change="logoYukle">
           <p class="text-xs text-soluk mt-2">JPEG, PNG veya WebP · en fazla 2 MB</p>
           <!-- ⚠️ SVG kabul edilmiyor: XML belgesidir ve betik taşıyabilir. -->
 

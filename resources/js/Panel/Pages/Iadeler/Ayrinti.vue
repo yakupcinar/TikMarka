@@ -36,7 +36,7 @@ const durumAdi = {
       <span class="rounded-full bg-yuzey-3 px-2 py-0.5 text-xs">{{ durumAdi[talep.status] ?? talep.status }}</span>
     </div>
 
-    <div class="grid grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-3">İade edilen ürünler</h2>
         <div class="overflow-x-auto">
@@ -72,7 +72,7 @@ const durumAdi = {
         <template v-else-if="talep.status === 'approved'">
           <!-- ⚠️ STOĞA GERİ KOYMA VARSAYILAN KAPALI (2B): iade edilen ürün
                hasarlı olabilir. Karar personelin, otomatik değil. -->
-          <label class="flex items-center gap-2 text-sm">
+          <label class="flex flex-wrap items-center gap-2 text-sm">
             <input v-model="stogaKoy" type="checkbox"> Stoğa geri koy
           </label>
           <button type="button" class="w-full rounded-lg bg-vurgu text-white py-2 text-sm font-semibold" @click="y('teslim-al', { restock: stogaKoy })">

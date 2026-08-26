@@ -232,3 +232,83 @@ it('★★ CUBUK vurgu-metin kullaniyor — vurgu DEGIL', function () {
     expect(panelDuzeniKod())->toContain('border-vurgu-metin')
         ->and(panelDuzeniKod())->not->toMatch('/border-vurgu(?!-metin)/');
 });
+
+/*
+|--------------------------------------------------------------------------
+| 4.6AF.1 — GERÇEK TARAYICI KOŞUSUNUN BULDUKLARI
+|--------------------------------------------------------------------------
+|
+| Yukarıdaki testler yeşilken 375px'te 14 sayfanın 5'i hâlâ yatay
+| kayıyordu ve bir sayfada iki tablo 118px'e sıkışmıştı. Yani sözleşme
+| testleri "kap var mı"yı ölçüyordu, "ekranda ne oluyor"u değil.
+| Aşağıdakiler tarayıcının bulduğu kusurların yapısal karşılığı.
+*/
+
+it('★★★ PANELDE KOSULSUZ COK SUTUNLU IZGARA YOK — mobilde iceriği ezer', function () {
+    /*
+    | ⚠️ 11 tane vardı ve hiçbiri kırılma noktası taşımıyordu. Bedeli
+    | yalnızca taşma değil SIKIŞMA: Personel'de iki tablo 375px'te
+    | 118px'lik iki sütuna giriyordu — okunacak hiçbir şey kalmıyordu.
+    | ⚠️ Taşmayı ölçen tarama bunu GÖREMEZDİ: sıkışan içerik taşmıyor.
+    */
+    $kotu = [];
+
+    foreach (panelSayfalari() as $yol) {
+        foreach (explode("\n", (string) File::get($yol)) as $i => $satir) {
+            if (preg_match_all('/(?<![a-z:-])grid-cols-([2-9])/', $satir, $m, PREG_OFFSET_CAPTURE)) {
+                foreach ($m[0] as $es) {
+                    $onek = substr($satir, max(0, $es[1] - 4), 4);
+
+                    if (! preg_match('/(sm|md|lg|xl):$/', $onek)) {
+                        $kotu[] = basename($yol).':'.($i + 1).' → '.$es[0];
+                    }
+                }
+            }
+        }
+    }
+
+    expect($kotu)->toBe([]);
+});
+
+it('★★★ SAYFALAMA CEVIRISI VAR — yoksa ekranda "pagination.next" YAZAR', function () {
+    /*
+    | ⚠️ lang/tr/pagination.php HİÇ YOKTU. Laravel çeviri bulamayınca
+    | anahtarın kendisini basıyor: dört panel sayfasında birden düğmede
+    | "pagination.previous" / "pagination.next" yazıyordu.
+    |
+    | ⚠️ 4.6AA'daki `validation.uploaded` ile AYNI AİLE — orada da
+    | "unutulursa hemen fark edilir" denmişti ve fark edilmemişti.
+    | 963 testin hiçbiri görmedi; gerçek tarayıcı koşusu gördü.
+    */
+    expect(File::exists(base_path('lang/tr/pagination.php')))->toBeTrue();
+
+    foreach (['previous', 'next'] as $anahtar) {
+        $ceviri = __('pagination.'.$anahtar);
+
+        expect($ceviri)->not->toBe('pagination.'.$anahtar)
+            ->and($ceviri)->toMatch('/[a-zçğıöşü]/iu');
+    }
+});
+
+it('★★★ SAYFALAMA SATIRI SARIYOR — dar ekranda tasmasin', function () {
+    $kotu = [];
+
+    foreach (panelSayfalari() as $yol) {
+        $icerik = (string) File::get($yol);
+
+        // sayfalama satırı: içinde `.links` döngüsü olan kap
+        if (! str_contains($icerik, '.links"')) {
+            continue;
+        }
+
+        foreach (explode("\n", $icerik) as $i => $satir) {
+            if (preg_match('/class="[^"]*\bflex\b[^"]*"/', $satir)
+                && preg_match('/(links\.length|last_page)/', $satir)
+                && ! str_contains($satir, 'flex-wrap')) {
+                $kotu[] = basename($yol).':'.($i + 1);
+            }
+        }
+    }
+
+    expect($kotu)->toBe([]);
+});

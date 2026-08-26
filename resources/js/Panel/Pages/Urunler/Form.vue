@@ -238,7 +238,7 @@ function urunSil() {
       </div>
     </div>
 
-    <form class="grid grid-cols-2 gap-6" @submit.prevent="kaydet">
+    <form class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit.prevent="kaydet">
       <div class="col-span-2 md:col-span-1 rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-4">Ürün bilgileri</h2>
 
@@ -253,7 +253,7 @@ function urunSil() {
           <textarea v-model="form.description" rows="4" class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2" />
         </label>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label class="block text-sm mb-3">
             Marka
             <input v-model="form.brand" type="text" class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2">
@@ -299,7 +299,7 @@ function urunSil() {
         <h2 class="font-semibold mb-3">Koleksiyonlar</h2>
 
         <div class="flex flex-wrap gap-3">
-          <label v-for="k in manuelKoleksiyonlar" :key="k.uuid" class="flex items-center gap-2 text-sm">
+          <label v-for="k in manuelKoleksiyonlar" :key="k.uuid" class="flex flex-wrap items-center gap-2 text-sm">
             <input
               type="checkbox"
               :checked="uyeUuidleri.has(k.uuid)"
@@ -342,7 +342,7 @@ function urunSil() {
           </p>
 
           <div class="flex flex-wrap gap-3 mb-3">
-            <label v-for="e in eksenler" :key="e.uuid" class="flex items-center gap-2 text-sm">
+            <label v-for="e in eksenler" :key="e.uuid" class="flex flex-wrap items-center gap-2 text-sm">
               <input
                 v-model="eksenForm.option_uuids"
                 type="checkbox"
@@ -389,7 +389,7 @@ function urunSil() {
         <p v-else class="text-sm text-uyari mb-4">Görsel yok — ürün vitrinde görselsiz görünür.</p>
 
         <div class="flex gap-2 items-center">
-          <input type="file" accept="image/jpeg,image/png,image/webp" class="text-sm"
+          <input type="file" accept="image/jpeg,image/png,image/webp" class="max-w-full text-sm"
                  @input="gorsel.image = $event.target.files[0]">
           <input v-model="gorsel.alt" placeholder="Görsel açıklaması" class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm">
           <button type="button" class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm"
@@ -462,7 +462,7 @@ function urunSil() {
             görüyordu. Doldurduğu veri de eksenler kaydedilince
             sıfırlanıyordu — iki kez emek.
           -->
-          <div class="grid grid-cols-3 gap-2 mb-2">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
             <input v-model="varyant.sku" placeholder="SKU" :disabled="eksenBekliyor"
                    class="rounded-lg border border-kenar-kontrol px-3 py-2 text-sm disabled:bg-yuzey-2 disabled:text-soluk-2">
             <input v-model="varyant.price" type="number" step="0.01" min="0" placeholder="Fiyat" :disabled="eksenBekliyor"

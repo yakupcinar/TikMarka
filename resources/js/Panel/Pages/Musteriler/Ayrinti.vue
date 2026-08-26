@@ -53,7 +53,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
     </p>
 
     <!-- ── ÖZET ────────────────────────────────────────────────────── -->
-    <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div class="mt-6 grid grid-cols-1 gap-4 min-[380px]:grid-cols-2 sm:grid-cols-4">
       <div class="rounded-xl border border-kenar p-4">
         <div class="text-2xl font-bold">{{ ozet.siparis }}</div>
         <!-- ⚠️ "TAMAMLANAN" yazıyor ve bu canlı doğrulamada bulundu: özet

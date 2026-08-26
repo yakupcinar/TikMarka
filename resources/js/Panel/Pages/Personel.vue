@@ -48,7 +48,7 @@ function rolSil(r) {
   <PanelDuzeni>
     <h1 class="text-2xl font-bold mb-6">Personel ve roller</h1>
 
-    <div class="grid grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="rounded-xl bg-yuzey border border-kenar p-5">
         <h2 class="font-semibold mb-3">Personel</h2>
 
@@ -120,7 +120,7 @@ function rolSil(r) {
 
           <input v-model="rolForm.name" placeholder="Rol adı" class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mb-2">
 
-          <div class="mb-3 grid grid-cols-2 gap-1">
+          <div class="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-1">
             <label v-for="i in izinler" :key="i.value" class="inline-flex items-center gap-1 text-sm">
               <input v-model="rolForm.permissions" type="checkbox" :value="i.value"> {{ i.label }}
             </label>

@@ -26,7 +26,7 @@ const izinler = computed(() => sayfa.props.auth?.permissions ?? [])
       <p v-if="kullanici?.is_owner" class="text-sm text-metin-2 mb-2">
         Mağaza sahibisiniz — bütün yetkilere sahipsiniz.
       </p>
-      <ul class="text-sm text-metin-2 grid grid-cols-2 gap-x-6">
+      <ul class="text-sm text-metin-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6">
         <li v-for="izin in izinler" :key="izin"><code>{{ izin }}</code></li>
       </ul>
     </div>
