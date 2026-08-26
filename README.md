@@ -134,21 +134,30 @@ veya dağıtım için izin gerekir.
 
 * Vitrinde ödemeyi yapıp siparişi veriyorum çıkan ekran biraz beklemem ödeme onaylanana kadar iyzicodan mı bekliyor onayı sonra yeniledim sayfayı o zaman ödeme başarılı dedi, siparişim hazırlanıyor ve afiyet olsun gibi mesajlar gördüm ama bizim ürünlrimiz de yemek yok neden öyle dedin düzelt oraları ayrıca ödeme sonrası bekleme sekmesinde hesabım yazısı yerine giriş, gözüküyor onu da düzeltelim.
 
-* "Mevcut projemizdeki çalışan tüm fonksiyonları, state yönetimini ve component bağlantılarını aynen korumanı istiyorum. Hiçbir işlevsel kodu silme veya değiştirme.
+* ~~UI/UX yenilemesi (modern SaaS estetiği)~~ → **4.6AG'de kapandı**
 
-Şu anki arayüz bana çok standart ve sıradan geliyor. Senden bir "Kıdemli UI/UX Tasarımcısı" gibi düşünmeni ve projemizi modern bir SaaS uygulaması estetiğine kavuşturmanı istiyorum.
+> Sezgi doğruydu ve ölçülebildi: panelde **gölge 0**, **yazılmış odak
+> stili 0**, 25 sayfaya **18 hover**, **4 farklı yarıçap** (vitrinde 6) ve
+> tipografide **16px hiç yok** — her şey 14px, sonra doğrudan 24px'e
+> atlıyordu. Hiyerarşi yoktu.
+>
+> Yapılanlar belirteç üzerinden, 25 dosyaya tek tek dokunmadan: **ölçek**
+> (16px geri geldi, 12px üstveriye çekildi, tutarlar hizalandı),
+> **yarıçap** (3 basamak), **derinlik** (açık temada gölge, koyu temada
+> yüzey basamağı) ve **etkileşim** (yazılmış odak halkası, geçiş,
+> `prefers-reduced-motion`).
+>
+> ⚠️ **İki istek bilerek yapılmadı, gerekçesiyle:** panele **bento-grid**
+> konmadı (bento pazarlama kalıbı; panel bir veri aracı ve bento mobilde
+> çok sütun sorununu geri getirir) ve **palet yeniden seçilmedi**
+> (4.6AD/AE/AF'de her renk tarayıcıda ölçülüp eşiğe oturtulmuştu).
+>
+> ⚠️ **Yoğunluk korundu** — marka kararı: tipografi büyüdü, satır dolgusu
+> büyümedi. 50+ kayıtlı bir listede "nefes payı" ile "ekranda kaç satır
+> görüyorum" doğrudan çelişiyor.
+>
+> Tasarım önce tuvalde gösterildi, sonra uygulandı.
 
-Projenin teknik altyapısına göre en verimli ve temiz çözümü seçmeyi tamamen sana bırakıyorum: Projede Tailwind mi, CSS Variables (Değişkenleri) mı yoksa düz CSS mi kullanmak daha mantıklıysa seçimi sen yap ve o dilde devam et.
-
-Senden ricam, token bütçemizi korumak için tüm kodu baştan yazmak yerine sadece arayüzü elitleştirecek şu estetik dokunuşları TEK SEFERDE (toplu olarak) yapman:
-
-1. Sayfa Düzeni (Layout) ve Boşluklar: Elemanların nefes alması için whitespace (beyaz boşluk) dengesini kur, padding ve margin değerlerini modern web trendlerine uygun şekilde optimize et. İçerikleri bento-grid veya temiz katmanlı yapılarla hizala.
-
-2. Renk Paleti ve Tipografi: Gözü yormayan, soft-contrast (yumuşak kontrastlı) modern bir renk paleti (Primary, Secondary, Background, Surface) belirle. Font boyutları ve ağırlıkları arasındaki hiyerarşiyi netleştir.
-
-3. Modern Detaylar: Buton, input ve kart tasarımlarında sert köşeler yerine modern yumuşatılmış köşeler (border-radius) kullan. Elemanlara derinlik katmak için yumuşak, katmanlı gölgeler (soft shadows) ekle. Etkileşimi artırmak için hover efektleri (smooth transitions) tanımla.
-
-ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istediğin bir skill var mı bunu çalıştırırken daha iyi sonuç almamıza yarayacak"
 
 
 * ~~samil.localhost açılmıyor~~ → **4.6Z'de kapandı** (Caddyfile artık joker kullanıyor; yeni marka için elle ekleme gerekmiyor)
@@ -287,6 +296,7 @@ ne düşünüyorsun bu fikrime ona göre ilerleyeceğiz. ayrıca vermemi istedi�
 | Ürün sayfasının altında öneri yoktu | **Benzer ürünler** (kategori → marka → en yeniler) ve **Çok satanlar** (ödenmiş siparişlerden) | 4.6E |
 | Fiyat ve bağlantılar marka renginde, koyu temada okunmuyordu (kontrast 2,02) | Marka renginin **okunur varyantı** sunucuda hesaplanıyor · fiyat normal metin renginde · her çizgi WCAG eşiğinde | 4.6AD |
 | Panel menüsü 14 maddeyle **masaüstünde bile 289px taşıyordu**, telefonda tablolar sayfayı yatay kaydırıyordu | Menü **yan menüye** taşındı (gruplu, etkin sayfa işaretli) · dar ekranda çekmece · 14 tablo kaydırma kabında | 4.6AF |
+| Panelde hiyerarşi yoktu: her şey 14px, gölge/odak stili/geçiş yok, 4 farklı yarıçap | Asıl veri **16px**, sütun başlığı etiket, tutarlar hizalı · 3 yarıçap basamağı · açık temada gölge, koyu temada yüzey basamağı · yazılmış odak halkası | 4.6AG |
 | Panelde sayfalama düğmelerinde **`pagination.next`** yazıyordu (Türkçe çeviri dosyası hiç yoktu) | Düğmelerde **« Önceki / Sonraki »** | 4.6AF.1 |
 | Panel telefonda kullanılamıyordu: 14 sayfanın 5'i yatay kayıyor, ızgaralar içeriği 118px'e sıkıştırıyordu | 375px'te **14 sayfanın 14'ü** temiz · ızgaralar mobilde alt alta, masaüstünde 2–3 sütun | 4.6AF.1 |
 | Panelde koyu tema yoktu (renk 25 dosyada **532 sabit sınıf**) | Panel üst barında **☾/☀ düğmesi** · sistem tercihi de okunuyor · renkler belirteçten geliyor | 4.6AE |

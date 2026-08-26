@@ -95,8 +95,8 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="col-span-2 space-y-6">
-        <div class="rounded-xl bg-yuzey border border-kenar p-5">
-          <h2 class="font-semibold mb-3">Ürünler</h2>
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+          <h2 class="text-lg font-semibold mb-3">Ürünler</h2>
           <div class="overflow-x-auto">
             <table class="min-w-[42rem] w-full text-sm">
               <tr v-for="s in kalanlar" :key="s.id" class="border-b border-kenar-soft">
@@ -114,8 +114,8 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
         </div>
 
         <div v-if="kargolayabilir && odendi && kalanlar.some((s) => s.kalan > 0)"
-             class="rounded-xl bg-yuzey border border-kenar p-5">
-          <h2 class="font-semibold mb-1">Siparişi tamamla</h2>
+             class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+          <h2 class="text-lg font-semibold mb-1">Siparişi tamamla</h2>
           <p class="text-sm text-metin-2 mb-3">
             Kalan tüm satırlar tek pakette sevk edilir ve sipariş teslim edildi olarak kapanır.
             Kargo firması takip etmek istersen aşağıdaki paket bölümünü kullan.
@@ -125,8 +125,8 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
           </button>
         </div>
 
-        <div v-if="kargolayabilir" class="rounded-xl bg-yuzey border border-kenar p-5">
-          <h2 class="font-semibold mb-3">Yeni paket</h2>
+        <div v-if="kargolayabilir" class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+          <h2 class="text-lg font-semibold mb-3">Yeni paket</h2>
 
           <p v-if="kalanlar.every((s) => s.kalan <= 0)" class="text-sm text-metin-2">
             Bu siparişin tamamı sevk edildi.
@@ -158,9 +158,9 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
           ⚠️ Ödenmemiş siparişte hiç gösterilmiyor: geri verilecek para yok
           ve servis zaten reddediyor.
         -->
-        <div v-if="iadeEdebilir && odendi" class="rounded-xl bg-yuzey border border-kenar p-5">
+        <div v-if="iadeEdebilir && odendi" class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
           <div class="flex items-center justify-between">
-            <h2 class="font-semibold">İade</h2>
+            <h2 class="text-lg font-semibold">İade</h2>
             <button type="button" class="text-sm text-vurgu-metin" @click="iadeFormu = !iadeFormu">
               {{ iadeFormu ? 'vazgeç' : 'İade talebi aç' }}
             </button>
@@ -187,8 +187,8 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
           </template>
         </div>
 
-        <div class="rounded-xl bg-yuzey border border-kenar p-5">
-          <h2 class="font-semibold mb-3">Paketler</h2>
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+          <h2 class="text-lg font-semibold mb-3">Paketler</h2>
 
           <p v-if="siparis.fulfillments.length === 0" class="text-sm text-metin-2">Henüz paket yok.</p>
 
@@ -199,9 +199,9 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
               <code v-if="p.tracking_number" class="text-soluk">{{ p.tracking_number }}</code>
 
               <span v-if="kargolayabilir" class="ml-auto flex gap-2">
-                <button v-if="p.status === 'pending'" type="button" class="rounded border border-kenar-kontrol px-2 py-1" @click="kargoyaVer(p.uuid)">Kargoya ver</button>
-                <button v-if="p.status === 'shipped'" type="button" class="rounded border border-kenar-kontrol px-2 py-1" @click="teslimEt(p.uuid)">Teslim edildi</button>
-                <button v-if="p.status !== 'cancelled' && p.status !== 'delivered'" type="button" class="rounded border border-tehlike-kenar text-tehlike px-2 py-1" @click="paketIptal(p.uuid)">İptal</button>
+                <button v-if="p.status === 'pending'" type="button" class="rounded-lg border border-kenar-kontrol px-2 py-1" @click="kargoyaVer(p.uuid)">Kargoya ver</button>
+                <button v-if="p.status === 'shipped'" type="button" class="rounded-lg border border-kenar-kontrol px-2 py-1" @click="teslimEt(p.uuid)">Teslim edildi</button>
+                <button v-if="p.status !== 'cancelled' && p.status !== 'delivered'" type="button" class="rounded-lg border border-tehlike-kenar text-tehlike px-2 py-1" @click="paketIptal(p.uuid)">İptal</button>
               </span>
             </div>
           </div>
@@ -209,16 +209,16 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
       </div>
 
       <aside class="space-y-6">
-        <div class="rounded-xl bg-yuzey border border-kenar p-5 text-sm">
-          <h2 class="font-semibold mb-3">Teslimat</h2>
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 text-sm shadow-kart">
+          <h2 class="text-lg font-semibold mb-3">Teslimat</h2>
           <p>{{ siparis.shipping_address.full_name }}</p>
           <p class="text-metin-2">{{ siparis.shipping_address.phone }}</p>
           <p class="text-metin-2">{{ siparis.shipping_address.line1 }}</p>
           <p class="text-metin-2">{{ siparis.shipping_address.district }} / {{ siparis.shipping_address.city }}</p>
         </div>
 
-        <div class="rounded-xl bg-yuzey border border-kenar p-5 text-sm">
-          <h2 class="font-semibold mb-3">Tutarlar</h2>
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 text-sm shadow-kart">
+          <h2 class="text-lg font-semibold mb-3">Tutarlar</h2>
           <div class="flex justify-between py-1"><span>Ürünler</span><span>{{ para(siparis.items_total) }}</span></div>
           <div class="flex justify-between py-1"><span>Kargo</span><span>{{ para(siparis.shipping_total) }}</span></div>
           <!-- ⚠️ KDV bilgi amaçlı: tahsil edilen tutarın İÇİNDE (§8.2). -->
@@ -228,8 +228,8 @@ const paketDurumu = { pending: 'Hazırlanıyor', shipped: 'Kargoda', delivered: 
 
         <!-- ⚠️ Müşterinin ONAYLADIĞI sözleşme sürümü: "neyi kabul etti"
              sorusu sonradan tartışmasız cevaplanabilsin diye (1D-K2). -->
-        <div v-if="siparis.contract_version" class="rounded-xl bg-yuzey border border-kenar p-5 text-sm">
-          <h2 class="font-semibold mb-1">Sözleşme</h2>
+        <div v-if="siparis.contract_version" class="rounded-xl bg-yuzey border border-kenar p-5 text-sm shadow-kart">
+          <h2 class="text-lg font-semibold mb-1">Sözleşme</h2>
           <p class="text-metin-2">Onaylanan sürüm: v{{ siparis.contract_version }}</p>
         </div>
       </aside>

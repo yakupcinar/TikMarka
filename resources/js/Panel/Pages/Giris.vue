@@ -22,7 +22,7 @@ function gonder() {
   <Head title="Giriş" />
 
   <div class="min-h-screen grid place-items-center bg-yuzey-2 text-metin">
-    <form class="w-full max-w-sm bg-yuzey rounded-xl border border-kenar p-6" @submit.prevent="gonder">
+    <form class="w-full max-w-sm bg-yuzey rounded-xl border border-kenar p-6 shadow-kart" @submit.prevent="gonder">
       <h1 class="text-xl font-bold mb-1">Panel girişi</h1>
       <p class="text-sm text-soluk mb-5">Mağazanızı yönetmek için giriş yapın.</p>
 

@@ -939,6 +939,39 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   gerektirdiği için bu adım atlanabiliyor — atlanırsa blok yarım kalır
   ("bitti kaydı bittiğinin kanıtı değildir" kuralının yerleşim biçimi).
 
+- **`el.focus()` `:focus-visible`'I TETİKLEMİYOR — odak stilini ÖLÇTÜĞÜNÜ
+  sanan test yanlış şey ölçer.** 4.6AG'de iki yüzeyde birden "odak halkası
+  yok" okundu; gerçek **Tab** ile ölçünce panelde tarayıcının varsayılan
+  halkası çıktı. Gerçek durum farklıydı: halka VAR ama **yazılmamış** —
+  rengi ve kalınlığı bizde değil, tarayıcıdan tarayıcıya değişiyor ve koyu
+  yüzeye karşı kontrastı garanti değil. ⚠️ Bir erişilebilirlik bulgusunu
+  kaydetmeden önce **gerçek klavye girdisiyle** doğrula; `.focus()` ile
+  ölçüp "WCAG ihlali" yazmak yanlış kayıt üretir.
+  ⚠️ Kuralı yazarken `:focus` DEĞİL `:focus-visible`: `:focus` fareyle
+  tıklanan her düğmeye halka takar ve marka bunu arıza sanar.
+- **KOYU TEMADA GÖLGE YOK HÜKMÜNDEDİR — derinlik YÜZEY AÇIKLIĞIYLA
+  anlatılır.** Gölge kontrastla görünür; koyu zeminde koyu gölge
+  görünmez. İki temaya da gölge konsaydı açık temada derinlik olur, koyu
+  temada **hiçbir şey** olmazdı — ve bu hata vermezdi (4.6AG). Bizde
+  `yuzey / yuzey-2 / yuzey-3` zaten var; gölge belirteci koyu temada
+  `none`.
+- **TAILWIND'İN ÖLÇEĞİNİ EZ, SINIFLARA DOKUNMA.** 4.6AG'de `--radius-lg`
+  ve `--radius-xl` yeniden tanımlanınca **163 kullanım tek yerden**
+  güncellendi. Sınıf sınıf dokunulsaydı biri unutulduğunda hata vermeden
+  eski değerde kalırdı. ⚠️ **Çıplak `rounded` bunun DIŞINDA:** o sınıf
+  değişkene değil sabit `.25rem`'e bağlı, yani belirteci değiştirmek onu
+  düzeltmiyor — ölçek kurarken çıplak biçimi ayrıca ara.
+- **`transition: all` YASAK.** Yerleşim özellikleri de animasyona girer ve
+  tablo satırları kayarken sürüklenir. Yalnızca etkileşimde değişen
+  özellikleri say (renk, kenar, gölge, dönüşüm, opaklık). ⚠️ Yanına
+  `prefers-reduced-motion` koruması: hareket duyarlılığı olan personel
+  için animasyon rahatsızlık değil **engel** (4.6AG).
+- **"FERAHLATALIM" BİR TASARIM TERCİHİ DEĞİL, İŞ KARARIDIR.** Sipariş
+  listesinde 50+ kayıt olabiliyor; nefes payı ile "bir ekranda kaç satır
+  görüyorum" doğrudan çelişiyor. 4.6AG'de marka yoğunluğu seçti:
+  tipografi büyüdü, **dolgu büyümedi**. Kararı ölçen test var — yoksa
+  ileride biri sessizce geri alır.
+
 ## Yapı
 
 ```

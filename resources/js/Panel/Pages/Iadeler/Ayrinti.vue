@@ -37,8 +37,8 @@ const durumAdi = {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-3">İade edilen ürünler</h2>
+      <div class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-3">İade edilen ürünler</h2>
         <div class="overflow-x-auto">
           <table class="min-w-[42rem] w-full text-sm mb-4">
             <tr v-for="(s, i) in talep.items" :key="i" class="border-b border-kenar-soft">
@@ -60,8 +60,8 @@ const durumAdi = {
         </div>
       </div>
 
-      <aside v-if="kararVerebilir" class="rounded-xl bg-yuzey border border-kenar p-5 space-y-3">
-        <h2 class="font-semibold">İşlemler</h2>
+      <aside v-if="kararVerebilir" class="rounded-xl bg-yuzey border border-kenar p-5 space-y-3 shadow-kart">
+        <h2 class="text-lg font-semibold">İşlemler</h2>
 
         <template v-if="talep.status === 'requested'">
           <button type="button" class="w-full rounded-lg bg-vurgu text-white py-2 text-sm font-semibold" @click="y('onayla')">Onayla</button>

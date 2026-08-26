@@ -46,7 +46,7 @@ function kaydet() { form.post('/yonetim/odeme-ayarlari') }
       Şu an <strong>sahte sağlayıcı</strong> seçili. Bu sağlayıcı gerçek para tahsil etmez; yalnızca test içindir.
     </p>
 
-    <form class="max-w-xl rounded-xl bg-yuzey border border-kenar p-5" @submit.prevent="kaydet">
+    <form class="max-w-xl rounded-xl bg-yuzey border border-kenar p-5 shadow-kart" @submit.prevent="kaydet">
       <label class="block text-sm mb-4">
         Sağlayıcı
         <select v-model="form.provider" class="mt-1 w-full rounded-lg border border-kenar-kontrol px-3 py-2">

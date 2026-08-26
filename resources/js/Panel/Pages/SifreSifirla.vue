@@ -32,7 +32,7 @@ function gonder() {
   <Head title="Yeni şifre" />
 
   <div class="min-h-screen grid place-items-center bg-yuzey-2 text-metin">
-    <form class="w-full max-w-sm bg-yuzey rounded-xl border border-kenar p-6" @submit.prevent="gonder">
+    <form class="w-full max-w-sm bg-yuzey rounded-xl border border-kenar p-6 shadow-kart" @submit.prevent="gonder">
       <h1 class="text-xl font-bold mb-5">Yeni şifre belirleyin</h1>
 
       <p v-if="bildirim.hata" class="mb-4 rounded-lg bg-tehlike-zemin border border-tehlike-kenar px-3 py-2 text-sm">

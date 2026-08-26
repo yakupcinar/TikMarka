@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AF.1 BİTTİ — panel mobilde temiz    ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AG BİTTİ — görsel dil sistemi kuruldu ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7933,6 +7933,87 @@ açık / koyu     etkin metin 13.32 / 9.43 · çubuk 3.94 / 4.54
 ```
 
 **966 test.**
+
+---
+
+### 4.6AG — görsel dil: ölçek, derinlik, etkileşim
+
+README'deki 12. madde ("arayüz çok standart ve sıradan geliyor"). Sezgi
+doğruydu ve **ölçülebilirdi**:
+
+```
+                     panel   vitrin
+gölge kuralı             0        1
+geçiş                    2        2
+hover                   18        —      (25 sayfaya)
+yazılmış odak stili      0        1
+yarıçap değeri           4        6
+metin boyutu   225× 14px · 42× 12px · 23× 24px  →  16px HİÇ YOK
+```
+
+Sonuncusu asıl sebep: hiyerarşi yoktu. Sipariş numarasıyla e-posta
+neredeyse aynı ağırlıktaydı, göz neye bakacağını bilmiyordu.
+
+**Kapsam kullanıcıyla daraltıldı.** Brifte bento-grid ve yeni palet
+isteniyordu; ikisine de itiraz edildi ve kabul edildi:
+
+> ⚠️ **Panele bento konmadı.** Bento bir pazarlama sayfası kalıbı; panel
+> bir veri aracı (tablo, form, liste). Hem taramayı zorlaştırır hem
+> 4.6AF.1'de kapatılan "mobilde çok sütun" sorununu geri getirir.
+>
+> ⚠️ **Palet yeniden seçilmedi.** 4.6AD/AE/AF'de her renk tarayıcıda
+> ölçülüp eşiğe oturtuldu; yeni palet o işin tamamını sıfırlardı.
+
+**Yoğunluk kasıtlı olarak korundu — marka kararı.** Tipografi büyüdü,
+**dolgu büyümedi**: sipariş listesinde 50+ kayıt olabiliyor ve "nefes
+payı" ile "bir ekranda kaç satır görüyorum" doğrudan çelişiyor. Kararı
+ölçen ayrı bir test var, ileride sessizce geri alınmasın diye.
+
+Yapılanlar, hepsi **belirteç üzerinden** (25 dosyaya tek tek dokunmadan):
+
+| | |
+|---|---|
+| **Ölçek** | 16px geri geldi (tablonun asıl verisi) · 12px yalnızca üstveriye · sütun başlığı etiket oldu · bölüm başlığı 18px · tutarlar `tabular-nums` |
+| **Yarıçap** | 4 değerden **3 basamağa** (6/10/14 + tam); rolü belirliyor, boyutu değil |
+| **Derinlik** | açık temada gölge (`--p-golge-1..3`), **koyu temada `none`** — yüzey basamağı zaten var |
+| **Etkileşim** | yazılmış `:focus-visible` halkası · geçiş katmanı · `prefers-reduced-motion` koruması |
+
+> ⚠️ **`--radius-lg` EZİLDİ, SINIFLAR DEĞİŞMEDİ.** 163 kullanım tek
+> yerden güncellendi. Sınıf sınıf dokunulsaydı biri unutulduğunda **hata
+> vermeden** eski yarıçapta kalırdı. ⚠️ Çıplak `rounded` bunun DIŞINDA:
+> Tailwind'de o sınıf değişkene değil sabit `.25rem`'e bağlı — 11 kullanım
+> role göre `sm`/`lg`'ye taşındı ve ölçen test yazıldı.
+
+**"ODAK STİLİ YOK" İLK ÖLÇÜMDE YANLIŞ OKUNDU — ve düzeltildi.**
+
+> `el.focus()` `:focus-visible`'ı **tetiklemiyor**; o yüzden hem panelde
+> hem vitrinde "odak halkası yok" görünüyordu. Gerçek Tab'la ölçünce
+> panelde tarayıcının **varsayılan** halkası çıktı. Yani sorun halkanın
+> olmaması değil, **renginin ve kalınlığının bizde olmaması**: varsayılan
+> halka tarayıcıdan tarayıcıya değişiyor ve koyu yüzeylerimize karşı
+> kontrastı garanti değil. Bulgu WCAG ihlali diye kaydedilmedi.
+
+**Sekiz kırma denemesi, sekizi de düştü** (koyuya gölge koy · `:focus`e
+düşür · `transition: all` · hareket korumasını kaldır · yarıçapı
+varsayılana döndür · sütun başlığını veriyle eşitle · **yoğunluğu boz** ·
+çıplak `rounded` geri koy).
+
+⚠️ Test yardımcısı `panelSayfalari()` ikinci dosyada kullanılınca dört
+test "tanımsız fonksiyon" ile düştü; `tests/Pest.php`'ye taşındı — kural
+zaten yazılıydı.
+
+DOĞRULANDI (gerçek panel, iki tema):
+
+```
+kart yarıçapı      14px        gölge   açık: var · koyu: none
+düğme yarıçapı     10px        geçiş   0.15s, yalnızca renk/gölge/dönüşüm
+sipariş no         16px / 500  tutar   16px, tabular-nums
+sütun başlığı      12px, büyük harf, soluk
+odak halkası       2px · açık 5.18 · koyu 6.70   (eşik 3:1)
+satır dolgusu      p-3 — DEĞİŞMEDİ
+```
+
+**972 test.**
 
 ---
 ---

@@ -49,8 +49,8 @@ function rolSil(r) {
     <h1 class="text-2xl font-bold mb-6">Personel ve roller</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-3">Personel</h2>
+      <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-3">Personel</h2>
 
         <div class="overflow-x-auto">
           <table class="min-w-[42rem] w-full text-sm mb-5">
@@ -93,8 +93,8 @@ function rolSil(r) {
         </form>
       </div>
 
-      <div class="rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-3">Roller</h2>
+      <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-3">Roller</h2>
 
         <div class="overflow-x-auto">
           <table class="min-w-[42rem] w-full text-sm mb-5">

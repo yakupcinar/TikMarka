@@ -874,3 +874,26 @@ function satisYap(Product $urun, int $adet): void
 
     app(CheckoutService::class)->odemeBasarili($siparis);
 }
+
+/**
+ * Panel Vue sayfalarının tam yolu.
+ *
+ * ⚠️ BURADA, `tests/Pest.php`'DE OLMAK ZORUNDA. İlk hâli
+ * `PanelDuzenTest.php`'de tanımlıydı ve `PanelGorselDilTest.php` onu
+ * kullanınca dört test "tanımsız fonksiyon" ile düştü — dosya yükleme
+ * sırasına bağlı, tüm süitte görünmeyen sessiz bağımlılık.
+ *
+ * @return list<string>
+ */
+function panelSayfalari(): array
+{
+    return array_values(array_map(
+        fn ($d) => $d->getPathname(),
+        array_filter(
+            iterator_to_array(new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(base_path('resources/js/Panel/Pages'))
+            )),
+            fn ($d) => $d->isFile() && $d->getExtension() === 'vue',
+        ),
+    ));
+}

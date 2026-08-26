@@ -30,7 +30,7 @@ function sil(d) {
       Doğrulandıktan sonra güvenlik sertifikası ilk ziyarette otomatik alınır.
     </p>
 
-    <div v-for="d in alanAdlari" :key="d.domain" class="rounded-xl bg-yuzey border border-kenar p-5 mb-4">
+    <div v-for="d in alanAdlari" :key="d.domain" class="rounded-xl bg-yuzey border border-kenar p-5 mb-4 shadow-kart">
       <div class="flex items-center gap-3">
         <strong>{{ d.domain }}</strong>
 
@@ -74,7 +74,7 @@ function sil(d) {
       </div>
     </div>
 
-    <form class="rounded-xl bg-yuzey border border-kenar p-5 max-w-lg" @submit.prevent="ekle">
+    <form class="rounded-xl bg-yuzey border border-kenar p-5 max-w-lg shadow-kart" @submit.prevent="ekle">
       <h2 class="font-semibold text-sm mb-2">Alan adı ekle</h2>
 
       <div class="flex gap-2">

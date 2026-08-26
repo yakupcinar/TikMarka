@@ -239,8 +239,8 @@ function urunSil() {
     </div>
 
     <form class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit.prevent="kaydet">
-      <div class="col-span-2 md:col-span-1 rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-4">Ürün bilgileri</h2>
+      <div class="col-span-2 md:col-span-1 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-4">Ürün bilgileri</h2>
 
         <label class="block text-sm mb-3">
           Başlık
@@ -295,8 +295,8 @@ function urunSil() {
         hesaplanıyor (2D) ve elle ekleme "bu ürün neden burada"
         sorusunun iki cevabı olması demekti.
       -->
-      <div v-if="!yeniMi && manuelKoleksiyonlar.length" class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-3">Koleksiyonlar</h2>
+      <div v-if="!yeniMi && manuelKoleksiyonlar.length" class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-3">Koleksiyonlar</h2>
 
         <div class="flex flex-wrap gap-3">
           <label v-for="k in manuelKoleksiyonlar" :key="k.uuid" class="flex flex-wrap items-center gap-2 text-sm">
@@ -317,8 +317,8 @@ function urunSil() {
         olabiliyordu: her varyantın `options` alanı boş kalıyor ve
         `(product_id, options)` benzersiz kısıtı ikinciyi reddediyordu.
       -->
-      <div v-if="!yeniMi" class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-1">Varyant eksenleri</h2>
+      <div v-if="!yeniMi" class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-1">Varyant eksenleri</h2>
 
         <p v-if="eksenler.length === 0" class="text-sm text-metin-2">
           Henüz eksen tanımlı değil.
@@ -373,13 +373,13 @@ function urunSil() {
         </template>
       </div>
 
-      <div v-if="!yeniMi" class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-3">Görseller</h2>
+      <div v-if="!yeniMi" class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-3">Görseller</h2>
 
         <div v-if="urun.images.length" class="flex gap-3 flex-wrap mb-4">
           <div v-for="g in urun.images" :key="g.uuid" class="relative">
             <img :src="g.url" :alt="g.alt ?? ''" class="w-24 h-24 object-cover rounded-lg border border-kenar">
-            <button type="button" class="absolute top-1 right-1 rounded bg-yuzey/90 px-1 text-xs text-tehlike" @click="gorselSil(g.uuid)">
+            <button type="button" class="absolute top-1 right-1 rounded-lg bg-yuzey/90 px-1 text-xs text-tehlike" @click="gorselSil(g.uuid)">
               sil
             </button>
           </div>
@@ -401,8 +401,8 @@ function urunSil() {
         <p v-if="gorsel.errors.image" class="text-sm text-tehlike mt-2">{{ gorsel.errors.image }}</p>
       </div>
 
-      <div v-if="!yeniMi" class="col-span-2 md:col-span-1 rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-1">Varyantlar</h2>
+      <div v-if="!yeniMi" class="col-span-2 md:col-span-1 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-1">Varyantlar</h2>
 
         <!-- ⚠️ Varyantsız ürün SATILAMAZ. Bunu gizlemek yerine yazıyoruz. -->
         <p v-if="urun.variants.length === 0" class="text-sm text-uyari mb-4">

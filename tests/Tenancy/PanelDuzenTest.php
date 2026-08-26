@@ -43,20 +43,6 @@ function panelDuzeniKod(): string
     return (string) preg_replace('!/\*.*?\*/!s', '', (string) $s);
 }
 
-/** @return list<string> */
-function panelSayfalari(): array
-{
-    return array_values(array_map(
-        fn ($d) => $d->getPathname(),
-        array_filter(
-            iterator_to_array(new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator(base_path('resources/js/Panel/Pages'))
-            )),
-            fn ($d) => $d->isFile() && $d->getExtension() === 'vue',
-        ),
-    ));
-}
-
 it('★★★ HER TABLO yatay kaydirma KABINDA — yoksa SAYFANIN TAMAMI kayar', function () {
     $kapsiz = [];
 

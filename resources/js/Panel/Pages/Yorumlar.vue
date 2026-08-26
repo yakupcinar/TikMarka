@@ -39,11 +39,11 @@ const durumAdi = { pending: 'Bekleyen', approved: 'Onaylı', rejected: 'Reddedil
       </select>
     </div>
 
-    <div v-if="yorumlar.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2">
+    <div v-if="yorumlar.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2 shadow-kart">
       Bu durumda yorum yok.
     </div>
 
-    <div v-for="y in yorumlar.data" :key="y.uuid" class="rounded-xl bg-yuzey border border-kenar p-5 mb-4">
+    <div v-for="y in yorumlar.data" :key="y.uuid" class="rounded-xl bg-yuzey border border-kenar p-5 mb-4 shadow-kart">
       <div class="flex items-center gap-3 mb-2">
         <span class="text-uyari">{{ '★'.repeat(y.rating) }}<span class="text-soluk-2">{{ '★'.repeat(5 - y.rating) }}</span></span>
         <strong v-if="y.title">{{ y.title }}</strong>
@@ -71,7 +71,7 @@ const durumAdi = { pending: 'Bekleyen', approved: 'Onaylı', rejected: 'Reddedil
 
     <div v-if="yorumlar.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
       <a v-for="b in yorumlar.links" :key="b.label" :href="b.url ?? ''"
-         class="rounded border border-kenar-kontrol px-3 py-1 bg-yuzey"
+         class="rounded-lg border border-kenar-kontrol px-3 py-1 bg-yuzey"
          :class="{ 'bg-vurgu text-white border-vurgu': b.active, 'opacity-40 pointer-events-none': !b.url }"
          v-html="b.label" />
     </div>

@@ -86,8 +86,8 @@ function urunCikar(u) {
     </div>
 
     <!-- KURAL DÜZENLEYİCİ — yalnızca kurallı koleksiyonda -->
-    <div v-if="koleksiyon.type === 'rule'" class="rounded-xl bg-yuzey border border-kenar p-5 mb-4">
-      <h2 class="font-semibold mb-3">Kural</h2>
+    <div v-if="koleksiyon.type === 'rule'" class="rounded-xl bg-yuzey border border-kenar p-5 mb-4 shadow-kart">
+      <h2 class="text-lg font-semibold mb-3">Kural</h2>
 
       <label class="block text-sm mb-3">
         Koşullardan
@@ -132,8 +132,8 @@ function urunCikar(u) {
       <p v-for="(h, alan) in kural.errors" :key="alan" class="text-sm text-tehlike mt-2">{{ h }}</p>
     </div>
 
-    <div class="rounded-xl bg-yuzey border border-kenar p-5">
-      <h2 class="font-semibold mb-3">Ürünler ({{ uyeler.length }})</h2>
+    <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+      <h2 class="text-lg font-semibold mb-3">Ürünler ({{ uyeler.length }})</h2>
 
       <p v-if="uyeler.length === 0" class="text-sm text-metin-2">Bu koleksiyonda ürün yok.</p>
 

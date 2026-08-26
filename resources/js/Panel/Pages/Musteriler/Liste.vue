@@ -52,7 +52,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
 
     <div class="overflow-x-auto" v-else>
       <table class="min-w-[42rem] w-full text-sm">
-        <thead class="text-left text-soluk">
+        <thead class="text-left text-xs font-semibold tracking-wide uppercase text-soluk">
           <tr>
             <th class="py-2">Müşteri</th>
             <th>E-posta</th>
@@ -65,7 +65,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
         <tbody>
           <tr v-for="m in musteriler.data" :key="m.uuid" class="border-t border-kenar-soft">
             <td class="py-3">
-              <Link :href="`/yonetim/musteriler/${m.uuid}`" class="font-medium text-metin hover:underline">
+              <Link :href="`/yonetim/musteriler/${m.uuid}`" class="text-base font-medium text-metin hover:underline">
                 {{ m.ad }}
               </Link>
             </td>
@@ -75,13 +75,13 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
 
               <!-- ⚠️ Doğrulama durumu listede: destek ekibi "postam gelmiyor"
                    diyen müşteride ilk buraya bakıyor (4.6W). -->
-              <span v-if="!m.dogrulanmis" class="ml-2 rounded bg-uyari-zemin px-2 py-0.5 text-xs text-uyari">
+              <span v-if="!m.dogrulanmis" class="ml-2 rounded-sm bg-uyari-zemin px-2 py-0.5 text-xs text-uyari">
                 doğrulanmadı
               </span>
             </td>
 
             <td class="text-right">{{ m.siparis }}</td>
-            <td class="text-right">{{ para(m.harcama) }}</td>
+            <td class="text-right text-base font-medium tabular-nums">{{ para(m.harcama) }}</td>
             <td class="text-soluk">{{ tarih(m.kayit) }}</td>
           </tr>
         </tbody>
@@ -93,7 +93,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
         v-for="b in musteriler.links"
         :key="b.label"
         :href="b.url ?? '#'"
-        class="rounded px-3 py-1 text-sm"
+        class="rounded-lg px-3 py-1 text-sm"
         :class="b.active ? 'bg-dugme text-dugme-yazi' : 'bg-yuzey-2'"
         v-html="b.label"
       />

@@ -23,19 +23,19 @@ const durumRengi = {
   <PanelDuzeni>
     <h1 class="text-2xl font-bold mb-6">İade talepleri</h1>
 
-    <div v-if="talepler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2">
+    <div v-if="talepler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2 shadow-kart">
       İade talebi yok.
     </div>
 
     <div class="overflow-x-auto" v-else>
-      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
-        <thead class="bg-zemin text-left text-sm text-metin-2">
+      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden shadow-kart">
+        <thead class="bg-zemin text-left text-xs font-semibold tracking-wide uppercase text-soluk">
           <tr><th class="p-3">Sipariş</th><th class="p-3">Tür</th><th class="p-3">Ürün</th><th class="p-3">Durum</th><th class="p-3">Tarih</th></tr>
         </thead>
         <tbody>
           <tr v-for="t in talepler.data" :key="t.uuid" class="border-t border-kenar-soft">
             <td class="p-3">
-              <Link :href="`/yonetim/iadeler/${t.uuid}`" class="font-medium hover:text-vurgu-metin">{{ t.order_number }}</Link>
+              <Link :href="`/yonetim/iadeler/${t.uuid}`" class="text-base font-medium hover:text-vurgu-metin">{{ t.order_number }}</Link>
             </td>
             <!-- ⚠️ CAYMA mı AYIPLI mı: kargo bedelinin geri verilip
                  verilmeyeceğini bu belirliyor (2B-K1). -->
@@ -44,7 +44,7 @@ const durumRengi = {
             <td class="p-3">
               <span class="rounded-full px-2 py-0.5 text-xs" :class="durumRengi[t.status]">{{ durumAdi[t.status] ?? t.status }}</span>
             </td>
-            <td class="p-3 text-sm">{{ tarih(t.created_at) }}</td>
+            <td class="p-3 text-sm tabular-nums">{{ tarih(t.created_at) }}</td>
           </tr>
         </tbody>
       </table>

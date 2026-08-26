@@ -41,7 +41,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
 
     <p class="text-metin-2">
       {{ musteri.eposta }}
-      <span v-if="!musteri.dogrulanmis" class="ml-2 rounded bg-uyari-zemin px-2 py-0.5 text-xs text-uyari">
+      <span v-if="!musteri.dogrulanmis" class="ml-2 rounded-sm bg-uyari-zemin px-2 py-0.5 text-xs text-uyari">
         e-posta doğrulanmadı
       </span>
       <span v-if="musteri.telefon" class="ml-2">· {{ musteri.telefon }}</span>

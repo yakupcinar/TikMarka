@@ -29,9 +29,9 @@ function yayinla(tur) { router.post(`/yonetim/yasal/${tur}/yayinla`) }
       siparişler onayladıkları sürüme bağlıdır.
     </p>
 
-    <div v-for="b in belgeler" :key="b.tur" class="rounded-xl bg-yuzey border border-kenar p-5 mb-5">
+    <div v-for="b in belgeler" :key="b.tur" class="rounded-xl bg-yuzey border border-kenar p-5 mb-5 shadow-kart">
       <div class="flex items-center gap-3 mb-3">
-        <h2 class="font-semibold">{{ b.ad }}</h2>
+        <h2 class="text-lg font-semibold">{{ b.ad }}</h2>
 
         <span v-if="b.yayin_surumu" class="text-xs text-metin-2">
           yayında: sürüm {{ b.yayin_surumu }} · {{ b.yayin_tarihi }}

@@ -47,8 +47,8 @@ function kapat() {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <form class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5" @submit.prevent="kaydet">
-        <h2 class="font-semibold mb-4">Bilgiler</h2>
+      <form class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart" @submit.prevent="kaydet">
+        <h2 class="text-lg font-semibold mb-4">Bilgiler</h2>
 
         <label v-for="(ad, anahtar) in etiket" :key="anahtar" class="block text-sm mb-3">
           {{ ad }}
@@ -68,7 +68,7 @@ function kapat() {
         </button>
       </form>
 
-      <aside class="rounded-xl bg-yuzey border border-kenar p-5">
+      <aside class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
         <h2 class="font-semibold text-sm mb-3">Yayın durumu</h2>
 
         <!-- ⚠️ Eksikler TEK SEFERDE listeleniyor, ilk eksikte durulmuyor. -->

@@ -41,13 +41,13 @@ function logoKaldir() { router.delete('/yonetim/tema/logo') }
     <h1 class="text-2xl font-bold mb-6">Tema</h1>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <form class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5" @submit.prevent="kaydet">
-        <h2 class="font-semibold mb-4">Görünüm</h2>
+      <form class="col-span-2 rounded-xl bg-yuzey border border-kenar p-5 shadow-kart" @submit.prevent="kaydet">
+        <h2 class="text-lg font-semibold mb-4">Görünüm</h2>
 
         <label class="block text-sm mb-4">
           Marka rengi
           <div class="mt-1 flex items-center gap-3">
-            <input v-model="form.renk" type="color" class="h-10 w-16 rounded border border-kenar-kontrol">
+            <input v-model="form.renk" type="color" class="h-10 w-16 rounded-lg border border-kenar-kontrol">
             <input v-model="form.renk" type="text" class="rounded-lg border border-kenar-kontrol px-3 py-2 w-32">
             <button type="button" class="text-sm text-metin-2 underline" @click="form.renk = varsayilan_renk">
               varsayılana dön
@@ -79,7 +79,7 @@ function logoKaldir() { router.delete('/yonetim/tema/logo') }
       </form>
 
       <aside class="space-y-6">
-        <div class="rounded-xl bg-yuzey border border-kenar p-5">
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
           <h2 class="font-semibold text-sm mb-3">Logo</h2>
 
           <div v-if="tema.logo" class="mb-3">
@@ -97,7 +97,7 @@ function logoKaldir() { router.delete('/yonetim/tema/logo') }
           <button v-if="tema.logo" type="button" class="mt-3 text-sm text-tehlike" @click="logoKaldir">Logoyu kaldır</button>
         </div>
 
-        <div class="rounded-xl bg-yuzey border border-kenar p-5">
+        <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
           <h2 class="font-semibold text-sm mb-2">Önizleme</h2>
           <p class="text-xs text-metin-2 mb-3">Değişiklikler kaydedildikten sonra vitrinde görünür.</p>
           <!-- ⚠️ Inertia `Link` DEĞİL düz `<a>` + yeni sekme: vitrin ayrı

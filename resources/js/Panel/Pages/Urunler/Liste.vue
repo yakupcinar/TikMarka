@@ -58,14 +58,14 @@ function para(deger) {
     </div>
 
     <!-- ⚠️ Boş liste "hata" gibi görünmemeli: yeni marka için NORMAL durum. -->
-    <div v-if="urunler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2">
+    <div v-if="urunler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2 shadow-kart">
       <p v-if="arama">“{{ arama }}” için ürün bulunamadı.</p>
       <p v-else>Henüz ürün yok. İlk ürününüzü ekleyin.</p>
     </div>
 
     <div class="overflow-x-auto" v-else>
-      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
-        <thead class="bg-zemin text-left text-sm text-metin-2">
+      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden shadow-kart">
+        <thead class="bg-zemin text-left text-xs font-semibold tracking-wide uppercase text-soluk">
           <tr>
             <th class="p-3">Ürün</th>
             <th class="p-3">Durum</th>
@@ -77,7 +77,7 @@ function para(deger) {
         <tbody>
           <tr v-for="urun in urunler.data" :key="urun.uuid" class="border-t border-kenar-soft">
             <td class="p-3">
-              <Link :href="`/yonetim/urunler/${urun.uuid}`" class="font-medium hover:text-vurgu-metin">
+              <Link :href="`/yonetim/urunler/${urun.uuid}`" class="text-base font-medium hover:text-vurgu-metin">
                 {{ urun.title }}
               </Link>
             </td>
@@ -91,8 +91,8 @@ function para(deger) {
               <span v-if="urun.variant_count === 0" class="text-uyari">yok — satılamaz</span>
               <span v-else>{{ urun.variant_count }}</span>
             </td>
-            <td class="p-3 text-sm">{{ urun.stock }}</td>
-            <td class="p-3 text-sm">{{ para(urun.min_price) }}</td>
+            <td class="p-3 text-sm tabular-nums">{{ urun.stock }}</td>
+            <td class="p-3 text-base font-medium tabular-nums">{{ para(urun.min_price) }}</td>
           </tr>
         </tbody>
       </table>
@@ -103,7 +103,7 @@ function para(deger) {
         v-for="bag in urunler.links"
         :key="bag.label"
         :href="bag.url ?? ''"
-        class="rounded border border-kenar-kontrol px-3 py-1 bg-yuzey"
+        class="rounded-lg border border-kenar-kontrol px-3 py-1 bg-yuzey"
         :class="{ 'bg-vurgu text-white border-vurgu': bag.active, 'opacity-40 pointer-events-none': !bag.url }"
         v-html="bag.label"
       />

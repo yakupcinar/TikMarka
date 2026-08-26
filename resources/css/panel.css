@@ -71,6 +71,21 @@
     --p-vurgu-zemin: #f9dbc8;
 
     /*
+    | ── DERİNLİK (4.6AG) ─────────────────────────────────────────────
+    |
+    | ⚠️ GÖLGE KONTRASTLA GÖRÜNÜR. Koyu zeminde koyu bir gölge yok
+    | hükmündedir — bu yüzden koyu tema derinliği gölgeyle DEĞİL
+    | YÜZEY AÇIKLIĞIYLA anlatıyor (yuzey → yuzey-2 → yuzey-3, zaten
+    | tanımlı). Gölgeyi iki temaya da koysaydık açık temada derinlik
+    | olur, koyu temada hiçbir şey olmazdı.
+    |
+    | Ölçek: 1 kart · 2 kalkık (hover) · 3 üstte duran (açılır liste).
+    */
+    --p-golge-1: 0 1px 2px rgb(28 25 23 / 0.06), 0 1px 3px rgb(28 25 23 / 0.04);
+    --p-golge-2: 0 2px 4px rgb(28 25 23 / 0.06), 0 4px 12px rgb(28 25 23 / 0.08);
+    --p-golge-3: 0 8px 24px rgb(28 25 23 / 0.12);
+
+    /*
     | ⚠️ BİRİNCİL DÜĞME TERS ÇEVRİLİYOR: açık temada koyu zemin + beyaz
     | yazı, koyu temada açık zemin + koyu yazı. Sabit bırakılsaydı koyu
     | temada neredeyse siyah düğme, neredeyse siyah zeminde kaybolurdu.
@@ -124,6 +139,11 @@
         --p-vurgu-metin: #fb923c;
         --p-vurgu-zemin: #5c3820;
 
+        /* ⚠️ Koyu temada gölge YOK — derinlik yüzey basamağıyla. */
+        --p-golge-1: none;
+        --p-golge-2: none;
+        --p-golge-3: none;
+
         --p-dugme: #f5f5f4;
         --p-dugme-yazi: #1c1917;
 
@@ -164,6 +184,11 @@
     --p-vurgu: #c2410c;
     --p-vurgu-metin: #fb923c;
     --p-vurgu-zemin: #5c3820;
+
+    /* ⚠️ Koyu temada gölge YOK — derinlik yüzey basamağıyla. */
+    --p-golge-1: none;
+    --p-golge-2: none;
+    --p-golge-3: none;
 
     --p-dugme: #f5f5f4;
     --p-dugme-yazi: #1c1917;
@@ -224,6 +249,29 @@
     --color-bilgi: var(--p-bilgi);
     --color-bilgi-zemin: var(--p-bilgi-zemin);
     --color-bilgi-kenar: var(--p-bilgi-kenar);
+
+    /*
+    | ── YARIÇAP ÖLÇEĞİ (4.6AG) ───────────────────────────────────────
+    |
+    | Panelde DÖRT farklı yarıçap dolaşıyordu (rounded · lg · xl ·
+    | full), vitrinde ALTI. Üç basamak yetiyor ve hangisini alacağını
+    | öğenin BOYUTU değil ROLÜ belirliyor:
+    |
+    |   sm  6px   rozet, etiket, küçük alan
+    |   lg 10px   düğme, girdi, seçici   (kontrol)
+    |   xl 14px   kart, tablo, panel     (kap)
+    |
+    | ⚠️ Tailwind'in kendi basamağı EZİLİYOR, sınıflar değişmiyor:
+    | 163 kullanım tek yerden güncelleniyor. Sınıf sınıf dokunulsaydı
+    | biri unutulduğunda hata vermeden eski yarıçapta kalırdı.
+    */
+    --radius-sm: 6px;
+    --radius-lg: 10px;
+    --radius-xl: 14px;
+
+    --shadow-kart: var(--p-golge-1);
+    --shadow-kalkik: var(--p-golge-2);
+    --shadow-ustte: var(--p-golge-3);
 }
 
 /*
@@ -233,4 +281,70 @@
 body {
     background-color: var(--p-zemin);
     color: var(--p-metin);
+}
+
+/*
+|--------------------------------------------------------------------------
+| ETKİLEŞİM KATMANI (4.6AG)
+|--------------------------------------------------------------------------
+|
+| ★ ÖLÇÜLEN DURUM: 25 sayfaya 18 hover ve 2 geçiş düşüyordu; yazılmış
+| odak stili ise HİÇ YOKTU.
+|
+| ⚠️ "Odak stili yok" ilk ölçümde YANLIŞ okundu ve bu ders kaydedildi:
+| `el.focus()` `:focus-visible`'ı TETİKLEMİYOR, o yüzden hem panelde hem
+| vitrinde "odak halkası yok" görünüyordu. Gerçek Tab ile ölçünce panelde
+| tarayıcının VARSAYILAN halkası çıktı. Yani sorun halkanın olmaması
+| değil, RENGİNİN VE KALINLIĞININ BİZDE OLMAMASI: varsayılan halka
+| tarayıcıdan tarayıcıya değişiyor ve koyu yüzeylerimize karşı kontrastı
+| garanti değil.
+*/
+@layer base {
+    /*
+    | ⚠️ `:focus` DEĞİL `:focus-visible`: `:focus` fareyle tıklanan her
+    | düğmeye de halka takar ve marka bunu "arıza" sanır. Klavyeyle
+    | gezinen personel halkayı görür, fareyle çalışan görmez.
+    */
+    :focus-visible {
+        outline: 2px solid var(--p-vurgu-metin);
+        outline-offset: 2px;
+
+        /*
+        | ⚠️ Yarıçap halkaya da uygulanmalı; uygulanmazsa yuvarlak
+        | düğmenin çevresinde köşeli bir kare beliriyor.
+        */
+        border-radius: inherit;
+    }
+
+    /*
+    | ⚠️ Geçiş YALNIZCA etkileşimli öğelerde ve YALNIZCA etkileşimde
+    | değişen özelliklerde. `all` yazılsaydı yerleşim özellikleri de
+    | animasyona girer, tablo satırları kayarken sürüklenirdi.
+    |
+    | ⚠️ `prefers-reduced-motion` ŞART: hareket duyarlılığı olan
+    | personel için animasyon rahatsızlık değil, engel.
+    */
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [role="button"] {
+        transition-property: background-color, border-color, color, box-shadow, transform, opacity;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(0.2, 0, 0.2, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        a,
+        button,
+        input,
+        select,
+        textarea,
+        summary,
+        [role="button"] {
+            transition-duration: 0.01ms;
+        }
+    }
 }

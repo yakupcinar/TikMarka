@@ -38,13 +38,13 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
       </select>
     </div>
 
-    <div v-if="siparisler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2">
+    <div v-if="siparisler.data.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2 shadow-kart">
       Henüz sipariş yok.
     </div>
 
     <div class="overflow-x-auto" v-else>
-      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden">
-        <thead class="bg-zemin text-left text-sm text-metin-2">
+      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden shadow-kart">
+        <thead class="bg-zemin text-left text-xs font-semibold tracking-wide uppercase text-soluk">
           <tr>
             <th class="p-3">Sipariş</th><th class="p-3">Tarih</th><th class="p-3">Ödeme</th>
             <th class="p-3">Kargo</th><th class="p-3">Tutar</th>
@@ -53,7 +53,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
         <tbody>
           <tr v-for="s in siparisler.data" :key="s.uuid" class="border-t border-kenar-soft">
             <td class="p-3">
-              <Link :href="`/yonetim/siparisler/${s.uuid}`" class="font-medium hover:text-vurgu-metin">
+              <Link :href="`/yonetim/siparisler/${s.uuid}`" class="text-base font-medium hover:text-vurgu-metin">
                 {{ s.order_number }}
               </Link>
               <!-- ⚠️ STOK AÇIĞI LİSTEDE görünüyor: yalnızca ayrıntıda olsaydı
@@ -61,14 +61,14 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
               <div v-if="s.stock_shortfall" class="text-xs text-tehlike">⚠ stok açığı</div>
               <div class="text-xs text-soluk">{{ s.email }}</div>
             </td>
-            <td class="p-3 text-sm">{{ tarih(s.placed_at) }}</td>
+            <td class="p-3 text-sm tabular-nums">{{ tarih(s.placed_at) }}</td>
             <td class="p-3">
               <span class="rounded-full px-2 py-0.5 text-xs" :class="odemeRengi[s.payment_status]">
                 {{ odemeAdi[s.payment_status] ?? s.payment_status }}
               </span>
             </td>
             <td class="p-3 text-sm">{{ kargoAdi[s.fulfillment_status] ?? s.fulfillment_status }}</td>
-            <td class="p-3 text-sm">{{ para(s.grand_total) }}</td>
+            <td class="p-3 text-base font-medium tabular-nums">{{ para(s.grand_total) }}</td>
           </tr>
         </tbody>
       </table>
@@ -76,7 +76,7 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
 
     <div v-if="siparisler.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
       <Link v-for="b in siparisler.links" :key="b.label" :href="b.url ?? ''"
-            class="rounded border border-kenar-kontrol px-3 py-1 bg-yuzey"
+            class="rounded-lg border border-kenar-kontrol px-3 py-1 bg-yuzey"
             :class="{ 'bg-vurgu text-white border-vurgu': b.active, 'opacity-40 pointer-events-none': !b.url }"
             v-html="b.label" />
     </div>

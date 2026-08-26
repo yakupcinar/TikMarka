@@ -3280,3 +3280,42 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
         1280px → yan menü sabit · ızgaralar 2/3 sütuna geri açılıyor
         kontrast: etkin metin 13.32/9.43 · çubuk 3.94/4.54 ·
                   grup başlığı 4.80 · pasif madde 7.63/10.18
+
+4.6AG ✅ GÖRSEL DİL: ÖLÇEK, DERİNLİK, ETKİLEŞİM — 972 test
+      README 12. madde ("arayüz çok standart geliyor"). Sezgi doğruydu
+      ve ÖLÇÜLEBİLİRDİ:
+        gölge 0 · geçiş 2 · hover 18/25 sayfa · yazılmış odak 0
+        yarıçap 4 değer (vitrinde 6)
+        metin: 225× 14px · 42× 12px · 23× 24px — 16px HİÇ YOK
+      Asıl sebep sonuncusu: sipariş no ile e-posta aynı ağırlıktaydı.
+
+      KAPSAM KULLANICIYLA DARALTILDI (ikisine de itiraz edildi, kabul):
+        ⚠ PANELE BENTO YOK — bento pazarlama kalıbı, panel veri aracı;
+          ayrıca 4.6AF.1'de kapatılan "mobilde çok sütun"u geri getirir
+        ⚠ PALET YENİDEN SEÇİLMEDİ — 4.6AD/AE/AF'nin ölçümlerini sıfırlar
+
+      ⚠ YOĞUNLUK KASITLI KORUNDU (marka kararı): tipografi büyüdü,
+        DOLGU BÜYÜMEDİ. 50+ kayıtlı listede "nefes payı" ile "ekranda
+        kaç satır" çelişiyor. Kararı ölçen ayrı test var.
+
+      ✅ ÖLÇEK: 16px geri geldi (asıl veri) · 12px yalnızca üstveri ·
+        sütun başlığı etiket oldu · bölüm başlığı 18px · tabular-nums
+      ✅ YARIÇAP: 4 → 3 basamak (6/10/14 + tam); rol belirliyor
+        ⚠ --radius-lg EZİLDİ, sınıflar değişmedi: 163 kullanım tek
+          yerden. Çıplak `rounded` bunun DIŞINDA (sabit .25rem'e bağlı)
+      ✅ DERİNLİK: açık temada gölge, KOYU TEMADA none — yüzey basamağı
+      ✅ ETKİLEŞİM: yazılmış :focus-visible · geçiş · reduced-motion
+
+      ⚠ "ODAK STİLİ YOK" İLK ÖLÇÜMDE YANLIŞ OKUNDU: el.focus()
+        :focus-visible'ı TETİKLEMİYOR. Gerçek Tab'la panelde tarayıcının
+        VARSAYILAN halkası çıktı — sorun halkanın olmaması değil,
+        renginin/kalınlığının bizde olmamasıydı. WCAG ihlali diye
+        kaydedilmedi.
+      ⚠ panelSayfalari() ikinci dosyada kullanılınca 4 test düştü →
+        tests/Pest.php'ye taşındı (kural zaten yazılıydı)
+
+      8 kırma denemesi, 8'i de düştü (yoğunluğu bozan dâhil)
+
+      DOĞRULANDI (gerçek panel, iki tema): kart 14px · düğme 10px ·
+      gölge açık var/koyu none · sipariş no 16px/500 · başlık 12px büyük
+      harf · odak halkası 2px, açık 5.18 koyu 6.70 · satır dolgusu p-3

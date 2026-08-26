@@ -81,19 +81,19 @@ const turAdi = { manual: 'Elle seçilen', rule: 'Kurallı (otomatik)' }
   <PanelDuzeni>
     <h1 class="text-2xl font-bold mb-6">Koleksiyonlar</h1>
 
-    <div v-if="koleksiyonlar.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2 mb-6">
+    <div v-if="koleksiyonlar.length === 0" class="rounded-xl bg-yuzey border border-kenar p-10 text-center text-metin-2 mb-6 shadow-kart">
       Henüz koleksiyon yok.
     </div>
 
     <div class="overflow-x-auto" v-else>
-      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden mb-6">
-        <thead class="bg-zemin text-left text-sm text-metin-2">
+      <table class="min-w-[42rem] w-full bg-yuzey rounded-xl border border-kenar overflow-hidden mb-6 shadow-kart">
+        <thead class="bg-zemin text-left text-xs font-semibold tracking-wide uppercase text-soluk">
           <tr><th class="p-3">Koleksiyon</th><th class="p-3">Tür</th><th class="p-3">Ürün</th><th class="p-3">Durum</th><th /></tr>
         </thead>
         <tbody>
           <tr v-for="k in koleksiyonlar" :key="k.uuid" class="border-t border-kenar-soft">
             <td class="p-3">
-              <Link :href="`/yonetim/koleksiyonlar/${k.uuid}`" class="font-medium hover:text-vurgu-metin">{{ k.title }}</Link>
+              <Link :href="`/yonetim/koleksiyonlar/${k.uuid}`" class="text-base font-medium hover:text-vurgu-metin">{{ k.title }}</Link>
             </td>
             <td class="p-3 text-sm">{{ turAdi[k.type] ?? k.type }}</td>
             <!-- ⚠️ Kurallıda bu sayı SORGUDAN geliyor: tabloya bakılsaydı
@@ -108,7 +108,7 @@ const turAdi = { manual: 'Elle seçilen', rule: 'Kurallı (otomatik)' }
       </table>
     </div>
 
-    <form class="rounded-xl bg-yuzey border border-kenar p-5 max-w-lg" @submit.prevent="ekle">
+    <form class="rounded-xl bg-yuzey border border-kenar p-5 max-w-lg shadow-kart" @submit.prevent="ekle">
       <h2 class="font-semibold text-sm mb-3">Koleksiyon ekle</h2>
 
       <input v-model="form.title" placeholder="Başlık" class="w-full rounded-lg border border-kenar-kontrol px-3 py-2 text-sm mb-2">

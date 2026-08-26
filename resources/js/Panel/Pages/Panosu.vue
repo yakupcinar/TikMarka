@@ -21,8 +21,8 @@ const izinler = computed(() => sayfa.props.auth?.permissions ?? [])
       Panel iskeleti ayakta. Ürün ve sipariş ekranları sıradaki bloklarda geliyor.
     </p>
 
-    <div class="rounded-xl bg-yuzey border border-kenar p-5">
-      <h2 class="font-semibold mb-2">Yetkileriniz</h2>
+    <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+      <h2 class="text-lg font-semibold mb-2">Yetkileriniz</h2>
       <p v-if="kullanici?.is_owner" class="text-sm text-metin-2 mb-2">
         Mağaza sahibisiniz — bütün yetkilere sahipsiniz.
       </p>

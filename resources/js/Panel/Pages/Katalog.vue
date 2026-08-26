@@ -36,8 +36,8 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
     <h1 class="text-2xl font-bold mb-6">Katalog ayarları</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-1">Kategoriler</h2>
+      <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-1">Kategoriler</h2>
         <p class="text-xs text-soluk mb-3">Ürünler tek bir kategoriye bağlanır.</p>
 
         <div class="overflow-x-auto">
@@ -70,8 +70,8 @@ function degerSil(e, d) { router.delete(`/yonetim/katalog/eksenler/${e.uuid}/deg
         </form>
       </div>
 
-      <div class="rounded-xl bg-yuzey border border-kenar p-5">
-        <h2 class="font-semibold mb-1">Varyant eksenleri</h2>
+      <div class="rounded-xl bg-yuzey border border-kenar p-5 shadow-kart">
+        <h2 class="text-lg font-semibold mb-1">Varyant eksenleri</h2>
         <!-- ⚠️ Eksen olmadan çok varyantlı ürün kurulamıyor; ekran bunu
              söylüyor, yoksa marka "beden nasıl eklenir" diye arar. -->
         <p class="text-xs text-soluk mb-3">Beden, renk gibi eksenler. Ürün varyantları bunlardan kurulur.</p>
