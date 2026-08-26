@@ -28,9 +28,25 @@ password.md
 # taze bir çıkışta klasör hiç oluşmuyor, Blade derleyemiyor ve vitrinin
 # bütün sayfaları düşüyor. Yerelde görünmez: klasör zaten diskte.
 #
-# `storage/logs/laravel.log` de bu yüzden takipten çıkarıldı: günlük
+# `storage/logs/laravel.log` de bu yüzden takipten çıkarılmalıydı: günlük
 # dosyası kaynak değil, her koşuda değişip her `git status`'ta kirlilik
-# üretiyordu.
+# üretiyor.
+#
+# ⚠️ AMA ÇIKARILMAMIŞTI — bu yorum yıllarca YANLIŞ söyledi. 4.6F'nin
+# gönderiminde GitHub "GH001: Large files detected" uyarısı verdi ve
+# dosya ölçüldü: **59,6 MB** ve takipteydi. Yani kaydın "yapıldı"
+# demesi yapıldığının kanıtı değil (aynı ders 4.6A'da da yazılmıştı).
+#
+# ⚠️ Denetlendi ve TEMİZ çıktı: `APP_KEY`, iyzico anahtarı, SMTP
+# parolası YOK; 632 e-postanın hepsi test alan adı (`@ornek.test`).
+# Yani sır ya da kişisel veri sızmadı.
+#
+# ⚠️ GEÇMİŞ TEMİZLENMEDİ. Dosya artık takipte değil ama eski
+# commit'lerde duruyor; çıkarmak `filter-repo` + zorla gönderim
+# demek, yani paylaşılan geçmişi yeniden yazmak. Ayrı bir karar.
+#
+# Klasörü ayakta tutan `storage/logs/.gitignore` (`*` + `!.gitignore`)
+# TAKİPTE KALMALI — git boş klasör tutmuyor (4A).
 
 # Inertia geliştirici aracının kayıtları — hata ayıklama çıktısı (4D'de kapatıldı)
 /storage/inertia-devtools
