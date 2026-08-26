@@ -34,6 +34,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
@@ -916,4 +917,67 @@ function vitrinliMarka(string $alanAdi = 'marka-a.test', string $ad = 'Ada Kozme
         ->yaz(SettingGroup::Store, 'name', $ad);
 
     app(StorePublication::class)->yayinla();
+}
+
+/**
+ * Sonuç sayfasının imzalı adresi.
+ *
+ * ⚠️ BURADA OLMAK ZORUNDA — bu oturumda ÜÇÜNCÜ kez ısırdı
+ * (`panelSayfalari`, `vitrinliMarka`, sonra bu). Kural CLAUDE.md'de
+ * yazılıydı ve yine unutuldu; artık `YardimciKonumuTest` ölçüyor.
+ *
+ * ⚠️ `forceRootUrl` ŞART ve sebebi 4.6W'de ölçülmüştü: `temporarySignedRoute`
+ * MUTLAK adres üretiyor ve kökünü o anki İSTEKTEN alıyor. Testte istek
+ * yokken `APP_URL`'e (`http://localhost` — MERKEZ) düşüyor ve imza yanlış
+ * alan adı üzerinden kuruluyor; sonuç 404.
+ *
+ * ⚠️ Üretimde bu sorun YOK: adresi sağlayıcı dönüşünü işleyen istek
+ * üretiyor, yani kök zaten markanın alan adı. Burada taklit edilen şey
+ * uygulama davranışı değil İSTEK BAĞLAMI.
+ */
+function sonucAdresi(Order $siparis, string $alanAdi = 'marka-a.test'): string
+{
+    URL::forceRootUrl("http://{$alanAdi}");
+
+    return URL::temporarySignedRoute(
+        'vitrin.odeme.sonuc', now()->addHour(), ['siparis' => $siparis->uuid]
+    );
+}
+
+/** Sepete geri koyma adresi — aynı kök gerekçesiyle. */
+function sepeteGeriAdresi(Order $siparis, string $alanAdi = 'marka-a.test'): string
+{
+    URL::forceRootUrl("http://{$alanAdi}");
+
+    return URL::temporarySignedRoute(
+        'vitrin.odeme.sepeteGeri', now()->addHour(), ['siparis' => $siparis->uuid]
+    );
+}
+
+/*
+| ⚠️ BURADA — `AbonelikTest` de kullanıyor. Bu, `YardimciKonumuTest`'in
+| bulduğu MEVCUT bir kusurdu: `AbonelikTest.php` tek başına koşturulunca
+| "Call to undefined function platformTokeni()" veriyordu ve tam süitte
+| görünmüyordu (dosya yükleme sırası gizliyordu).
+*/
+/** Alan adından marka kimliği — `whereHas` yerine (gerekçe kullanım yerinde). */
+function markaKimligi(string $alanAdi): string
+{
+    return (string) DB::connection('pgsql')->table('domains')->where('domain', $alanAdi)->value('tenant_id');
+}
+
+/** Platform yöneticisi açar ve token'ını döndürür. */
+function platformTokeni(string $eposta = 'yonetici@tikmarka.test'): string
+{
+    tenancy()->end();
+
+    PlatformUser::where('email', $eposta)->delete();
+
+    $kullanici = PlatformUser::create([
+        'name' => 'Platform Yöneticisi',
+        'email' => $eposta,
+        'password' => 'gizli-parola',
+    ]);
+
+    return $kullanici->createToken('test')->plainTextToken;
 }

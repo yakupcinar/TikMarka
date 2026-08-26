@@ -130,9 +130,15 @@ veya dağıtım için izin gerekir.
 
 * Mailime bu düştü ama neden bu düştü anlamadım işlemleri mi sanki zaten maili doğru kaydettiğim hesaptan yapıyorum bu şaşırttı şimdi: "Address not found Your message wasn't delivered to vazgec@marka-a.localhost because the domain marka-a.localhost couldn't be found. Check for typos or unnecessary spaces and try again"
 
-* Şirket Panelinde aşağıdan sayfa atlamak pagination next yazıyor sadece sayılar 1 2 3 ... istiyorum.
+* ~~Panelde sayfalama "pagination next" yazıyor, sadece sayılar istiyorum~~ → **4.6F ve 4.6AI'de kapandı** (çeviri dosyası hiç yokmuş; sayfalama artık yalnızca sayı ve ortak parçada)
 
-* Vitrinde ödemeyi yapıp siparişi veriyorum çıkan ekran biraz beklemem ödeme onaylanana kadar iyzicodan mı bekliyor onayı sonra yeniledim sayfayı o zaman ödeme başarılı dedi, siparişim hazırlanıyor ve afiyet olsun gibi mesajlar gördüm ama bizim ürünlrimiz de yemek yok neden öyle dedin düzelt oraları ayrıca ödeme sonrası bekleme sekmesinde hesabım yazısı yerine giriş, gözüküyor onu da düzeltelim.
+* ~~Ödeme sonrası ekranda "afiyet olsun" yazıyor ve "hesabım" yerine "giriş" gözüküyor~~ → **4.6AI'de kapandı**
+
+> ⚠️ İkincisi bildirilenden ağırdı: sayfa `api` grubunda olduğu için oturum
+> hiç yoktu ve **"Siparişimi görüntüle" düğmesi kimseye çıkmıyordu**.
+>
+> ⏳ **Ödeme onayı için sayfayı yenileme ihtiyacı ayrı bir madde** — sağlayıcı
+> bildirimi 10–15 saniye sürüyor ve ekran kendini tazelemiyor.
 
 * ~~UI/UX yenilemesi (modern SaaS estetiği)~~ → **4.6AG'de kapandı**
 

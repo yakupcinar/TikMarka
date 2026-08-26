@@ -1017,6 +1017,24 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yolu da onları görmüyordu — talep o an eksik cevaplanıyordu. Müşteriye
   bağlı veri **zaten toplanıyorsa** boşluk gelecekte değil **bugün** var.
 
+- **`api` GRUBUNDA RENDER EDİLEN İNSAN SAYFASI OTURUMU GÖREMEZ — belirti
+  masum, bedel ağır.** Ödeme sonuç sayfası `api`'deydi; görünen kusur "üst
+  barda Hesabım yerine Giriş yazıyor"du, gerçek bedel ise
+  `auth('customer-web')` her zaman `null` olduğu için **"Siparişimi
+  görüntüle" düğmesinin hiç kimseye çıkmamasıydı** — ve bu hata vermiyordu
+  (4.6AI). ⚠️ Bir sayfa sağlayıcıdan POST aldığı için `api`'ye konmuşsa,
+  akış sonradan POST→303→GET'e çevrildiğinde (4.5R) o gerekçe DÜŞER;
+  rotayı geri taşımayı hatırla.
+  ⚠️ Taşırken `magaza-acik` gibi grup middleware'lerini gözden geçir:
+  parasını ödemiş müşteri, marka mağazayı kapattıysa 503 görmemeli.
+- **YAZILI KURAL ÜÇ KEZ TUTMADIYSA KURAL DEĞİL TEST YAZ.** "Test yardımcısı
+  `tests/Pest.php`'ye taşınır" kuralı CLAUDE.md'de yazılıydı ve **tek
+  oturumda üç kez** unutuldu (`panelSayfalari` · `vitrinliMarka` ·
+  `sonucAdresi`). Artık `YardimciKonumuTest` ölçüyor — ve ilk koşusunda
+  **zaten depoda duran** bir kusur buldu (`platformTokeni`,
+  `AbonelikTest` tek başına koşunca düşüyordu). ⚠️ Belirti dosya yükleme
+  sırasına bağlı: tam süitte GÖRÜNMÜYOR.
+
 ## Yapı
 
 ```

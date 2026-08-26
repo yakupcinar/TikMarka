@@ -8,6 +8,7 @@
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import PanelDuzeni from '../../Layouts/PanelDuzeni.vue'
+import Sayfalama from '../../Components/Sayfalama.vue'
 
 const props = defineProps({
   urunler: Object,
@@ -98,15 +99,6 @@ function para(deger) {
       </table>
     </div>
 
-    <div v-if="urunler.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
-      <Link
-        v-for="bag in urunler.links"
-        :key="bag.label"
-        :href="bag.url ?? ''"
-        class="rounded-lg border border-kenar-kontrol px-3 py-1 bg-yuzey"
-        :class="{ 'bg-vurgu text-white border-vurgu': bag.active, 'opacity-40 pointer-events-none': !bag.url }"
-        v-html="bag.label"
-      />
-    </div>
+    <Sayfalama :baglantilar="urunler.links" />
   </PanelDuzeni>
 </template>

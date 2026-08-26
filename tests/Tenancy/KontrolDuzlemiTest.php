@@ -8,7 +8,6 @@ use App\Platform\Models\PlatformUser;
 use App\Platform\Models\Tenant;
 use App\Platform\TenantLifecycle;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,28 +19,6 @@ use Illuminate\Support\Facades\Route;
 |   3  askıda PANEL kapalı, VİTRİN AÇIK
 |   4  kayıt ucu YOK — yönetici yalnızca komutla açılıyor
 */
-
-/** Alan adından marka kimliği — `whereHas` yerine (gerekçe kullanım yerinde). */
-function markaKimligi(string $alanAdi): string
-{
-    return (string) DB::connection('pgsql')->table('domains')->where('domain', $alanAdi)->value('tenant_id');
-}
-
-/** Platform yöneticisi açar ve token'ını döndürür. */
-function platformTokeni(string $eposta = 'yonetici@tikmarka.test'): string
-{
-    tenancy()->end();
-
-    PlatformUser::where('email', $eposta)->delete();
-
-    $kullanici = PlatformUser::create([
-        'name' => 'Platform Yöneticisi',
-        'email' => $eposta,
-        'password' => 'gizli-parola',
-    ]);
-
-    return $kullanici->createToken('test')->plainTextToken;
-}
 
 it('★ PLATFORM yöneticisi giriş yapabiliyor', function () {
     tenancy()->end();

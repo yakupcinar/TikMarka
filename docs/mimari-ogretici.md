@@ -417,3 +417,4 @@ scheduler   dakikada bir uyanıyor          (kimse istemedi)
 | Hangi tablo neyi tutuyor? | `domain-model.md` |
 | Şu an neredeyiz, sırada ne var? | `PLAN.md` |
 | Neler sessizce kırılıyor? | `CLAUDE.md` → "Sessiz hataya yol açan kurallar" |
+

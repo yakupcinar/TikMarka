@@ -2,6 +2,7 @@
 /* Sipariş listesi. (4E) — `izin:order.view` arkasında. */
 import { Head, Link, router } from '@inertiajs/vue3'
 import PanelDuzeni from '../../Layouts/PanelDuzeni.vue'
+import Sayfalama from '../../Components/Sayfalama.vue'
 import { tarih } from '../../Yardimcilar/tarih'
 
 const props = defineProps({ siparisler: Object, durum: String })
@@ -74,11 +75,6 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
       </table>
     </div>
 
-    <div v-if="siparisler.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
-      <Link v-for="b in siparisler.links" :key="b.label" :href="b.url ?? ''"
-            class="rounded-lg border border-kenar-kontrol px-3 py-1 bg-yuzey"
-            :class="{ 'bg-vurgu text-white border-vurgu': b.active, 'opacity-40 pointer-events-none': !b.url }"
-            v-html="b.label" />
-    </div>
+    <Sayfalama :baglantilar="siparisler.links" />
   </PanelDuzeni>
 </template>

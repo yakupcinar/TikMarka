@@ -9,7 +9,6 @@ use App\Models\Customer;
 use App\Models\Order;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
 
 /*
 | ÖDEME DÖNÜŞ EKRANI — DURUMA GÖRE BAĞLANTILAR (4.6Y)
@@ -33,37 +32,6 @@ function donusSiparisi(): Order
     app(StorePublication::class)->yayinla();
 
     return $siparis;
-}
-
-/**
- * Sonuç sayfasının imzalı adresi.
- *
- * ⚠️ `forceRootUrl` ŞART ve sebebi 4.6W'de ölçülmüştü: `temporarySignedRoute`
- * MUTLAK adres üretiyor ve kökünü o anki İSTEKTEN alıyor. Testte istek
- * yokken `APP_URL`'e (`http://localhost` — MERKEZ) düşüyor ve imza yanlış
- * alan adı üzerinden kuruluyor; sonuç 404.
- *
- * ⚠️ Üretimde bu sorun YOK: adresi sağlayıcı dönüşünü işleyen istek
- * üretiyor, yani kök zaten markanın alan adı. Burada taklit edilen şey
- * uygulama davranışı değil İSTEK BAĞLAMI.
- */
-function sonucAdresi(Order $siparis, string $alanAdi = 'marka-a.test'): string
-{
-    URL::forceRootUrl("http://{$alanAdi}");
-
-    return URL::temporarySignedRoute(
-        'vitrin.odeme.sonuc', now()->addHour(), ['siparis' => $siparis->uuid]
-    );
-}
-
-/** Sepete geri koyma adresi — aynı kök gerekçesiyle. */
-function sepeteGeriAdresi(Order $siparis, string $alanAdi = 'marka-a.test'): string
-{
-    URL::forceRootUrl("http://{$alanAdi}");
-
-    return URL::temporarySignedRoute(
-        'vitrin.odeme.sepeteGeri', now()->addHour(), ['siparis' => $siparis->uuid]
-    );
 }
 
 it('★★★ BASARISIZ odemede sepet BOS kaliyor — baglantinin varlik sebebi', function () {

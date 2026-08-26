@@ -9,6 +9,7 @@
 import { ref } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import PanelDuzeni from '../Layouts/PanelDuzeni.vue'
+import Sayfalama from '../Components/Sayfalama.vue'
 
 const props = defineProps({ yorumlar: Object, durum: String, bekleyen: Number })
 
@@ -69,11 +70,6 @@ const durumAdi = { pending: 'Bekleyen', approved: 'Onaylı', rejected: 'Reddedil
       <span v-else class="text-xs rounded-full bg-yuzey-3 px-2 py-0.5">{{ durumAdi[y.status] }}</span>
     </div>
 
-    <div v-if="yorumlar.links.length > 3" class="mt-4 flex flex-wrap gap-1 text-sm">
-      <a v-for="b in yorumlar.links" :key="b.label" :href="b.url ?? ''"
-         class="rounded-lg border border-kenar-kontrol px-3 py-1 bg-yuzey"
-         :class="{ 'bg-vurgu text-white border-vurgu': b.active, 'opacity-40 pointer-events-none': !b.url }"
-         v-html="b.label" />
-    </div>
+    <Sayfalama :baglantilar="yorumlar.links" />
   </PanelDuzeni>
 </template>

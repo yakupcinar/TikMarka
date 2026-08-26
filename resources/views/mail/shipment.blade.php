@@ -1,6 +1,10 @@
 <x-mail-layout :markaAdi="$markaAdi" :iletisim="$iletisim" :telefon="$telefon">
+  {{-- ⚠️ "Afiyet olsun" YAZIYORDU (4.6AI). Yemek uygulamasından kalma bir
+       cümle: TıkMarka genel bir e-ticaret altyapısı ve markaları tişört de
+       satabilir dizüstü de. Müşteriye alanıyla ilgisiz bir dille seslenmek
+       markayı özensiz gösteriyordu. --}}
   @if ($teslim)
-    <p style="margin:0 0 16px">Siparişiniz teslim edildi. Afiyet olsun!</p>
+    <p style="margin:0 0 16px">Siparişiniz teslim edildi. İyi günlerde kullanın!</p>
   @else
     <p style="margin:0 0 16px">Siparişiniz kargoya verildi.</p>
   @endif

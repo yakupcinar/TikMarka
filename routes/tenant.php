@@ -132,9 +132,6 @@ Route::middleware([
     | ⚠️ `signed`: sayfa artık GET'lenebilir, yani uuid'i bilen herkes
     | başkasının sipariş durumunu okuyabilirdi. Adresi biz üretiyoruz.
     */
-    Route::get('/odeme/sonuc/{siparis:uuid}', [PaymentReturnController::class, 'sonuc'])
-        ->middleware('signed')
-        ->name('vitrin.odeme.sonuc');
 
     /*
     | KVKK DOĞRULAMA BAĞLANTISI (2G-K3).
@@ -690,6 +687,38 @@ Route::middleware([
     | ⚠️ İSİM ŞART — form `route()` ile bu adresi üretiyor. 4.6V'de
     | isimsiz POST rotası müşteriye 405 aldırmıştı.
     */
+    /*
+    | ★ ÖDEME SONUÇ SAYFASI — `api` GRUBUNDAN `web`'E TAŞINDI (4.6AI).
+    |
+    | ⚠️ ÖLÇÜLEN KUSUR: rota `api` grubundaydı, yani OTURUM YOKTU. İki
+    | sonucu vardı ve ikincisi bildirilenden ağır:
+    |
+    |   1. Üst bar müşteriyi MİSAFİR sanıyordu — ödemesini yeni yapmış
+    |      kişi "Hesabım" yerine "Giriş" görüyordu.
+    |   2. "Siparişimi görüntüle" düğmesinin koşulu
+    |      (`auth('customer-web')->id() === $siparis->customer_id`)
+    |      ASLA doğru olamıyordu. Yani 4.6Y'de eklenen o düğme HİÇ
+    |      KİMSEYE çıkmıyordu ve bu hata vermiyordu.
+    |
+    | ⚠️ NEDEN ARTIK GÜVENLİ: sayfa 4.5R'den beri POST almıyor —
+    | sağlayıcı `/odeme/donus`'a POST ediyor, o 303 ile BURAYA
+    | GET'liyor. Yani `web` grubunun CSRF'i bir engel değil.
+    |
+    | ⚠️ ÇERÇEVE İÇİNDE oturum çerezi gelmeyebilir (`SameSite=lax`,
+    | çapraz köken iframe). Sorun değil: çerçeveden çıkış betiği üst
+    | pencereyi aynı adrese GET'liyor ve ÜST DÜZEY gezinmede lax çerez
+    | gönderiliyor — müşterinin gördüğü son hâl doğru.
+    |
+    | ⚠️ `magaza-acik` DIŞINDA BIRAKILDI. Grubun geri kalanı için doğru
+    | ama burada değil: parasını ödemiş müşteri, marka o sırada
+    | mağazasını kapattıysa "siparişiniz alındı" yerine 503 görürdü.
+    | Ödemenin sonucunu görmek mağazanın açık olmasına bağlı olamaz.
+    */
+    Route::get('/odeme/sonuc/{siparis:uuid}', [PaymentReturnController::class, 'sonuc'])
+        ->middleware('signed')
+        ->withoutMiddleware('magaza-acik')
+        ->name('vitrin.odeme.sonuc');
+
     Route::post('/odeme/sonuc/{siparis:uuid}/sepete-geri', [PaymentReturnController::class, 'sepeteGeri'])
         ->middleware('signed')
         ->name('vitrin.odeme.sepeteGeri');

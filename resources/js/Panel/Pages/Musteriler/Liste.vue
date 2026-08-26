@@ -12,6 +12,7 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import PanelDuzeni from '../../Layouts/PanelDuzeni.vue'
+import Sayfalama from '../../Components/Sayfalama.vue'
 import { tarih } from '../../Yardimcilar/tarih'
 
 const props = defineProps({ musteriler: Object, ara: String })
@@ -88,15 +89,6 @@ function para(v) { return Number(v).toLocaleString('tr-TR', { minimumFractionDig
       </table>
     </div>
 
-    <div v-if="musteriler.last_page > 1" class="mt-6 flex flex-wrap gap-2">
-      <Link
-        v-for="b in musteriler.links"
-        :key="b.label"
-        :href="b.url ?? '#'"
-        class="rounded-lg px-3 py-1 text-sm"
-        :class="b.active ? 'bg-dugme text-dugme-yazi' : 'bg-yuzey-2'"
-        v-html="b.label"
-      />
-    </div>
+    <Sayfalama :baglantilar="musteriler.links" />
   </PanelDuzeni>
 </template>

@@ -3400,3 +3400,38 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       8 kırma denemesi, 8'i de düştü
       ⚠ Test Event::create() KULLANMIYOR: $fillable bilerek boş
         (customer_id sahiplik alanı). Doğrudan tabloya yazılıyor
+
+4.6AI ✅ BİLDİRİLEN ÜÇ KUSUR — 995 test
+      Kullanıcının README'ye yazdığı üç madde; İKİSİ BİLDİRİLENDEN AĞIR.
+
+      1 · ÖDEME SONUÇ SAYFASI api GRUBUNDAYDI — OTURUM YOK
+        bildirilen: "hesabım yerine giriş gözüküyor"
+        ⚠ ASIL BEDEL: 4.6Y'de eklenen "Siparişimi görüntüle" düğmesinin
+          koşulu (auth('customer-web')->id() === customer_id) ASLA
+          doğru olamıyordu → düğme HİÇ KİMSEYE çıkmıyordu, hata da
+          vermiyordu. Ödemesini yapan müşteri siparişine ulaşamıyordu
+        ✅ web grubuna taşındı — 4.5R'den beri sayfa POST almıyor
+          (sağlayıcı /odeme/donus'a POST, o 303 ile buraya GET)
+        ⚠ magaza-acik DIŞLANDI: ödemesini yapmış müşteri, marka o an
+          mağazayı kapattıysa 503 görürdü
+
+      2 · KARGO POSTASI "Afiyet olsun!" diyordu — yemek uygulaması dili
+
+      3 · SAYFALAMA sayılara indirildi + ORTAK PARÇAYA taşındı
+        (dört sayfada kopyaydı, ikisi farklı sınıflarla)
+        ⚠ v-html kalktı — düz sayı için gerek yok
+
+      6 kırma denemesi, 6'sı da düştü
+
+      ★ YAN ÜRÜN MEVCUT BİR KUSUR BULDU:
+        sonucAdresi() yine başka test dosyasındaydı — kural yazılı
+        olmasına rağmen TEK OTURUMDA ÜÇÜNCÜ KEZ (panelSayfalari ·
+        vitrinliMarka · sonucAdresi). Artık ÖLÇÜLÜYOR:
+        YardimciKonumuTest
+        ⚠ Test ilk koşusunda ZATEN DEPODA DURAN kusur buldu:
+          platformTokeni() KontrolDuzlemiTest'te tanımlı, AbonelikTest
+          de kullanıyordu. Kanıtlandı: AbonelikTest TEK BAŞINA
+          "undefined function" veriyordu, tam süitte görünmüyordu
+        ⚠ Geri alırken git checkout kullanıldı ve COMMIT'E döndürdü —
+          aynı oturumda silinen 22 satır geri geldi (yazılı tuzak,
+          üçüncü kez)

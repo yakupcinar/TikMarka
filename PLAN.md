@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6F BİTTİ — ölçüm, rapor ve KVKK     ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AI BİTTİ — bildirilen üç kusur     ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -2116,7 +2116,7 @@ ayrı dosyaya taşınmalı.
 
 ---
 
-## Faz 2 — Olgunlaştırma  ← **AÇIK**
+## Faz 2 — Olgunlaştırma ✅
 
 ```
 2H bildirim    → 2G kvkk → 2B iade → 2A kupon → 2C arama → 2D · 2E · 2F
@@ -2406,7 +2406,7 @@ kuponsuz da okunabiliyor
 
 ---
 
-### 2C — Arama
+### 2C — Arama ✅
 
 **2C-K1 · PostgreSQL'İN KENDİ ARAMASI — dış servis yok.**
 
@@ -2511,7 +2511,7 @@ taslak "Yaklaşan Koleksiyon" aramada **çıkmıyor** (`forStorefront` — 1B-K1
 
 ---
 
-### 2D — Koleksiyon
+### 2D — Koleksiyon ✅
 
 **2D-K1 · Manuel liste VE kural birlikte.**
 > 1B-K7'de not düşülmüştü: koleksiyon "nerede göstereyim" sorusudur, kategori
@@ -2598,7 +2598,7 @@ taslak ürün vitrinde **çıkmadı** (`forStorefront` — 1B-K10).
 
 ---
 
-### 2E — Yorum ve puan
+### 2E — Yorum ve puan ✅
 
 **2E-K1 · Yalnızca SATIN ALAN yazabilir.**
 > Sipariş kontrolü. Herkese açık olsaydı rakip ve bot yorumu kaçınılmazdı.
@@ -2716,7 +2716,7 @@ kaldırılınca üçü de düşüyor (doğrulandı).
 
 ---
 
-### 2F — Terk edilmiş ödeme
+### 2F — Terk edilmiş ödeme ✅
 
 **2F-K1 · Sepet DEĞİL, ödemesi yarım kalmış SİPARİŞ hedeflenir.**
 
@@ -4046,7 +4046,7 @@ genişletmek ayrı bir iş.
 
 ---
 
-## Faz 4 — Arayüz  ◀ **AÇILDI**
+## Faz 4 — Arayüz ✅
 
 Üç fazdır sistemin **yüzü yok**. M-3 "arayüz sonra" demişti; sonra geldi.
 
@@ -4937,7 +4937,7 @@ kendi yüzeyinden, kimse diğerinin ekranını göremeden.
 
 ---
 
-## Faz 4.5 — Arayüz boşlukları  ◀ **AÇILDI**
+## Faz 4.5 — Arayüz boşlukları ✅
 
 Faz 4 "arayüz **var**" hedefini karşıladı; "arayüz **yeterli**" hedefi hiç
 konulmamıştı. Kapanıştan sonra ölçüldü:
@@ -6289,7 +6289,7 @@ isteği):** 5 eksen → **422** + *"Bir üründe en fazla 3 eksen olabilir…"* 
 > yaşandı.
 
 
-## Faz 4.6 — Vitrin deneyimi ve ölçüm  *(planlandı)*
+## Faz 4.6 — Vitrin deneyimi ve ölçüm  ◀ **4.6G HARİÇ BİTTİ**
 
 Kullanıcının biriktirdiği geliştirme fikirleri + planlama sırasında
 **ölçümle bulunan iki eksik**. Faz 5'ten (kargo · e-fatura) önce
@@ -6589,6 +6589,64 @@ satılabilir ürünler; yetmezse aynı marka, sonra en yeniler.
 > (`customer_id` sahiplik alanı). Testin korumayı test uğruna gevşetmesi
 > yerine doğrudan tabloya yazılıyor — 4.6X.1'deki "kısıtı ölçen test
 > Domain'i atlamalı" dersinin aynısı.
+
+### 4.6AI — bildirilen üç kusur: sonuç sayfası, kargo postası, sayfalama
+
+Kullanıcının README'ye yazdığı üç madde. **İkisi bildirilenden ağır çıktı.**
+
+**1 · Ödeme sonuç sayfası `api` grubundaydı — yani OTURUM YOKTU.**
+
+Bildirilen belirti: *"ödeme sonrası bekleme sekmesinde hesabım yerine
+giriş gözüküyor"*. Ölçülünce asıl bedel çıktı:
+
+> ⚠️ 4.6Y'de eklenen **"Siparişimi görüntüle" düğmesinin koşulu**
+> (`auth('customer-web')->id() === $siparis->customer_id`) **asla doğru
+> olamıyordu**. Yani o düğme HİÇ KİMSEYE çıkmıyordu — ve bu hata
+> vermiyordu. Ödemesini yeni yapmış müşteri siparişine ulaşamıyordu.
+
+Rota `web` grubuna taşındı. ⚠️ **Artık güvenli çünkü sayfa 4.5R'den beri
+POST almıyor**: sağlayıcı `/odeme/donus`'a POST ediyor, o 303 ile buraya
+GET'liyor.
+
+⚠️ **`magaza-acik` DIŞLANDI.** Grubun geri kalanı için doğru ama burada
+değil: parasını ödemiş müşteri, marka o sırada mağazasını kapattıysa
+"siparişiniz alındı" yerine **503** görürdü.
+
+⚠️ Çerçeve içinde `SameSite=lax` çerezi gelmeyebilir — sorun değil:
+çıkış betiği üst pencereyi aynı adrese GET'liyor ve üst düzey gezinmede
+lax çerez gönderiliyor.
+
+**2 · Kargo postası "Afiyet olsun!" diyordu.** Yemek uygulamasından kalma
+bir cümle; TıkMarka genel bir e-ticaret altyapısı ve markaları tişört de
+satabilir dizüstü de.
+
+**3 · Sayfalama sayılara indirildi** — ve **ortak parçaya** taşındı.
+Aynı kalıp dört sayfada tekrarlanıyordu, ikisi farklı sınıflarla.
+⚠️ `v-html` kalktı: Laravel'in HTML varlıklı etiketleri (`&laquo;`)
+gitti, geriye düz sayı kaldı.
+
+**Altı kırma denemesi, altısı da düştü.**
+
+> ★ **BU BLOK BİR YAN ÜRÜN VERDİ VE O YAN ÜRÜN MEVCUT BİR KUSUR BULDU.**
+>
+> `sonucAdresi()` yardımcısı yine başka test dosyasındaydı — kural
+> CLAUDE.md'de yazılı olmasına rağmen **tek oturumda üçüncü kez**
+> (`panelSayfalari` · `vitrinliMarka` · `sonucAdresi`). Yazılı kural üç
+> kez tutmadığı için artık **ölçülüyor**: `YardimciKonumuTest`.
+>
+> ⚠️ Test ilk koşusunda **zaten depoda duran** bir kusur buldu:
+> `platformTokeni()` `KontrolDuzlemiTest`'te tanımlıydı ama `AbonelikTest`
+> de kullanıyordu. Kanıtlandı — `AbonelikTest.php` **tek başına**
+> koşturulunca *"Call to undefined function"* veriyordu ve tam süitte
+> görünmüyordu (dosya yükleme sırası gizliyordu).
+>
+> ⚠️ Geri alırken `git checkout` kullanıldı ve **commit'e döndürdü** —
+> aynı oturumda düzeltilen 22 satır geri geldi. CLAUDE.md'de yazılı
+> tuzağın kendisi; üçüncü kez yaşandı.
+
+**995 test.**
+
+---
 
 ### 4.6G — Rakip özellik taraması  *(araştırma)*
 
