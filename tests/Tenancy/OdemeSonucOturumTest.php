@@ -45,7 +45,7 @@ it('★★★ SONUC SAYFASI web grubunda — oturum OLMADAN dugme cikmiyordu', f
 
     // ⚠️ Statik analiz `getByName()` sonucunun null olabileceğini görüyor;
     //    yukarıdaki iddia çalışma anında yeterli ama analiz için daraltma şart.
-    assert($rota instanceof \Illuminate\Routing\Route);
+    assert($rota instanceof Illuminate\Routing\Route);
 
     /*
     | ⚠️ `web` grubu OTURUMU getiriyor. `api`'de `StartSession` hiç yok
