@@ -5,6 +5,7 @@ namespace App\Domain\Privacy;
 use App\Domain\Favorite\FavoriteService;
 use App\Models\Address;
 use App\Models\Customer;
+use App\Models\Event;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -70,6 +71,32 @@ class Anonymizer
             | gibi kalırdı.
             */
             $this->favoriler->hepsiniSil($musteri);
+
+            /*
+            | ★ OLAYLAR BAĞDAN KOPARILIYOR, silinmiyor. (4.6F)
+            |
+            | ⚠️ Favorinin TERSİ karar ve sebebi şu: favoride kişisel veri
+            | BAĞIN KENDİSİYDİ ve maskelenecek alanı yoktu. Olayda ise
+            | kişisel veri yalnızca `customer_id` — `payload`'a kişisel
+            | veri girmiyor (1F-K4). Bağ koparılınca geriye markanın
+            | meşru ölçümü kalıyor ("bu ürüne 40 kez bakıldı") ama artık
+            | kimseye ait değil.
+            |
+            | ⚠️ SİLİNSEYDİ markanın satış istatistikleri, silme talebinde
+            | bulunan her müşteride geriye dönük olarak bozulurdu — üstelik
+            | kişisel veri barındırmayan bir kayıt için.
+            |
+            | ⚠️ `anon_id` DE TEMİZLENİYOR. Takma kimlik de bir kimliktir:
+            | kalsaydı aynı `anon_id`'yi taşıyan olaylar birbirine
+            | bağlanabilir ve profil yeniden kurulabilirdi.
+            |
+            | ⚠️ Yabancı anahtardaki `nullOnDelete` BURADA DEVREYE GİRMEZ:
+            | o yalnızca müşteri GERÇEKTEN silinince çalışıyor;
+            | anonimleştirme müşteriyi silmiyor, maskeliyor. (4.6D'de
+            | favoride yaşanan tuzağın aynısı.)
+            */
+            Event::where('customer_id', $musteri->id)
+                ->update(['customer_id' => null, 'anon_id' => null]);
 
             /*
             | ⚠️ E-posta BENZERSİZ olmak zorunda (`customers.email` unique).

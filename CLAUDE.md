@@ -993,6 +993,30 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   doğrula: `SettingGroup` `App\Domain\Settings` değil **`App\Enums`**
   altında ve yanlış yazıldığında 14 test birden düşüyor.
 
+- **OLAYIN YOKLUĞU, O ŞEYİN OLMADIĞI ANLAMINA GELMEZ — parayı olaydan
+  sayma.** `EventRecorder` bilerek "işi bozmayan" bir yol: kuyruğa
+  atamazsa istisnayı yutuyor (1F-K3). Yani olay kaydı **eksik olabilir**
+  ve bu tasarım gereği. 4.6F'de rapor bu yüzden satışı `order_items`'tan
+  sayıyor, olaylardan değil. ⚠️ Tersi de doğru: görüntülemeyi
+  `order_items`'tan sayamazsın. **Her ölçüyü güvenilir olduğu yerden al**,
+  tek kaynağa zorlama.
+- **OKUMA YOLUNDA YAZAN ÖLÇÜMÜN BOT ELEMESİ OLMALI.** Ürün sayfası
+  herkese açık; arama motorları, önizleme çekenler ve tarayıcılar aynı
+  sayfayı defalarca çekiyor. Elenmezse marka "400 kez bakılmış" diye bir
+  sayı görür ve ona göre stok planlar (4.6F). ⚠️ `curl` de elenir — bizim
+  gerçek HTTP doğrulama koşularımız da olay üretmez; "curl ile denedim,
+  sayaç artmadı" bir arıza değil.
+- **HESABI DOĞRU AMA SONUCU SAÇMA OLAN SAYIYI GÖSTERME.** 4.6F'de rapor
+  9 görüntülemeden 11 satış için **%122 dönüşüm** yazıyordu; matematik
+  doğru, sebep ölçümün eksikliğiydi. Doğrusu sayıyı **düzeltmek değil**
+  (tavan koymak gibi) hesaplamamak ve ekranda **sebebini yazmak** —
+  bilinmeyeni bilinir göstermek daha kötü. ⚠️ Bunu ancak gerçek ekrana
+  bakınca görürsün; prop'ları ölçen test "122" değerini doğru bulur.
+- **KVKK GENİŞLETMESİ BLOĞUN SONUNA BIRAKILMAZ.** 4.6F'de ölçüldü: blok
+  başlamadan **137 olay kayıtlıydı, 51'i müşteriye bağlı** ve iki KVKK
+  yolu da onları görmüyordu — talep o an eksik cevaplanıyordu. Müşteriye
+  bağlı veri **zaten toplanıyorsa** boşluk gelecekte değil **bugün** var.
+
 ## Yapı
 
 ```

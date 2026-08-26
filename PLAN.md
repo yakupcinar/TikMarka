@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AH BİTTİ — ölçek iki yüzeyde de aynı ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6F BİTTİ — ölçüm, rapor ve KVKK     ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6534,6 +6534,61 @@ satılabilir ürünler; yetmezse aynı marka, sonra en yeniler.
 > ⚠️ Yazma OKUMA YOLUNDA: her ürün sayfası bir olay yazacak.
 > `EventRecorder` kuyruğa atıyor (`afterCommit`, 1F-K5) — sayfa yavaşlamaz
 > ama bot trafiği sayıları şişirir. En az bir eleme kuralı gerekli.
+
+> ── SONUÇ ────────────────────────────────────────────────────────────
+>
+> **BİTTİ. 988 test.**
+>
+> **KVKK boşluğu VARSAYIMSAL DEĞİLDİ.** Ölçüm anında **137 olay kayıtlı,
+> 51'i müşteriye bağlıydı** ve ne `Anonymizer` ne `DataExporter` olaylara
+> dokunuyordu — yani "verimi ver" ve "beni unut" talepleri **o an eksik
+> cevaplanıyordu**. Blok bu yüzden KVKK ile başladı.
+>
+> ⚠️ **İki yolun kararı FARKLI, 4.6D'nin tersi yönde.** Favoride kişisel
+> veri *bağın kendisiydi* ve maskelenecek alanı yoktu → **silindi**.
+> Olayda kişisel veri yalnızca `customer_id`; bağ koparılınca geriye
+> markanın meşru ölçümü kalıyor ama artık kimseye ait değil → **bağ
+> koparılıyor**. Silinseydi, silme talebinde bulunan her müşteride
+> markanın istatistikleri geriye dönük bozulurdu.
+> ⚠️ `anon_id` de temizleniyor: takma kimlik de bir kimliktir.
+>
+> **KUSUR DOĞRULANDI VE DÜZELTİLDİ.** `product_viewed` yalnızca API'den
+> yazılıyordu; ölçüldü: **18 görüntüleme olayı vardı ve hiçbiri bir
+> müşteriye bağlı değildi.** Artık Blade sayfası yazıyor ve gerçek
+> koşuda müşteri doğru bağlandı.
+>
+> **Bot elemesi** (`BotFilter`): gerçek koşuda üç istek atıldı
+> (curl · Googlebot · tarayıcı), **yalnızca biri** olay üretti.
+> ⚠️ `curl` de eleniyor — bizim doğrulama koşularımız da olay üretmiyor.
+> Bu doğru davranış ama bilinmeli.
+>
+> **Panel raporu** (`/yonetim/rapor`): ürün başına görüntüleme → sepet →
+> satış, dönem seçici, dönüşüm oranı.
+>
+> ⚠️ **ÜÇ ÖLÇÜ, İKİ KAYNAK — bilinçli.** Satış `order_items`'tan
+> sayılıyor, olaylardan DEĞİL: olay kaydı bilerek "işi bozmayan" bir yol
+> (1F-K3, kuyruk erişilemezse istisna yutuluyor), yani bir olayın
+> YOKLUĞU o şeyin olmadığı anlamına gelmiyor. Para bu belirsizliği
+> kaldıramaz.
+>
+> ⚠️ **CİRO SÜTUNU AYRICA KISITLI** — 4F'nin dersi: "tablo listesini
+> daraltmak yetmez, KOLON da temizlenir". Ekran `product.view|order.view`
+> ile açık ama ciro `finance.view` istiyor ve alan `null` gidiyor,
+> sıfır değil.
+>
+> ⚠️ **GERÇEK EKRANA BAKMAK BİR KUSUR DAHA BULDU:** "Basic Tişört"
+> 9 görüntülemeden 11 satışla **%122 dönüşüm** gösteriyordu. Matematik
+> doğru, sonuç saçma — sebep görüntüleme ölçümünün bu bloğa kadar eksik
+> olması. Satış > görüntüleme ise oran artık hesaplanmıyor ve ekran
+> **sebebini yazıyor**. Sayı düzeltilmedi (tavan konmadı): bilinmeyeni
+> bilinir göstermek daha kötü olurdu.
+>
+> **Sekiz kırma denemesi, sekizi de düştü.**
+>
+> ⚠️ Test `Event::create()` KULLANMIYOR: `$fillable` bilerek boş
+> (`customer_id` sahiplik alanı). Testin korumayı test uğruna gevşetmesi
+> yerine doğrudan tabloya yazılıyor — 4.6X.1'deki "kısıtı ölçen test
+> Domain'i atlamalı" dersinin aynısı.
 
 ### 4.6G — Rakip özellik taraması  *(araştırma)*
 

@@ -24,6 +24,7 @@ use App\Http\Panel\PaymentSettingsController;
 use App\Http\Panel\PaymentSettingsPageController;
 use App\Http\Panel\ProductController;
 use App\Http\Panel\ProductPageController as PanelUrunSayfasi;
+use App\Http\Panel\ReportPageController;
 use App\Http\Panel\ReturnController as PanelIade;
 use App\Http\Panel\ReturnPageController;
 use App\Http\Panel\ReviewController;
@@ -1135,6 +1136,22 @@ Route::middleware([
         | ⚠️ Rota anahtarı `uuid`: `Customer::getRouteKeyName()` öyle
         | söylüyor ve `id` gönderilseydi 404 gelirdi (4.5C'de ısırdı).
         */
+        /*
+        | ★ ÜRÜN RAPORU (4.6F).
+        |
+        | ⚠️ İZİN `product.view|order.view` — HERHANGİ BİRİ. Huni bilgisi
+        | hem katalogcunun hem sipariş sorumlusunun işi; tek izne
+        | bağlansaydı diğeri kendi alanının ölçümünü göremezdi.
+        |
+        | ⚠️ CİRO SÜTUNU BU İZNE BAĞLI DEĞİL, ayrıca `finance.view`
+        | isteniyor — kontrol controller'da. Rota seviyesinde çözülemez:
+        | aynı ekran iki farklı personel için farklı SÜTUN kümesi
+        | göstermek zorunda.
+        */
+        Route::middleware('izin:product.view|order.view')->group(function () {
+            Route::get('/rapor', ReportPageController::class)->name('panel.rapor');
+        });
+
         Route::middleware('izin:customer.view')->group(function () {
             Route::get('/musteriler', [CustomerPageController::class, 'index'])->name('panel.musteriler');
             Route::get('/musteriler/{musteri:uuid}', [CustomerPageController::class, 'show'])->name('panel.musteri');

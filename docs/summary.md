@@ -3354,3 +3354,49 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
       DOĞRULANDI (gerçek vitrin, iki tema, İKİ DÜZEN): sabit boyut 0 ·
       sabit yarıçap 0 (999px hariç) · gölge açık var/koyu none · kart
       gölgesiz · ürün adı 15→16px · geçiş 0.15s
+
+4.6F ✅ TIKLAMA SAYIMI, PANEL RAPORU VE KVKK — 988 test
+      Üç iş, birincisi bir KUSUR, ikincisi ZORUNLU.
+
+      ⚠ KVKK BOŞLUĞU VARSAYIMSAL DEĞİLDİ: ölçüm anında 137 olay
+        kayıtlı, 51'i müşteriye BAĞLI. Ne Anonymizer ne DataExporter
+        olaylara dokunuyordu — "verimi ver" / "beni unut" talepleri
+        O AN eksik cevaplanıyordu. Blok KVKK ile başladı.
+
+      ✅ ANONİMLEŞTİRME: bağ koparılıyor (customer_id + anon_id null)
+        ⚠ 4.6D'NİN TERSİ KARAR: favoride kişisel veri BAĞIN KENDİSİYDİ
+          ve maskelenecek alanı yoktu → silindi. Olayda kişisel veri
+          yalnızca customer_id; koparılınca markanın meşru ölçümü
+          kalıyor. Silinseydi her silme talebinde marka istatistikleri
+          geriye dönük bozulurdu
+        ⚠ anon_id de temizleniyor: takma kimlik de bir kimliktir
+      ✅ VERİ DÖKÜMÜ: davranis_kayitlari eklendi
+        ⚠ payload OLDUĞU GİBİ yazılıyor — 1F-K4'ün (kişisel veri
+          girmez) aynı zamanda DENETİMİ
+
+      ✅ KUSUR DÜZELTİLDİ: product_viewed yalnızca API'den yazılıyordu.
+        Ölçüldü: 18 görüntüleme vardı ve HİÇBİRİ müşteriye bağlı
+        değildi. Artık Blade sayfası yazıyor; gerçek koşuda müşteri
+        doğru bağlandı (customer_id = 5)
+      ✅ BOT ELEMESİ: gerçek koşuda 3 istek (curl · Googlebot ·
+        tarayıcı) → YALNIZCA 1 olay
+        ⚠ curl de eleniyor: bizim doğrulama koşularımız olay üretmiyor
+
+      ✅ PANEL RAPORU /yonetim/rapor — ürün başına huni + dönem seçici
+        ⚠ ÜÇ ÖLÇÜ İKİ KAYNAK: satış order_items'tan, olaylardan DEĞİL.
+          Olay kaydı bilerek "işi bozmayan" yol (1F-K3) — bir olayın
+          YOKLUĞU o şeyin olmadığı anlamına gelmiyor; para bu
+          belirsizliği kaldıramaz
+        ⚠ CİRO SÜTUNU AYRICA KISITLI (4F dersi: kolon da temizlenir).
+          Ekran product.view|order.view, ciro finance.view; alan null
+          gidiyor, SIFIR değil
+
+      ⚠ GERÇEK EKRANA BAKMAK BİR KUSUR DAHA BULDU: "Basic Tişört"
+        9 görüntülemeden 11 satışla %122 dönüşüm gösteriyordu. Satış >
+        görüntüleme ise oran artık hesaplanmıyor, ekran SEBEBİNİ
+        yazıyor. Sayı düzeltilmedi — bilinmeyeni bilinir göstermek
+        daha kötü
+
+      8 kırma denemesi, 8'i de düştü
+      ⚠ Test Event::create() KULLANMIYOR: $fillable bilerek boş
+        (customer_id sahiplik alanı). Doğrudan tabloya yazılıyor

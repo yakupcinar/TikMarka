@@ -72,6 +72,7 @@ const menu = [
     { ad: 'İadeler', yol: '/yonetim/iadeler', izin: ['order.view'] },
     { ad: 'Müşteriler', yol: '/yonetim/musteriler', izin: ['customer.view'] },
     { ad: 'Yorumlar', yol: '/yonetim/yorumlar', izin: ['product.view', 'product.write'] },
+    { ad: 'Rapor', yol: '/yonetim/rapor', izin: ['product.view', 'order.view'] },
   ] },
   { baslik: 'Ayarlar', maddeler: [
     { ad: 'Mağaza', yol: '/yonetim/magaza', izin: ['settings.view', 'settings.write'] },

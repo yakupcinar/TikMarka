@@ -2,12 +2,15 @@
 
 namespace App\Http\Storefront;
 
+use App\Domain\Analytics\BotFilter;
+use App\Domain\Analytics\EventRecorder;
 use App\Domain\Catalog\ProductQuery;
 use App\Domain\Catalog\SimilarProductQuery;
 use App\Domain\Catalog\VariantSelector;
 use App\Domain\Favorite\FavoriteService;
 use App\Domain\Review\ReviewService;
 use App\Domain\Settings\ThemeSettings;
+use App\Enums\EventType;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Contracts\View\View;
@@ -28,6 +31,8 @@ class ProductPageController extends Controller
         private readonly ReviewService $yorumlar,
         private readonly FavoriteService $favoriler,
         private readonly SimilarProductQuery $oneriler,
+        private readonly EventRecorder $olaylar,
+        private readonly BotFilter $botlar,
     ) {}
 
     public function __invoke(Request $istek, string $slug): View
@@ -53,6 +58,32 @@ class ProductPageController extends Controller
         | ayrı sorgu açılırdı — ürün sayfası N+1'e düşerdi.
         */
         $urun->load(['images', 'variants', 'options.values']);
+
+        /*
+        | ★ GÖRÜNTÜLEME OLAYI (4.6F) — ve bu bir KUSUR DÜZELTMESİ.
+        |
+        | ⚠️ `product_viewed` bugüne kadar YALNIZCA `CatalogController`'dan
+        | (API) yazılıyordu. Müşterinin gerçekten gezdiği yer ise BU sayfa.
+        | Ölçüldü: 18 görüntüleme olayı vardı ve HİÇBİRİ bir müşteriye
+        | bağlı değildi — yani marka, ürünlerine kimin baktığını gösteren
+        | bir ekrana baksaydı boş görürdü. 4.5I'deki sayfa/API ayrımının
+        | aynısı.
+        |
+        | ⚠️ Olay controller'da doğuyor, Domain'de değil — `EventRecorder`
+        | bunu kendi yorumunda gerekçelendiriyor: "ürüne bakıldı" bir iş
+        | kuralı değil, saf bir görüntüleme. Domain'e taşımak olmayan bir
+        | kural uydurmak olurdu.
+        |
+        | ⚠️ `kaydet()` KUYRUĞA atıyor (`afterCommit`, 1F-K5) — sayfa
+        | yavaşlamıyor. Kuyruk erişilemezse istisna yutuluyor (1F-K3):
+        | ölçüm kaydı ürün sayfasını DÜŞÜREMEZ.
+        */
+        if ($this->botlar->sayilirMi($istek->userAgent())) {
+            $this->olaylar->kaydet(EventType::ProductViewed, [
+                'product_id' => $urun->id,
+                'slug' => $urun->slug,
+            ], $musteri instanceof Customer ? $musteri : null);
+        }
 
         /*
         | ⚠️ Görünüm adı `match` ile SABİT metne çevriliyor, birleştirmeyle

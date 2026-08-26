@@ -4,6 +4,7 @@ namespace App\Domain\Privacy;
 
 use App\Models\Address;
 use App\Models\Customer;
+use App\Models\Event;
 use App\Models\Favorite;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -84,6 +85,35 @@ class DataExporter
                         'birim_fiyat' => $k->unit_price,
                         'satir_toplami' => $k->line_total,
                     ])->all(),
+                ])
+                ->values()
+                ->all(),
+
+            /*
+            | ★ DAVRANIŞ KAYITLARI (4.6F).
+            |
+            | ⚠️ KVKK'nın sorusu "ne gösterelim" değil "ELİMİZDE NE VAR".
+            | Bu kayıtlar müşteriye bağlı olduğu sürece onun verisi ve
+            | dökümde yer almak zorunda — 4.6D'de favori için verilen
+            | kararın aynısı.
+            |
+            | ⚠️ `payload` OLDUĞU GİBİ yazılıyor. İçinde kişisel veri
+            | olmaması gerekiyor (1F-K4) ama döküm "bizde ne var"ı
+            | anlatıyor; süzülseydi kural ihlal edilmiş olsa bile müşteri
+            | bunu göremezdi. Yani bu alan aynı zamanda 1F-K4'ün
+            | DENETİMİ.
+            |
+            | ⚠️ Sınır KONMUYOR. Sipariş dökümünde de yok; eksik döküm
+            | eksik cevaptır. Hacim sorun olursa çözüm kırpmak değil
+            | dökümü akışa çevirmek.
+            */
+            'davranis_kayitlari' => Event::where('customer_id', $musteri->id)
+                ->orderBy('occurred_at')
+                ->get()
+                ->map(fn (Event $o): array => [
+                    'tur' => $o->type->value,
+                    'zaman' => $o->occurred_at?->toIso8601String(),
+                    'ayrinti' => $o->payload,
                 ])
                 ->values()
                 ->all(),
