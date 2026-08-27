@@ -1071,6 +1071,24 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   başlamamalı**. ⚠️ Terminal durumda sayaç temizlenmeli, yoksa aynı
   tarayıcı oturumundaki İKİNCİ ödemede yenileme hiç çalışmaz (4.6AK).
 
+- **`queue:restart` BU KURULUMDA WORKER'I ÖLDÜRÜP ORTADA BIRAKIYOR.**
+  Laravel'in "doğru" yolu o (nazikçe çık), ama hiçbir serviste `restart:`
+  politikası yok — ölçüldü: `RestartPolicy → no`. Sinyal gidiyor, worker
+  `Exited (0)` oluyor ve **geri gelmiyor**. Kod değişince kullanılacak yol
+  `docker compose restart worker scheduler`.
+  ⚠️ Aynı eksiğin daha ağır yüzü: **worker çökerse kimse fark etmiyor** ve
+  işler Redis'te sessizce birikiyor.
+- **`pcntl` YÜKLÜ DEĞİL — restart işi YARIDA KESEBİLİR.** Laravel SIGTERM'de
+  "şu anki işi bitir, sonra çık" der; `pcntl` olmadan süreç anında ölüyor.
+  Veri kaybı yok (`--tries=3` + `retry_after`) ama iş **baştan koşuyor** —
+  e-posta gönderen bir iş yarıda kesilirse müşteri **iki kez** posta alır.
+- **WORKER'IN BAYAT KOD TUTMASININ SEBEBİ OPCACHE DEĞİL.** Ölçüldü:
+  `opcache.validate_timestamps=1`, yani opcache değişen dosyayı zaten fark
+  ediyor. Sebep PHP'nin **sürecin belleğine bir kez yüklenen sınıfı bir
+  daha okumaması**; `queue:work` tek bir uzun ömürlü süreç. ⚠️ Bu yüzden
+  "worker'ı derlemeden sonra başlatalım" ÇÖZÜM DEĞİL: sorun ilk açılış
+  değil, worker'ın saatlerce ayakta kalması.
+
 ## Yapı
 
 ```

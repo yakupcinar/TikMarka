@@ -8313,6 +8313,50 @@ Kargo firmaları · e-fatura / e-arşiv
 
 Yayın · yedekleme · gözlemlenebilirlik
 
+### ⚠️ Faz 6'ya taşınan ÖLÇÜLMÜŞ iki eksik — worker dayanıklılığı
+
+Kullanıcının "worker'ı sonra başlatsak düzelmez mi" sorusu üzerine
+ölçüldü. Cevap hayır (sorun ilk açılış değil, worker'ın SAATLERCE ayakta
+kalması) ama ölçüm iki ayrı eksik çıkardı:
+
+**1 · `pcntl` YÜKLÜ DEĞİL — nazik kapanış yok.**
+
+```
+docker compose exec app php -r 'echo extension_loaded("pcntl");'  →  boş
+```
+
+Laravel normalde SIGTERM'de "şu anki işi bitir, sonra çık" diyor; `pcntl`
+olmadan süreç **anında** ölüyor. Yani `docker compose restart worker`
+bir işin ORTASINDA yakalarsa iş yarıda kesiliyor.
+
+⚠️ Veri kaybı YOK (`--tries=3`, `retry_after: 90` → iş kuyruğa geri
+düşüyor) ama iş **baştan koşuyor**. `RecordEvent` için zararsız; e-posta
+gönderen bir iş yarıda kesilirse müşteri **iki kez** posta alabilir.
+
+**2 · HİÇBİR SERVİSTE `restart:` POLİTİKASI YOK.**
+
+```
+docker inspect tkmarkad2capp-worker-1 --format '{{.HostConfig.RestartPolicy.Name}}'  →  no
+```
+
+İki sonucu var:
+
+⚠️ **`queue:restart` BU KURULUMDA TUZAK.** Laravel'in "doğru" yolu o;
+denendi ve worker `Exited (0)` olup **geri gelmedi**. Yani nazikçe
+öldürüp ortada bırakıyor — `docker compose restart`'tan DAHA KÖTÜ.
+
+⚠️ **Worker herhangi bir sebeple çökerse kimse fark etmiyor.** İşler
+Redis'te birikmeye devam ediyor, sessizce. Bu ikisinden daha önemlisi.
+
+**Çözüm (Faz 6'da):** `Dockerfile`'a `pcntl` + `docker-compose.yml`'ye
+`restart: unless-stopped`. İkisi birlikte `queue:restart`'ı da
+kullanılabilir hâle getiriyor.
+
+> ⚠️ Bir de opcache'e dair düzeltme: sebep opcache DEĞİL.
+> `validate_timestamps=1` ölçüldü, yani opcache değişen dosyayı zaten
+> fark ediyor. Asıl sebep PHP'nin **sürecin belleğine bir kez yüklenen
+> sınıfı bir daha okumaması**; `queue:work` tek bir uzun ömürlü süreç.
+
 ---
 
 ## Sonraya bırakılanlar
