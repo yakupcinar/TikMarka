@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AI BİTTİ — bildirilen üç kusur     ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AJ BİTTİ — sepet artık kilitlenmiyor ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6645,6 +6645,68 @@ gitti, geriye düz sayı kaldı.
 > tuzağın kendisi; üçüncü kez yaşandı.
 
 **995 test.**
+
+---
+
+### 4.6AJ — silinen ürün sepette kalınca
+
+**Bildirilen:** *"Vitrinde bir ürünü sepete aldım, sonra panelde ürünü
+sildim; sepette 'variant uuid alanı zorunludur' hatası aldım, ürün üstü
+silik ve isimsiz duruyordu. Biz soft delete atmıyor muyuz?"*
+
+**Ölçülen bedel bundan ağır: müşteri o satırı sepetinden ÇIKARAMIYORDU.**
+İki bariyer birden vardı:
+
+```
+1. Ekran  value="{{ $satir->variant?->uuid }}"  → varyant yumuşak silinmiş,
+                                                  ilişki null, alan BOŞ
+2. satiriBul()  whereHas('variant')             → silinmiş varyant o sorguya
+                                                  hiç girmiyor
+```
+
+Yani ürünü silen marka, müşterinin sepetini **çalışamaz hâle
+getiriyordu**.
+
+**STRATEJİ DEĞİŞMEDİ — ve değişmemeliydi.** Proje zaten "sessizce silme,
+işaretle" diyordu (`kullanilabilirMi()` + ölü satır uyarısı) ve ekrandaki
+yorum gerekçesini yazmıştı: *"Sessizce silinseydi müşteri ne kaybettiğini
+bilmezdi."* Büyük yüzeyler de aynı yerde duruyor — ürünü sepetten
+kaybetmek "ürünüm nerede" sorusunu doğuruyor. **Kırık olan strateji
+değil, işaretlenen satırın YÖNETİLEBİLİR olmamasıydı.**
+
+Uygulanan kural projenin kendi kuralı (1E.6):
+
+> Bir kaydı **KAPATAN** yol (kesinleştirme, iptal, iade — ve burada:
+> sepetten çıkarma) silinmişi de görmeli; **AÇAN** yol görmemeli.
+
+| Değişiklik | Neden |
+|---|---|
+| `CartItem::variant()` → `withTrashed()` | satır görünsün ve çıkarılabilsin |
+| `kullanilabilirMi()` → açık `trashed()` kontrolü | silinmiş satılamasın |
+| `CartItem::urunAdi()` | müşteri neyi çıkardığını görsün |
+| Ekranda "sepetten çıkarabilirsiniz" | çıkmaz hissi kalksın |
+
+⚠️ **`ProductVariant::product()` BİLEREK AÇILMADI.** O ilişki katalog
+sorgularının her yerinde; toptan `withTrashed()` silinmiş ürünün vitrinde
+görünmesi gibi çok daha geniş bir kapıyı sessizce açardı. İhtiyaç dardı,
+çözüm de dar: yalnızca sepet satırının adı.
+
+**Beş kırma denemesi; dördü ilk turda düştü, EN TEHLİKELİSİ DÜŞMEDİ.**
+
+> ⚠️ `trashed()` kontrolünü kaldıran deneme hiçbir testi düşürmedi. Sebep:
+> ürün silindiğinde koruma **başka yerden** geliyor —
+> `ProductVariant::product()` silinmişi görmediği için
+> `product?->status === Active` zaten `false` oluyor.
+>
+> ⚠️ **AMA MARKA TEK BİR VARYANTI DA SİLEBİLİYOR** (`VariantService::sil`,
+> panelde varyant silme düğmesi). O durumda ürün HAYATTA: durumu `Active`
+> ve `satinAlinabilirMi()` de geçebilir. Kontrol olmasaydı **silinmiş bir
+> varyant satılabilirdi** — hata vermeden.
+>
+> Yani kontrol gereksiz değildi; **testler onu ölçmüyordu**. Varyant-yalnız
+> silme testi eklendikten sonra deneme düştü.
+
+**1000 test.**
 
 ---
 

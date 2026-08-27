@@ -15,14 +15,24 @@
             @foreach ($sepet->items as $satir)
                 <tr class="{{ $satir->kullanilabilirMi() ? '' : 'olu' }}">
                     <td>
-                        <strong>{{ $satir->variant?->product?->title ?? 'Ürün' }}</strong>
+                        {{-- ⚠️ `urunAdi()` — SİLİNMİŞ ürününkini de çözüyor (4.6AJ).
+                             Doğrudan ilişki okunsaydı ölü satırda yalnızca
+                             "Ürün" yazardı ve müşteri neyi çıkardığını
+                             bilmezdi. --}}
+                        <strong>{{ $satir->urunAdi() }}</strong>
 
                         {{--
                             ⚠️ ÖLÜ SATIR SİLİNMİYOR, İŞARETLENİYOR (1C-K2).
                             Sessizce silinseydi müşteri ne kaybettiğini bilmezdi.
                         --}}
                         @if (! $satir->kullanilabilirMi())
-                            <div class="uyari">Bu ürün artık satışta değil.</div>
+                            {{-- ⚠️ "Çıkarabilirsiniz" AÇIKÇA yazılıyor: 4.6AJ'den
+                                 önce müşteri bu satırı sepetinden çıkaramıyordu
+                                 (form boş `variant_uuid` basıyordu) ve sepet
+                                 kilitleniyordu. Artık çıkarılabiliyor; ekranın
+                                 bunu söylemesi müşteriyi çıkmaz hissinden
+                                 kurtarıyor. --}}
+                            <div class="uyari">Bu ürün artık satışta değil — sepetten çıkarabilirsiniz.</div>
                         @elseif (! $satir->stokYetiyorMu())
                             <div class="uyari">Stok yetersiz.</div>
                         @endif

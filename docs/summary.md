@@ -3435,3 +3435,40 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
         ⚠ Geri alırken git checkout kullanıldı ve COMMIT'E döndürdü —
           aynı oturumda silinen 22 satır geri geldi (yazılı tuzak,
           üçüncü kez)
+
+4.6AJ ✅ SİLİNEN ÜRÜN SEPETTE KALINCA — 1000 test
+      BİLDİRİLEN: "ürünü panelden sildim, sepette 'variant uuid
+      zorunludur' hatası aldım, ürün üstü silik ve isimsiz duruyordu"
+
+      ⚠ ÖLÇÜLEN BEDEL DAHA AĞIR: müşteri o satırı ÇIKARAMIYORDU.
+        İKİ bariyer birden:
+          1. ekran value="{{ $satir->variant?->uuid }}" → BOŞ
+          2. satiriBul() whereHas('variant') → silinmiş girmiyor
+        Yani ürünü silen marka müşterinin sepetini çalışamaz hâle
+        getiriyordu
+
+      ★ STRATEJİ DEĞİŞMEDİ ve değişmemeliydi: proje zaten "sessizce
+        silme, işaretle" diyordu ve gerekçesi ekranda yazılıydı
+        ("sessizce silinseydi müşteri ne kaybettiğini bilmezdi").
+        Kırık olan strateji değil, işaretlenen satırın YÖNETİLEBİLİR
+        olmamasıydı
+
+      Uygulanan kural projenin kendi kuralı (1E.6): KAPATAN yol
+      (sepetten çıkarma) silinmişi görür, AÇAN yol görmez
+
+      ✅ CartItem::variant() → withTrashed()
+      ✅ kullanilabilirMi() → AÇIK trashed() kontrolü
+      ✅ CartItem::urunAdi() — silinmiş ürünün adını çözüyor
+      ✅ ekranda "sepetten çıkarabilirsiniz"
+      ⚠ ProductVariant::product() BİLEREK AÇILMADI: o ilişki katalog
+        sorgularının her yerinde, toptan withTrashed silinmiş ürünü
+        vitrinde gösterirdi. İhtiyaç dardı, çözüm de dar
+
+      5 kırma denemesi; 4'ü ilk turda düştü, EN TEHLİKELİSİ DÜŞMEDİ
+      ⚠ trashed() kontrolünü kaldıran deneme hiçbir testi düşürmedi:
+        ürün silindiğinde koruma BAŞKA YERDEN geliyor
+        (product?->status === Active zaten false)
+      ⚠ AMA MARKA TEK VARYANT DA SİLEBİLİYOR (VariantService::sil) —
+        o durumda ürün HAYATTA ve kontrol olmasaydı SİLİNMİŞ VARYANT
+        SATILABİLİRDİ. Kontrol gereksiz değildi, testler onu
+        ölçmüyordu. Varyant-yalnız testi eklenince deneme düştü

@@ -1035,6 +1035,29 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   `AbonelikTest` tek başına koşunca düşüyordu). ⚠️ Belirti dosya yükleme
   sırasına bağlı: tam süitte GÖRÜNMÜYOR.
 
+- **SİLİNEN KAYDIN SEPETTEKİ İZİ YÖNETİLEBİLİR KALMALI — yoksa sepet
+  KİLİTLENİR.** 4.6AJ'de ölçüldü: varyant yumuşak silinince ilişki `null`
+  dönüyor, ekran `value="{{ $satir->variant?->uuid }}"` ile **boş** alan
+  basıyor ve müşteri satırı **çıkaramıyor**; üstelik `satiriBul()`
+  `whereHas('variant')` ile aradığı için ikinci bir bariyer daha var.
+  Kural 1E.6'nın sepet hâli: **kapatan yol** (sepetten çıkarma) silinmişi
+  görmeli, **açan yol** (sepete ekleme, ödemeye geçme) görmemeli.
+  ⚠️ Strateji "sessizce sil" DEĞİL "işaretle": müşterinin sepetinden bir
+  şeyi habersiz çıkarmak "ürünüm nerede" sorusunu doğurur.
+- **BİR İLİŞKİYE `withTrashed()` EKLEMEK ÖRTÜLÜ BİR KORUMAYI KALDIRIR.**
+  Silinmiş kayıt görünür olunca "satılabilir mi" sorusunu cevaplayan kod
+  ona da `true` diyebilir. 4.6AJ'de `kullanilabilirMi()`'ye açık
+  `trashed()` kontrolü eklendi — ⚠️ ve kırma denemesi **tutmadı**, çünkü
+  ürün silindiğinde koruma başka yerden geliyordu
+  (`product?->status === Active` zaten `false`). Gerçek senaryo **tek
+  varyantın silinmesiydi**: orada ürün hayatta ve kontrol olmasaydı
+  silinmiş varyant satılırdı. Ders: bir korumayı ölçen test, o korumanın
+  **tek başına** geçerli olduğu senaryoyu kurmalı.
+- **DAR İHTİYACA DAR ÇÖZÜM.** Sepette silinmiş ürünün ADI gerekiyordu;
+  `ProductVariant::product()` ilişkisine toptan `withTrashed()` eklemek
+  silinmiş ürünün vitrinde görünmesi gibi çok daha geniş bir kapıyı
+  **sessizce** açardı. Model üzerinde dar bir erişimci yazıldı (4.6AJ).
+
 ## Yapı
 
 ```

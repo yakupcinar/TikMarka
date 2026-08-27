@@ -122,7 +122,17 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
-* Vitrinde bir ürünü sepete aldım sonra Panelde ürünü sildim şimdi vitrin sepetinde variant uuid alanı zorunludur diye bir hata aldım, ürün üstü silik bir şekilde isimsiz duruyordu, Bu yaşanabilecek bir durum gerçekte bunu çözmemiz lazım, ama anlamadığım şey şu biz soft delete atmıyor muyuz silerken ne yapıyoruz ne yapmamız doğru araştır e ticaretleri karar verelim.
+* ~~Silinen ürün sepette kalınca "variant uuid zorunludur" hatası~~ → **4.6AJ'de kapandı**
+
+> **Sorunun cevabı: evet, soft delete atıyoruz** — ürün de varyant da yumuşak
+> siliniyor. Kırık olan silme değil, silinmiş satırın **yönetilemez** olmasıydı:
+> ekran boş bir `variant_uuid` basıyordu, yani **satırı sepetten
+> çıkaramıyordun**. Sepet kilitleniyordu.
+>
+> **Strateji değişmedi ve değişmemeliydi.** Büyük yüzeyler de ürünü sepetten
+> sessizce silmiyor, "artık satışta değil" diye işaretliyor — sessiz silme
+> "ürünüm nerede" sorusunu doğuruyor. Artık satır adıyla görünüyor,
+> çıkarılabiliyor ve satılamıyor.
 
 * Yeni ürün açtım adı "a" 2 varyant verdim depolaması farklı fiyatları 50 100 olacak şekilde ana sayfaya baktım ürünün fiyatı 50 diye gözüküyor bence bu mantıklı sonuçta ürünün en düşük depolu hali öyle; sonra ürüne tıkladım ve içindeki deposu büyük olana tıkladım fiyat hala 50 gösterdi ama fiyatı 100 tl bu fiyat tıkladığım varyanta göre fiyatı alsın standart ana sayfada en ucuz varyantı göstersin.
 
