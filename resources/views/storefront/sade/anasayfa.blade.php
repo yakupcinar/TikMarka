@@ -18,6 +18,24 @@
         </p>
     @endif
 
+    {{--
+        ★ BÖLÜMLER (B1) — tam katalogdan ÖNCE.
+
+        ⚠️ Bölümler seçilmiş; altındaki liste her şey. Sıra ters olsaydı
+        müşteri önce 24 ürünlük düz listeyi görür, seçilmiş bölümler
+        sayfanın dibinde kalırdı.
+
+        ⚠️ Arama varsa `$bolumler` boş geliyor (controller'da): müşteri
+        bir şey aradıysa ekranın cevabı o olmalı.
+    --}}
+    @if (! empty($bolumler))
+        @include('storefront.partials.anasayfa-bolumleri')
+
+        {{-- ⚠️ Alttaki listenin NE OLDUĞU söyleniyor: başlıksız bırakılsaydı
+             müşteri bölümlerin devamı sanırdı. --}}
+        <h2 class="bolum-baslik">Tüm ürünler</h2>
+    @endif
+
     @if ($urunler->isEmpty())
         <p class="bos">
             @if ($arama)

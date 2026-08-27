@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AK BİTTİ — ödeme ekranı kendini yeniliyor ──────┐
+┌─ YOL HARİTASI ──────── şu an: B1 BİTTİ — ana sayfa bölümlere ayrıldı  ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6759,6 +6759,86 @@ sayaç 12 yapıldı     → yenileme DURDU, "Onay hâlâ gelmedi" çıktı,
 ```
 
 **1005 test.**
+
+---
+
+### B1 — ana sayfa bölümleri
+
+**İstenen:** *"Ana sayfadaki ürünler direkt her kullanıcı önüne konmuş;
+bir algoritma mantığı yapalım — sizin ilginizi çekebilecekler, popüler
+ürünler (en çok tıklanan), yeni gelenler."*
+
+Ana sayfa bugüne kadar **tek düz listeydi** (24 ürün). Müşteri neye
+baktığını bilmiyordu: bu ürünler neden burada, hangisi yeni, hangisi
+tutuyor?
+
+**Dört bölüm:** Sizin için seçtiklerimiz · Şu sıralar popüler · Çok
+satanlar · Yeni gelenler. Altında "Tüm ürünler" başlığıyla mevcut liste.
+
+> ★ **BU BLOĞUN ASIL KARARI ALGORİTMA DEĞİL, EŞİKLER.**
+>
+> Kod yazmadan önce veri ölçüldü:
+>
+> ```
+> görüntüleme olayı              20
+> müşteriye bağlı görüntüleme     1
+> satılabilir ürün               23
+> son 30 günde eklenen ürün      23     ← katalogun TAMAMI
+> ```
+>
+> Eşiksiz kurulsaydı **"en çok tıklanan" tek bir tıklamayla popüler ürün
+> ilan ederdi** ve **"yeni gelenler" katalogun tamamını gösterirdi** —
+> müşteri aynı ürünleri iki kez görürdü. İkisi de yanlış bilgi.
+>
+> 4.6F'nin dersinin uygulaması: *hesabı doğru ama sonucu saçma olan
+> sayıyı gösterme.* Buradaki karşılığı: **verisi olmayan bölüm hiç
+> çizilmez.**
+
+| Bölüm | Eşik | Kaynak |
+|---|---|---|
+| Sizin için | ≥3 etkileşim, giriş yapmış | olaylar + siparişler |
+| Popüler | ≥50 görüntüleme (30 gün) | olaylar |
+| Çok satanlar | ≥4 ürün | `order_items` (mevcut sorgu) |
+| Yeni gelenler | pencere DIŞINDA da ürün olmalı | `products.created_at` |
+
+⚠️ **BÖLÜMLER ARASI TEKRAR ENGELLENMİYOR — bilerek.** Bir ürün hem
+popüler hem çok satan olabilir; "çok satanlar"dan gerçek en çok satanı,
+başka bölümde geçtiği için çıkarmak **başlığı yalan yapardı**.
+
+⚠️ **KİŞİSEL BÖLÜM ÖNBELLEĞE KONMUYOR.** Ortak önbelleğe konsaydı bir
+müşterinin önerileri **başkasına** gösterilirdi — çok kiracılıkta değil,
+aynı marka içinde müşteriler arası sızma. Öteki üç bölüm 5 dakika
+önbellekli ve yalnızca **kimlikler** saklanıyor (model değil).
+
+⚠️ **ARAMA SIRASINDA BÖLÜM YOK.** Müşteri bir şey aradıysa ekranın
+cevabı o olmalı; bölümler sonucun altına konsaydı sonuç kaybolur,
+üstüne konsaydı müşteri aradığını bulamazdı.
+
+⚠️ **İKİ DÜZEN DE ORTAK PARÇADAN** (`partials/anasayfa-bolumleri`).
+4.6A'da varyant seçicisi yalnızca `sade`'ye eklenmiş ve öteki düzeni
+seçen markanın müşterisinde **hiç görünmemişti**.
+
+**Altı kırma denemesi; beşi ilk turda düştü, biri DÜŞMEDİ.**
+
+> ⚠️ "Az geçmişli müşteriye öneri yapma" eşiğini kaldıran deneme hiçbir
+> testi düşürmedi. Sebep 4.6AJ'dekiyle aynı aile: **test ürünlerinin
+> kategorisi yoktu**, yani öneri zaten "kategori bulunamadı" kolundan boş
+> dönüyordu. Koruma eşikten değil **veri eksikliğinden** geliyordu.
+> Ürünlere kategori verilince eşik tek başına sınanabildi ve deneme
+> düştü.
+
+DOĞRULANDI (gerçek marka, gerçek veri):
+
+```
+Çok satanlar     ✅ çizildi   (20 ödenmiş sipariş satırı var)
+Şu sıralar popüler  ⊘ çizilmedi  (20 görüntüleme, eşik 50)
+Yeni gelenler       ⊘ çizilmedi  (katalogun tamamı yeni)
+Sizin için          ⊘ çizilmedi  (misafir)
+```
+
+Yani eşikler gerçek veride de tasarlandığı gibi davranıyor.
+
+**1013 test.**
 
 ---
 

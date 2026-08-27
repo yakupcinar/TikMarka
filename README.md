@@ -208,7 +208,17 @@ veya dağıtım için izin gerekir.
 
 * Lazy Loading (Tembel Yükleme): Ana sayfada çok fazla ürün listeleneceği için aşağı kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını uçurur.
 
-* Ana sayfadaki ürünler direkt her kullanıcı önüne konmuş bir algoritma mantığı yapalım sizin ilginizi çekebilecekler, popüler ürünler(en çok tıklanan ürünler), yeni gelen ürünler, etc. yani ana sayfa yapalım e ticaret applerinde yaptıkları gibi.
+* ~~Ana sayfaya algoritma: ilginizi çekebilecekler, popüler, yeni gelenler~~ → **B1'de kapandı**
+
+> Dört bölüm eklendi: **Sizin için seçtiklerimiz · Şu sıralar popüler · Çok
+> satanlar · Yeni gelenler**, altında "Tüm ürünler".
+>
+> ⚠️ **Asıl karar algoritma değil eşikler oldu.** Ölçtüm: markada 20
+> görüntüleme olayı vardı ve ürünlerin **tamamı** son 30 günde eklenmişti.
+> Eşiksiz kurulsaydı "en çok tıklanan" **tek bir tıklamayı** popüler ilan
+> eder, "yeni gelenler" ise **katalogun tamamını** gösterirdi. Artık verisi
+> olmayan bölüm **hiç çizilmiyor** — şu an gerçek markada yalnızca "Çok
+> satanlar" çıkıyor, ötekiler veri biriktikçe kendiliğinden açılacak.
 
 
 

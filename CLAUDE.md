@@ -1089,6 +1089,24 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   "worker'ı derlemeden sonra başlatalım" ÇÖZÜM DEĞİL: sorun ilk açılış
   değil, worker'ın saatlerce ayakta kalması.
 
+- **ÖNERİ/POPÜLERLİK BÖLÜMÜ EŞİKSİZ KURULMAZ.** Az veriyle üretilen liste
+  popülerlik değil **gürültü** ölçüyor: B1'de ölçüldü, markada 20
+  görüntüleme vardı ve eşiksiz bir "en çok tıklanan" bölümü **tek
+  tıklamayı** popüler ilan ederdi. Aynı şekilde katalogun tamamı son 30
+  günde eklendiyse "yeni gelenler" **katalogun kendisidir** ve müşteri
+  aynı ürünleri iki kez görür. Kural: **verisi olmayan bölüm hiç
+  çizilmez** — boş göstermek de yanlış göstermek kadar kötü değil, ama
+  yanlış göstermek en kötüsü.
+- **KİŞİYE ÖZEL LİSTE ORTAK ÖNBELLEĞE KONMAZ.** B1'de kırma denemesiyle
+  ölçüldü: kişisel bölüm `Cache::remember` ile ortak anahtara konsaydı
+  **bir müşterinin önerileri başkasına** gösterilirdi. Bu çok kiracılık
+  sızması değil, **aynı marka içinde müşteriler arası** sızma — kiracı
+  öneki onu engellemiyor.
+- **BÖLÜMLER ARASI TEKRARI ENGELLEMEK BAŞLIĞI YALAN YAPABİLİR.** "Çok
+  satanlar"dan gerçek en çok satanı, başka bölümde geçtiği için çıkarmak
+  o başlığın vaadini bozar (B1). Tekrar bir kusur değil; küçük katalogda
+  rahatsız ediyorsa çözüm eşikleri yükseltmek, listeyi çarpıtmak değil.
+
 ## Yapı
 
 ```

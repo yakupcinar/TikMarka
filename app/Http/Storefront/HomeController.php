@@ -2,10 +2,12 @@
 
 namespace App\Http\Storefront;
 
+use App\Domain\Catalog\HomeSections;
 use App\Domain\Catalog\ProductQuery;
 use App\Domain\Search\ProductSearch;
 use App\Domain\Settings\ThemeSettings;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -39,6 +41,7 @@ class HomeController extends Controller
         private readonly ProductQuery $sorgu,
         private readonly ProductSearch $arama,
         private readonly ThemeSettings $tema,
+        private readonly HomeSections $bolumler,
     ) {}
 
     public function __invoke(Request $istek): View
@@ -79,8 +82,26 @@ class HomeController extends Controller
             default => 'storefront.sade.anasayfa',
         };
 
+        /*
+        | ★ ANA SAYFA BÖLÜMLERİ (B1) — arama YOKKEN.
+        |
+        | ⚠️ Arama sırasında bölüm çizilmiyor: müşteri bir şey aradıysa
+        | ekranın cevabı o olmalı. "Popüler" ve "yeni gelenler" arama
+        | sonucunun altına konsaydı sonuç kaybolur, üstüne konsaydı
+        | müşteri aradığını bulamaz.
+        |
+        | ⚠️ GUARD AÇIKÇA (4.5I): sayfa katmanında kimlik OTURUMDA.
+        | `$istek->user()` yazılsaydı varsayılan guard (sanctum) sorulur,
+        | `null` döner ve giriş yapmış müşteri MİSAFİR sayılırdı — yani
+        | "sizin için seçtiklerimiz" hiç kimseye çıkmazdı.
+        */
+        $musteri = $istek->user('customer-web');
+
         return view($gorunum, [
             'urunler' => $urunler,
+            'bolumler' => $aramaVar
+                ? []
+                : $this->bolumler->bolumler($musteri instanceof Customer ? $musteri : null),
             'arama' => $aramaVar ? trim((string) $kelime) : null,
         ]);
     }

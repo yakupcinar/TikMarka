@@ -396,6 +396,26 @@
         .bos { padding: 64px 0; text-align: center; color: var(--soluk); }
 
         /* GÖRSEL İYİLEŞTİRME (4.5F) — yeni yapı değil, mevcut yapının cilası */
+        /*
+        | ── ANA SAYFA BÖLÜMLERİ (B1) ─────────────────────────────────
+        |
+        | ⚠️ Başlık ÖLÇEKTEN geliyor (`--boyut-xl`, 4.6AH); serbest bir
+        | piksel değeri yazılsaydı vitrinin altı basamaklı ölçeği yedi
+        | olurdu ve hiyerarşi yeniden bulanırdı.
+        */
+        .bolum { margin-top: 40px; }
+
+        .bolum-baslik {
+            font-size: var(--boyut-xl);
+            font-weight: 700;
+            line-height: 1.25;
+            margin: 0 0 16px;
+        }
+
+        /* ⚠️ İlk bölüm üstten boşluk almıyor: sayfanın tepesinde
+           gereksiz bir boşluk kalırdı. */
+        .bolum:first-of-type { margin-top: 24px; }
+
         .kart { transition: opacity .15s; }
 
         /*

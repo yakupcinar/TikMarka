@@ -3503,3 +3503,45 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
         sayfa açıldı → "Ödemeniz işleniyor"
         ~20 sn sonra sayaç 4 (dört kez kendini yenilemiş)
         sayaç 12 → yenileme DURDU, açıklama çıktı, sayaç temizlendi
+
+B1 ✅ ANA SAYFA BÖLÜMLERİ — 1013 test
+      İSTENEN: "ana sayfadaki ürünler direkt önüne konmuş; ilginizi
+      çekebilecekler, popüler (en çok tıklanan), yeni gelenler olsun"
+
+      Ana sayfa tek düz listeydi (24 ürün). Müşteri neye baktığını
+      bilmiyordu.
+
+      ★ ASIL KARAR ALGORİTMA DEĞİL, EŞİKLER. Kod yazmadan ölçüldü:
+        görüntüleme olayı              20
+        müşteriye bağlı görüntüleme     1
+        son 30 günde eklenen ürün      23   ← katalogun TAMAMI
+        Eşiksiz kurulsaydı "en çok tıklanan" TEK TIKLAMAYLA popüler ürün
+        ilan ederdi, "yeni gelenler" katalogun tamamını gösterirdi.
+        4.6F'nin dersi: hesabı doğru ama sonucu saçma olan sayıyı
+        gösterme → VERİSİ OLMAYAN BÖLÜM HİÇ ÇİZİLMEZ
+
+      Sizin için    ≥3 etkileşim + giriş  · olaylar + siparişler
+      Popüler       ≥50 görüntüleme/30gün · olaylar
+      Çok satanlar  ≥4 ürün               · order_items (mevcut sorgu)
+      Yeni gelenler pencere DIŞINDA da ürün olmalı
+
+      ⚠ BÖLÜMLER ARASI TEKRAR ENGELLENMİYOR (bilerek): "çok satanlar"dan
+        gerçek en çok satanı başka bölümde geçti diye çıkarmak BAŞLIĞI
+        YALAN yapardı
+      ⚠ KİŞİSEL BÖLÜM ÖNBELLEĞE KONMUYOR: ortak önbellekte bir
+        müşterinin önerileri BAŞKASINA gösterilirdi (aynı marka içinde
+        müşteriler arası sızma). Öteki üçü 5 dk önbellekli, yalnızca
+        KİMLİKLER saklanıyor
+      ⚠ ARAMA SIRASINDA BÖLÜM YOK: müşteri bir şey aradıysa ekranın
+        cevabı O olmalı
+      ⚠ İKİ DÜZEN DE ORTAK PARÇADAN (4.6A'nın dersi)
+
+      6 kırma denemesi; 5'i ilk turda düştü, BİRİ DÜŞMEDİ
+      ⚠ "az geçmişli müşteriye öneri yapma" eşiğini kaldıran deneme
+        hiçbir testi düşürmedi: test ürünlerinin KATEGORİSİ YOKTU, yani
+        koruma eşikten değil veri eksikliğinden geliyordu (4.6AJ'nin
+        aynısı). Kategori verilince eşik tek başına sınandı ve düştü
+
+      DOĞRULANDI (gerçek marka): Çok satanlar çizildi · popüler
+      çizilmedi (20 görüntüleme, eşik 50) · yeni gelenler çizilmedi
+      (katalogun tamamı yeni) · sizin için çizilmedi (misafir)
