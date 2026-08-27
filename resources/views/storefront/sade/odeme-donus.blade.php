@@ -34,6 +34,15 @@
     </script>
 
 
+    {{-- ⚠️ TERMİNAL DURUMDA SAYAÇ TEMİZLENİYOR. Kalsaydı müşteri aynı
+         tarayıcı oturumunda ikinci bir ödeme yaptığında sayaç dolu
+         başlar ve o sipariş için otomatik yenileme HİÇ çalışmazdı. --}}
+    @if ($durum !== 'processing')
+        <script>
+            try { window.sessionStorage.removeItem('tikmarka-odeme-bekleme-{{ $siparis->uuid }}') } catch (e) {}
+        </script>
+    @endif
+
     <div class="sonuc">
         @if ($durum === 'success')
             <h1>Siparişiniz alındı</h1>
@@ -63,10 +72,71 @@
             --}}
             <h1>Ödemeniz işleniyor</h1>
             <p class="siparis-no">Sipariş numaranız: <strong>{{ $siparis->order_number }}</strong></p>
-            <p>
+
+            {{--
+                ★ OTOMATİK YENİLEME (4.6AK) — bildirilen kusur buydu.
+
+                Müşteri "ödemeniz işleniyor" ekranında bekliyor, hiçbir şey
+                olmuyor ve ancak sayfayı ELLE yenileyince sonucu görüyordu.
+                Sağlayıcı bildirimi 10-15 saniye sürüyor; o aralıkta ekran
+                ölü kalıyordu ve müşteri ödemesinin akıbetini bilmiyordu.
+            --}}
+            <p id="bekliyor-notu">
                 Bankanızdan onay bekliyoruz. Bu birkaç saniye sürebilir —
-                sayfayı yenileyerek durumu görebilirsiniz.
+                sayfa kendini yenileyecek.
             </p>
+
+            {{-- ⚠️ Süre dolunca gösterilecek: sipariş KAYBOLMADI, yalnızca
+                 onay gecikti. Müşterinin elinde sipariş numarası var. --}}
+            <p id="gecikti-notu" hidden>
+                Onay hâlâ gelmedi. <strong>Siparişiniz kaydedildi</strong> ve
+                numarası yukarıda; ödeme onaylandığında e-posta göndereceğiz.
+                Sayfayı yenileyerek de bakabilirsiniz.
+            </p>
+
+            <script>
+                (function () {
+                    /*
+                     | ⚠️ SAYAÇ ADRESE KONAMAZ. Bu sayfanın adresi İMZALI
+                     | ve imza sorgu dizesini de kapsıyor: `?deneme=3`
+                     | eklemek imzayı geçersiz kılar ve müşteri 403 görür.
+                     | Bu yüzden sayaç `sessionStorage`'da.
+                     */
+                    var ANAHTAR = 'tikmarka-odeme-bekleme-{{ $siparis->uuid }}'
+                    var EN_COK = 12        // 12 × 5 sn ≈ 1 dakika
+                    var ARALIK = 5000
+
+                    var depo = null
+                    try { depo = window.sessionStorage } catch (e) { depo = null }
+
+                    /*
+                     | ⚠️ DEPO YOKSA HİÇ YENİLEME (gizli sekme, kapalı
+                     | depolama). Sayaç tutulamayınca sayfa SONSUZA KADAR
+                     | kendini yenilerdi — sunucuya da müşteriye de zarar.
+                     | Bu durumda elle yenileme notu gösteriliyor.
+                     */
+                    if (depo === null) {
+                        document.getElementById('bekliyor-notu').hidden = true
+                        document.getElementById('gecikti-notu').hidden = false
+                        return
+                    }
+
+                    var sayi = parseInt(depo.getItem(ANAHTAR) || '0', 10)
+                    if (isNaN(sayi) || sayi < 0) sayi = 0
+
+                    if (sayi >= EN_COK) {
+                        depo.removeItem(ANAHTAR)
+                        document.getElementById('bekliyor-notu').hidden = true
+                        document.getElementById('gecikti-notu').hidden = false
+                        return
+                    }
+
+                    setTimeout(function () {
+                        depo.setItem(ANAHTAR, String(sayi + 1))
+                        window.location.reload()
+                    }, ARALIK)
+                })()
+            </script>
         @endif
 
         {{--

@@ -981,3 +981,23 @@ function platformTokeni(string $eposta = 'yonetici@tikmarka.test'): string
 
     return $kullanici->createToken('test')->plainTextToken;
 }
+
+/**
+ * Sonuç sayfasının HTML'i — YORUMLAR AYIKLANMIŞ.
+ *
+ * ⚠️ BURADA OLMAK ZORUNDA: `test()` kullanıyor ve statik analiz Pest'in
+ * bağlamasını yalnızca `tests/Pest.php` için görüyor (`phpstan.neon`
+ * istisnası o dosyaya tanımlı). Başka yerde *"call to an undefined
+ * method"* veriyor — tek dosya kullansa bile kural teknik olarak zorunlu.
+ *
+ * ⚠️ Bu ayıklama bir yanlış eşleşmeden doğdu: sayfadaki JS yorumu
+ * tuzağı ANLATIRKEN `?deneme=3` yazıyor ve "adrese sayaç konmuyor"
+ * iddiası kendi açıklamasına takılıyordu. 4.6AE'de iki kırma denemesi
+ * de aynı sebeple tutmamıştı — iddia kuralı anlatan metni okuyor.
+ */
+function sonucKodu(Order $siparis): string
+{
+    $html = (string) test()->get(sonucAdresi($siparis))->getContent();
+
+    return (string) preg_replace('!/\*.*?\*/!s', '', $html);
+}

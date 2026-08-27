@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AJ BİTTİ — sepet artık kilitlenmiyor ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AK BİTTİ — ödeme ekranı kendini yeniliyor ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6707,6 +6707,58 @@ görünmesi gibi çok daha geniş bir kapıyı sessizce açardı. İhtiyaç dard
 > silme testi eklendikten sonra deneme düştü.
 
 **1000 test.**
+
+---
+
+### 4.6AK — ödeme beklerken ekran ölü kalıyordu
+
+**Bildirilen:** *"Ödemeyi yapıp siparişi veriyorum, çıkan ekranda
+bekliyorum, sonra sayfayı yeniledim — o zaman ödeme başarılı dedi."*
+
+**Sebep 1E.7.3'te zaten ölçülmüştü:** sağlayıcı ilk bildirimi 10-15
+saniye sonra atıyor, müşteri sonuç sayfasına 3 saniyede varıyor. O
+aralıkta ekran **ölü** kalıyordu — hiçbir şey olmuyor, müşteri
+ödemesinin akıbetini bilmiyor ve ancak **elle yenileyince** öğreniyordu.
+
+`processing` dalına **sınırlı** otomatik yenileme eklendi: 5 saniyede
+bir, en çok 12 kez (≈1 dakika), sonra duruyor ve "onay hâlâ gelmedi,
+siparişiniz kaydedildi" diyor.
+
+⚠️ **SAYAÇ ADRESE KONAMAZ — ve bu tuzak koda yazıldı.** Bu sayfanın
+adresi **imzalı** ve imza sorgu dizesini de kapsıyor: `?deneme=3`
+eklemek imzayı geçersiz kılar ve müşteri ödemesinin sonucu yerine
+**403** görür. Sayaç `sessionStorage`'da.
+
+⚠️ **DEPO YOKSA HİÇ YENİLEME.** Gizli sekmede `sessionStorage` istisna
+atabiliyor; sayaç tutulamayınca sayfa **sonsuza kadar** kendini
+yenilerdi. O durumda otomatik yenileme hiç başlamıyor, elle yenileme
+notu çıkıyor.
+
+⚠️ **TERMİNAL DURUMDA SAYAÇ TEMİZLENİYOR.** Kalsaydı müşteri aynı
+tarayıcı oturumunda ikinci bir ödeme yaptığında sayaç dolu başlar ve o
+sipariş için otomatik yenileme **hiç çalışmazdı**.
+
+**Beş kırma denemesi, beşi de düştü** (yenilemeyi kaldır · sınırı kaldır
+· depo korumasını kaldır · sayacı temizleme · sayacı imzalı adrese koy).
+
+⚠️ Bir iddia ilk turda **kendi açıklamasına takıldı**: "sayaç adrese
+konmuyor" testi, tuzağı ANLATAN JS yorumundaki `?deneme=3` metnini
+yakalıyordu. 4.6AE'deki dersin aynısı; yorumlar ayıklandı.
+
+⚠️ `sonucKodu()` yardımcısı `test()` kullandığı için `tests/Pest.php`'ye
+taşındı — tek dosya kullansa bile kural teknik olarak zorunlu (statik
+analiz Pest bağlamasını yalnızca orada görüyor).
+
+DOĞRULANDI (gerçek tarayıcı, tünel, bekleyen gerçek sipariş):
+
+```
+sayfa açıldı         → "Ödemeniz işleniyor"
+~20 sn sonra sayaç   → 4   (dört kez kendini yenilemiş)
+sayaç 12 yapıldı     → yenileme DURDU, "Onay hâlâ gelmedi" çıktı,
+                        sayaç temizlendi
+```
+
+**1005 test.**
 
 ---
 

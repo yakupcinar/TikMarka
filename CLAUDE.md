@@ -1058,6 +1058,19 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   silinmiş ürünün vitrinde görünmesi gibi çok daha geniş bir kapıyı
   **sessizce** açardı. Model üzerinde dar bir erişimci yazıldı (4.6AJ).
 
+- **İMZALI ADRESE SORGU PARAMETRESİ EKLENEMEZ.** İmza sorgu dizesini de
+  kapsıyor; `?deneme=3` eklemek imzayı geçersiz kılar ve kullanıcı
+  **403** görür. 4.6AK'de otomatik yenileme sayacı bu yüzden adrese değil
+  `sessionStorage`'a kondu. ⚠️ Aynı sebeple imzalı bir adrese analitik
+  parametresi, dil seçimi ya da UTM etiketi de eklenemez.
+- **KENDİNİ YENİLEYEN EKRANIN SINIRI VE DEPO KORUMASI OLMALI.** Ödeme
+  kalıcı olarak `pending` kalabiliyor; sınırsız yenileme müşterinin
+  sekmesini sonsuza kadar döndürür. ⚠️ Sayaç `sessionStorage`'daysa
+  **gizli sekmede istisna atabilir** — o durumda sayaç tutulamaz ve sayfa
+  yine sonsuza kadar yenilenir. Depo yoksa otomatik yenileme **hiç
+  başlamamalı**. ⚠️ Terminal durumda sayaç temizlenmeli, yoksa aynı
+  tarayıcı oturumundaki İKİNCİ ödemede yenileme hiç çalışmaz (4.6AK).
+
 ## Yapı
 
 ```

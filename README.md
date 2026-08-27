@@ -147,8 +147,9 @@ veya dağıtım için izin gerekir.
 > ⚠️ İkincisi bildirilenden ağırdı: sayfa `api` grubunda olduğu için oturum
 > hiç yoktu ve **"Siparişimi görüntüle" düğmesi kimseye çıkmıyordu**.
 >
-> ⏳ **Ödeme onayı için sayfayı yenileme ihtiyacı ayrı bir madde** — sağlayıcı
-> bildirimi 10–15 saniye sürüyor ve ekran kendini tazelemiyor.
+> ✅ **Ödeme onayı için elle yenileme de kapandı (4.6AK):** "Ödemeniz
+> işleniyor" ekranı artık kendini yeniliyor (5 sn'de bir, en çok 1 dakika),
+> sonra "onay hâlâ gelmedi, siparişiniz kaydedildi" diyor.
 
 * ~~UI/UX yenilemesi (modern SaaS estetiği)~~ → **4.6AG'de kapandı**
 

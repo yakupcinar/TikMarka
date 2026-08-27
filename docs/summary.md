@@ -3472,3 +3472,34 @@ FAZ 5 SIRADA — kargo firmaları · e-fatura/e-arşiv
         o durumda ürün HAYATTA ve kontrol olmasaydı SİLİNMİŞ VARYANT
         SATILABİLİRDİ. Kontrol gereksiz değildi, testler onu
         ölçmüyordu. Varyant-yalnız testi eklenince deneme düştü
+
+4.6AK ✅ ÖDEME BEKLERKEN EKRAN ÖLÜ KALIYORDU — 1005 test
+      BİLDİRİLEN: "ödemeyi yaptım, ekranda bekledim, sonra sayfayı
+      yeniledim o zaman başarılı dedi"
+
+      SEBEP 1E.7.3'te ZATEN ÖLÇÜLMÜŞTÜ: sağlayıcı ilk bildirimi 10-15
+      sn sonra atıyor, müşteri ekrana 3 sn'de varıyor. O aralıkta ekran
+      ölü kalıyordu ve müşteri ancak ELLE yenileyince öğreniyordu.
+
+      ✅ processing dalına SINIRLI otomatik yenileme: 5 sn'de bir,
+        en çok 12 kez (~1 dk), sonra "onay hâlâ gelmedi" diyor
+
+      ⚠ SAYAÇ ADRESE KONAMAZ: sayfanın adresi İMZALI ve imza sorgu
+        dizesini de kapsıyor — ?deneme=3 eklemek imzayı geçersiz kılar
+        ve müşteri ödemesinin sonucu yerine 403 görür. sessionStorage
+      ⚠ DEPO YOKSA HİÇ YENİLEME: gizli sekmede sessionStorage istisna
+        atabiliyor; sayaç tutulamayınca sayfa SONSUZA KADAR yenilerdi
+      ⚠ TERMİNAL DURUMDA SAYAÇ TEMİZLENİYOR: kalsaydı aynı oturumdaki
+        İKİNCİ ödemede sayaç dolu başlar ve yenileme hiç çalışmazdı
+
+      5 kırma denemesi, 5'i de düştü
+      ⚠ Bir iddia ilk turda KENDİ AÇIKLAMASINA takıldı: "sayaç adrese
+        konmuyor" testi, tuzağı ANLATAN JS yorumundaki ?deneme=3'ü
+        yakalıyordu (4.6AE'nin aynısı) — yorumlar ayıklandı
+      ⚠ sonucKodu() test() kullandığı için tests/Pest.php'ye taşındı:
+        tek dosya kullansa bile kural teknik olarak zorunlu
+
+      DOĞRULANDI (gerçek tarayıcı, bekleyen gerçek sipariş):
+        sayfa açıldı → "Ödemeniz işleniyor"
+        ~20 sn sonra sayaç 4 (dört kez kendini yenilemiş)
+        sayaç 12 → yenileme DURDU, açıklama çıktı, sayaç temizlendi
