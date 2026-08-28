@@ -144,7 +144,24 @@ veya dağıtım için izin gerekir.
 > ekleyemiyorum" uyarısı da hiç çıkmıyordu.
 
 
-* Mailime bu düştü ama neden bu düştü anlamadım işlemleri mi sanki zaten maili doğru kaydettiğim hesaptan yapıyorum bu şaşırttı şimdi: "Address not found Your message wasn't delivered to vazgec@marka-a.localhost because the domain marka-a.localhost couldn't be found. Check for typos or unnecessary spaces and try again"
+* ~~"Address not found: vazgec@marka-a.localhost" maili neden düştü?~~ → **cevaplandı**
+
+> **Hesabında sorun yok.** Test siparişini `vazgec@marka-a.localhost` adresiyle
+> verdin; sistem o adrese **gerçekten** posta gönderdi, Gmail
+> `marka-a.localhost` alan adını DNS'te aradı ve bulamadı (NXDOMAIN), iade
+> bildirimi de gönderen hesaba — yani sana — düştü. Alıcı adresi sahteydi,
+> gönderen değil.
+>
+> ⚠️ **Ama altında gerçek bir eksik var:** `DeliverableEmail` kuralı (4.5C)
+> `.localhost` ve `.test` uzantılarını **geçiriyor** — ölçüldü.
+> `.localhost` · `.test` · `.invalid` · `.example` RFC 6761'de **asla
+> çözülmemek üzere** ayrılmış; yani bu adreslere posta göndermek tanımı
+> gereği boşa gidiyor ve her denemede gerçek Gmail hesabında bir iade
+> birikiyor. Zamanla gönderen itibarını (sender reputation) düşürür.
+>
+> Karar: **kuralı sıkılaştırmak değil**, postayı göndermeden önce ayrılmış
+> uzantıları elemek. Doğrulama geçirmeye devam etsin (test verisi
+> kırılmasın), ama çözülemeyeceği kesin olan adrese posta çıkmasın.
 
 * ~~Panelde sayfalama "pagination next" yazıyor, sadece sayılar istiyorum~~ → **4.6F ve 4.6AI'de kapandı** (çeviri dosyası hiç yokmuş; sayfalama artık yalnızca sayı ve ortak parçada)
 
@@ -262,7 +279,15 @@ veya dağıtım için izin gerekir.
 
 **Merkez yönetim**
 
-* ⚠️ **Geliştirmede** yeni marka alan adı hâlâ `docker/Caddyfile`'a elle ekleniyor — Let's Encrypt `.localhost` adreslerine sertifika veremediği için on-demand TLS yerelde devreye giremiyor. **Üretimde gerekmiyor** (4.5N).
+* [x] ~~Geliştirmede yeni marka alan adı `docker/Caddyfile`'a elle ekleniyor~~ → **4.6Z'de kapandı**
+
+> Caddyfile artık joker kullanıyor (`*.localhost, localhost`) ve gerçek alan
+> adları için `on_demand_tls` kurulu. Ölçüldü: `samil.localhost` ve
+> `marka-b.localhost` Caddyfile'da **hiç geçmediği hâlde** 200 dönüyor.
+>
+> ⚠️ İki belirtiyi karıştırma: **503** mağazanın kapalı olması,
+> **000** alan adının Caddy tarafından tanınmaması. İkincisinde bağlantı
+> TLS el sıkışmasına bile gelmiyor.
 
 ### Fikirler → **Faz 4.6 olarak planlandı** (`PLAN.md`)
 
@@ -270,9 +295,9 @@ veya dağıtım için izin gerekir.
 |---|---|---|
 | 1 | ~~Varyantlar sıralı kutucuklardan seçilsin…~~ → **4.6A'da yazıldı, 4.6A.1'de İKİNCİ DÜZENE de uygulandı** | **4.6A** |
 | 2 | ~~Ürün sayfasının altında benzer ürünler, beğenilenler~~ → **4.6E'de kapandı** ("beğenilenler" yerine **çok satanlar** — beğeni verisi 4.6F'de gelecek) | **4.6E** |
-| 3 | Ürüne tıklamayı sayma, kullanıcı başına veri; panelde bölüm | **4.6F** |
+| 3 | ~~Ürüne tıklamayı sayma, kullanıcı başına veri; panelde bölüm~~ → **4.6F'de kapandı** (kusur da çıktı: sayfa hiç olay yazmıyormuş) | **4.6F** |
 | 4 | ~~Vitrinde ürün favorileme~~ → **4.6D'de kapandı** | **4.6D** |
-| 5 | Büyük e-ticaret sitelerinin niş özelliklerini tespit et | **4.6G** |
+| 5 | ~~Büyük e-ticaret sitelerinin niş özelliklerini tespit et~~ → **4.6G'de kapandı** — 9 madde karara bağlandı, **dördü "yapma"** | **4.6G** |
 
 **Planlama sırasında ölçümle bulunan iki eksik de fazın içine alındı:**
 
@@ -281,10 +306,13 @@ veya dağıtım için izin gerekir.
 | ~~Vitrinde **kategori gezinme sayfası yok**~~ → **4.6B'de kapandı** | **4.6B** |
 | ~~**Yorumlar vitrinde hiç görünmüyor**~~ → **4.6C'de kapandı** | **4.6C** |
 
-> ⚠️ Ayrıca ölçüldü: `ProductViewed` olayı **yalnızca API'den** yazılıyor,
-> vitrin sayfası hiç kaydetmiyor — bugünkü sayılar eksik. Ve
-> `Anonymizer`/`DataExporter` **olayları kapsamıyor**; müşteri başına
-> davranış verisi tutmadan önce KVKK tarafı genişletilmeli (4.6F).
+> ✅ **İkisi de 4.6F'de kapandı.** `ProductViewed` artık vitrin sayfasından
+> da yazılıyor (ölçüldü: 18 görüntülemenin **hiçbiri** müşteriye bağlı
+> değilmiş) ve `Anonymizer`/`DataExporter` olayları kapsıyor.
+>
+> ⚠️ KVKK boşluğu **varsayımsal değildi**: blok başlarken 137 olay
+> kayıtlıydı ve 51'i müşteriye bağlıydı — yani "verimi ver" ve "beni unut"
+> talepleri o an **eksik cevaplanıyordu**.
 
 ---
 

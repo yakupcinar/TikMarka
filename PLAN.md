@@ -8593,6 +8593,55 @@ gölge        açık: var · koyu: none          kart: gölgesiz
 
 ---
 ---
+### B3 — SEO etiketleri  ◀ **SIRADA** *(4.6G'nin tek çıktısı)*
+
+4.6G taraması tek bir iş çıkardı ve o iş bir "rakip özelliği" değil,
+**kendi kararımızın yarım kalmış hâli**.
+
+Proje SEO için üç karar verdi — 4-K1 (sunucuda render), 4-K2 (SSR reddi),
+B2 (gerçek `<a href>`). Ölçüldü:
+
+```
+sitemap.xml            404        rel="canonical"          0
+property="og:*"          0        application/ld+json      0
+robots.txt      varsayılan: panele ve ödemeye bile izin veriyor
+```
+
+| Yapılacak | Neden |
+|---|---|
+| `<link rel="canonical">` | B2 `?sayfa=` ekledi; kopya içerik üretiyor |
+| Open Graph + Twitter kartı | D2C ürünü Instagram/WhatsApp'ta paylaşılıyor, önizleme **boş** |
+| JSON-LD (`Product`, `Offer`) | Arama sonucunda fiyat/stok görünsün |
+| `sitemap.xml` (kiracı başına) | Motor her sayfayı bağlantı takip ederek bulmak zorunda |
+| `robots.txt` daraltma | `/yonetim`, `/sepet`, `/odeme` taranmamalı |
+
+⚠️ **Kiracı başına**: sitemap markanın kendi alan adında ve yalnızca o
+markanın ürünlerini içermeli.
+
+---
+
+### B4 — ayrılmış uzantılara posta gönderilmiyor  *(küçük)*
+
+Kullanıcının *"Address not found"* sorusundan çıktı. Cevap: hesapta sorun
+yok, alıcı adresi (`vazgec@marka-a.localhost`) sahteydi. Ama ölçüm bir
+eksik gösterdi:
+
+⚠️ `DeliverableEmail` (4.5C) `.localhost` ve `.test` uzantılarını
+**geçiriyor**. RFC 6761 bu uzantıları *asla çözülmemek üzere* ayırmış;
+yani bu adreslere posta göndermek tanımı gereği boşa gidiyor ve her
+denemede gerçek Gmail hesabında bir iade birikiyor — zamanla gönderen
+itibarını düşürür.
+
+**Karar: kuralı sıkılaştırma, POSTAYI ELEME.** Doğrulama geçirmeye devam
+etsin (bütün test verisi `@ornek.test` kullanıyor, kırılmasın) ama
+çözülemeyeceği kesin olan adrese posta çıkmasın.
+
+⚠️ DNS sorgusu YOK — liste statik (RFC 6761): `.localhost` · `.test` ·
+`.invalid` · `.example` · `.local`. 4.5C'nin "ödeme akışında ağa
+çıkılmaz" kararı korunuyor.
+
+---
+
 ## Faz 5 — Entegrasyonlar  *(henüz açılmadı)*
 
 Kargo firmaları · e-fatura / e-arşiv
