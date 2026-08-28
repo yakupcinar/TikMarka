@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: B2 BİTTİ — tembel yükleme ve sayfalama ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6G BİTTİ — sırada SEO etiketleri (B3) ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6987,14 +6987,77 @@ sayfa 2   8 kart · bölüm YOK
 
 ---
 
-### 4.6G — Rakip özellik taraması  *(araştırma)*
+### 4.6G — Rakip özellik taraması ✅  *(araştırma — çıktı: liste + karar)*
 
-Hepsiburada · Trendyol · İkas gibi yüzeylerde bizde olmayan niş
-özellikleri çıkarmak ve **karara bağlamak**.
+Hepsiburada · Trendyol · ikas taraması. **Çıktı kod değil karar.**
 
-> ⚠️ Çıktısı kod değil **liste + karar**. K-6/M-2.0'ın sorusu burada da
-> geçerli: *bu problemi gerçekten yaşıyor muyuz, yoksa yaşayabileceğimizi
-> mi düşünüyoruz?*
+> ⚠️ K-6/M-2.0'ın sorusu her maddeye tek tek soruldu: *bu problemi
+> gerçekten yaşıyor muyuz, yoksa yaşayabileceğimizi mi düşünüyoruz?*
+
+**Önce kendi envanterimiz koddan çıkarıldı** — karşılaştırma ezberden
+değil ölçümden. 17 domain alanı, 38 vitrin rotası, 80 panel rotası.
+
+#### Bizde ZATEN VAR (rakiplerin öne çıkardığı şeylerin çoğu)
+
+| Onların vurgusu | Bizdeki karşılığı |
+|---|---|
+| Terk edilmiş sepet otomasyonu | `siparis:terk-hatirlat` (2F) — ⚠️ ama SİPARİŞ, sepet değil |
+| Çapraz satış / ek satış | Benzer ürünler + çok satanlar (4.6E), ana sayfa bölümleri (B1) |
+| Kupon / kampanya | Yüzde · sabit · **ücretsiz kargo** (2A) |
+| İade yönetimi | Tam akış: talep → onay → teslim → para iadesi (2B) |
+| Ürün yorumları | Moderasyonlu, "satın almış mı" kontrollü (2E) |
+| Çok kullanıcılı panel | Rol + izin sistemi (1A.6) |
+| Raporlama | Ürün hunisi: görüntüleme → sepet → satış (4.6F) |
+| Kargo takip | Paket bazlı, takip no + firma (1D.4) |
+
+#### ★ ASIL BULGU: SEO YÜZEYİ KENDİ GEREKÇEMİZİN GERİSİNDE
+
+Bu blok bir "eksik özellik listesi" çıkarmak için açılmıştı; ölçüm bunun
+yerine **kendi kararımızla çelişen** bir boşluk gösterdi.
+
+Proje SEO için üç ayrı karar verdi: vitrin **sunucuda** render ediliyor
+(4-K1), Inertia SSR **reddedildi** (4-K2), ve daha bugün B2'de sonsuz
+kaydırma yerine gerçek `<a href>` seçildi — üçünün de tek gerekçesi
+*"arama motoru sayfayı görebilsin"*. Ama ölçüldü:
+
+```
+sitemap.xml            404   ← hiç yok
+<link rel="canonical">   0   ← ?sayfa= ve ?q= kopya içerik üretiyor
+<meta property="og:*">   0   ← paylaşılan bağlantıda önizleme YOK
+application/ld+json      0   ← ürün/fiyat/stok işaretlemesi yok
+robots.txt             varsayılan: her şeye izin (panel ve ödeme dâhil)
+```
+
+⚠️ **`canonical` eksikliği bugün büyüdü:** B2 `?sayfa=2` adreslerini yeni
+ekledi. Canonical olmadan arama motoru bunları ayrı sayfa sayıyor.
+
+⚠️ **`og:` eksikliği D2C için özellikle ağır:** marka ürününü
+Instagram/WhatsApp'ta paylaşıyor ve önizlemede **hiçbir şey** çıkmıyor.
+Bu bir "niş özellik" değil, D2C'nin ana satış kanalı.
+
+#### Karara bağlanan liste
+
+| # | Özellik | Karar | Gerekçe |
+|---|---|---|---|
+| 1 | **SEO etiketleri** (canonical · og · JSON-LD · sitemap) | ✅ **YAP — sıradaki blok** | Kendi SSR gerekçemizin yarısı boşta duruyor; B2 ile birlikte aciliyeti arttı |
+| 2 | **Terk edilmiş SEPET** (ödemeye gelmeden önce) | ⏸️ Ölçülmeden yapılmaz | Bugün terk edilen *sipariş* toplanıyor. Sepet hatırlatması e-posta ister; misafirin e-postası yok. Önce "kaç misafir sepeti terk ediliyor" ölçülmeli |
+| 3 | **Beden tablosu** | ⏸️ Sonraya | Varyant eksenleri zaten var; tablo bir *içerik* sorunu. Marka bunu ürün açıklamasına yazabiliyor |
+| 4 | **Ürün soru-cevap** | ❌ Yapma | Moderasyon yükü yorumun iki katı ve bizde zaten yorum var. Pazaryerinde anlamlı (satıcı çok), D2C'de marka doğrudan ulaşılabilir |
+| 5 | **SMS bildirimi** | ⏸️ Faz 5 | Dış servis + maliyet + KVKK açık rıza. Kargo entegrasyonuyla aynı blokta anlamlı |
+| 6 | **Manuel sipariş oluşturma** (panelden) | ⏸️ Sonraya | Telefonla sipariş alan marka için gerçek; ama stok/ödeme/sözleşme akışını panelden tekrar kurmak demek. Talep gelince |
+| 7 | **Pazaryeri entegrasyonu** | ❌ Kapsam dışı | Zaten "Sonraya bırakılanlar"da. Biz D2C altyapısıyız; markayı pazaryerine bağlamak farklı bir ürün |
+| 8 | **Çoklu para birimi / dil** | ❌ Kapsam dışı | Zaten kayıtlı. Fiyat, vergi ve yasal metin üçünü birden etkiler |
+| 9 | **Ürün videosu** | ⏸️ Sonraya | Görsel altyapısı (4.6AA) video için hazır değil: boyut, süre, kodek ayrı bir iş |
+
+> ⚠️ **DÖRT MADDE "YAPMA" YA DA "ÖLÇÜLMEDEN YAPMA" ÇIKTI** ve bu bloğun
+> asıl değeri o: rakipte görülen her özellik bizde eksik demek değil.
+> Pazaryeri panelinin çözdüğü problemlerin bir kısmı (soru-cevap,
+> çoklu satıcı) D2C'de **yok**.
+
+**Sonuç: tek bir iş çıktı — SEO etiketleri (B3).** Geri kalanı ya zaten
+var, ya ölçüm bekliyor, ya da bilinçli olarak kapsam dışı.
+
+---
 
 ### Önerilen sıra
 

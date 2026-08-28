@@ -3622,3 +3622,42 @@ B2 ✅ TEMBEL YÜKLEME VE ANA SAYFA SAYFALAMASI — 1021 test
       DOĞRULANDI (iki düzen, limit geçici 8): sayfa 1 → 14 kart, "Daha
       fazla" var, eager 4 / lazy 25 · bağlantı ?sayfa=2 (arama varsa
       ?q= korunuyor) · sayfa 2 → 8 kart, bölüm YOK
+
+4.6G ✅ RAKİP ÖZELLİK TARAMASI (araştırma — çıktı: liste + karar)
+      Hepsiburada · Trendyol · ikas taraması. Kod üretilmedi.
+      Önce KENDİ envanterimiz koddan çıkarıldı: 17 domain alanı,
+      38 vitrin rotası, 80 panel rotası.
+
+      ZATEN VAR: terk edilmiş sipariş hatırlatma · çapraz satış ·
+      kupon (yüzde/sabit/ücretsiz kargo) · tam iade akışı · moderasyonlu
+      yorum · rol+izin · ürün hunisi raporu · paket bazlı kargo takip
+
+      ★ ASIL BULGU: SEO YÜZEYİ KENDİ GEREKÇEMİZİN GERİSİNDE
+        Proje SEO için ÜÇ karar verdi (4-K1 sunucuda render, 4-K2 SSR
+        reddi, B2'de gerçek <a href>) ama ölçüldü:
+          sitemap.xml           404
+          rel="canonical"         0   ← ?sayfa= kopya içerik üretiyor
+          property="og:*"         0   ← paylaşımda önizleme YOK
+          application/ld+json     0
+          robots.txt        varsayılan, panele bile izin veriyor
+        ⚠ canonical eksikliği BUGÜN büyüdü: B2 ?sayfa= adreslerini yeni
+          ekledi
+        ⚠ og: eksikliği D2C için ağır: marka Instagram/WhatsApp'ta
+          paylaşıyor ve önizleme BOŞ çıkıyor — niş özellik değil, ana
+          satış kanalı
+
+      KARARLAR:
+        ✅ YAP   SEO etiketleri (canonical·og·JSON-LD·sitemap) → B3
+        ⏸ ÖLÇ   terk edilmiş SEPET (misafirin e-postası yok; önce kaç
+                sepet terk ediliyor ölçülmeli)
+        ⏸ SONRA beden tablosu · manuel sipariş · ürün videosu
+        ⏸ FAZ 5 SMS bildirimi (dış servis + KVKK açık rıza)
+        ❌ YAPMA ürün soru-cevap (moderasyon yükü yorumun 2 katı;
+                pazaryerinde anlamlı, D2C'de marka zaten ulaşılabilir)
+        ❌ KAPSAM DIŞI pazaryeri entegrasyonu · çoklu para/dil
+
+      ⚠ DÖRT MADDE "yapma" ya da "ölçülmeden yapma" çıktı — bloğun asıl
+        değeri bu: rakipte görülen her özellik bizde eksik demek değil.
+        Pazaryeri panelinin çözdüğü bazı problemler D2C'de YOK.
+
+      SONUÇ: tek iş çıktı — SEO etiketleri (B3)
