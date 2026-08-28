@@ -31,9 +31,9 @@ class HomeController extends Controller
     /**
      * Ana sayfada gösterilen ürün sayısı.
      *
-     * ⚠️ Sayfalama YOK ve bu bilinçli: 4A vitrin İSKELETİ. Sayfalama
-     * ürün listesi sayfasıyla birlikte 4B'de geliyor. Sınırsız bırakmak
-     * ise 10.000 ürünlü bir markada sayfayı çökertirdi.
+     * ⚠️ B2'ye kadar sayfalama YOKTU ve 24'ten sonrası sessizce
+     * kayboluyordu. Artık sayfa başına sayı — kaydırdıkça yükleniyor,
+     * JavaScript kapalıysa "Daha fazla" bağlantısı çalışıyor.
      */
     public const LIMIT = 24;
 
@@ -59,10 +59,21 @@ class HomeController extends Controller
             ? $this->arama->ara((string) $kelime)
             : $this->sorgu->forStorefront();
 
+        /*
+        | ★ SAYFALAMA (B2) — ve bu bir KUSUR DÜZELTMESİ.
+        |
+        | ⚠️ Önce `limit(24)->get()` yazıyordu: 25. ürün ana sayfadan
+        | HİÇ görünmüyordu ve bunu söyleyen bir şey de yoktu. Katalog
+        | büyüdükçe ana sayfa sessizce eksik gösteriyordu.
+        |
+        | ⚠️ `withQueryString()` ŞART: arama yapılmışken sayfa 2'ye
+        | geçen bağlantı `?q=` olmadan üretilirdi ve müşteri aramasını
+        | kaybederdi.
+        */
         $urunler = $sorgu
             ->with(['images', 'variants'])
-            ->limit(self::LIMIT)
-            ->get();
+            ->paginate(self::LIMIT, ['*'], 'sayfa')
+            ->withQueryString();
 
         /*
         | ★ Görünüm adı TEMADAN seçiliyor ama METİN BİRLEŞTİRMEYLE DEĞİL.
@@ -99,7 +110,16 @@ class HomeController extends Controller
 
         return view($gorunum, [
             'urunler' => $urunler,
-            'bolumler' => $aramaVar
+            /*
+            | ⚠️ BÖLÜMLER YALNIZCA İLK SAYFADA.
+            |
+            | Arama varsa hiç çizilmiyor (ekranın cevabı arama olmalı).
+            | Sayfa 2+'de de çizilmiyor: bölümler bir KARŞILAMA öğesi,
+            | listenin devamı değil. Çizilseydi "Daha fazla"ya basan
+            | müşteri aynı "çok satanlar"ı ikinci kez görürdü ve her
+            | sayfa gereksiz üç sorgu daha açardı.
+            */
+            'bolumler' => ($aramaVar || $urunler->currentPage() > 1)
                 ? []
                 : $this->bolumler->bolumler($musteri instanceof Customer ? $musteri : null),
             'arama' => $aramaVar ? trim((string) $kelime) : null,

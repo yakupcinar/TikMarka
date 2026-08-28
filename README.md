@@ -212,7 +212,17 @@ veya dağıtım için izin gerekir.
 > kararları ilk kez **sınanabilir sayıya** çevirdi — bloktan önce var olan
 > bir kusur (düğme yazısı 3,56) böyle bulundu.
 
-* Lazy Loading (Tembel Yükleme): Ana sayfada çok fazla ürün listeleneceği için aşağı kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını uçurur.
+* ~~Lazy Loading: aşağı kaydırdıkça ürünler yüklensin~~ → **B2'de kapandı**
+
+> ⚠️ Ölçüm isteği ikiye ayırdı ve **ikincisi asıl kusurdu**: sayfa bu katalogda
+> yavaş değil (57 KB, 0,5 sn) ama ana sayfa **24'te sessizce kesiliyordu** —
+> 25. ürün hiç görünmüyordu.
+>
+> Görseller artık tembel yükleniyor (ilk satır hariç — ekranın üstündekine
+> `lazy` vermek onu *geciktiriyor*), liste sayfalanıyor ve kaydırdıkça
+> yükleniyor. **Saf sonsuz kaydırma yazılmadı:** bağlantı gerçek bir
+> `<a href>` olarak duruyor, çünkü ürünler yalnızca JavaScript'le gelseydi
+> arama motoru ilk sayfadan sonrasını göremezdi.
 
 * ~~Ana sayfaya algoritma: ilginizi çekebilecekler, popüler, yeni gelenler~~ → **B1'de kapandı**
 

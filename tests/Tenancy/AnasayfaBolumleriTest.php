@@ -2,16 +2,11 @@
 
 use App\Domain\Catalog\CategoryService;
 use App\Domain\Catalog\HomeSections;
-use App\Domain\Catalog\ProductService;
-use App\Domain\Catalog\VariantService;
 use App\Domain\Settings\SettingsService;
 use App\Domain\Settings\StorePublication;
 use App\Enums\EventType;
-use App\Enums\ProductStatus;
 use App\Enums\SettingGroup;
 use App\Models\Customer;
-use App\Models\Product;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -44,27 +39,6 @@ function bolumlerHazir(): array
     Cache::flush();
 
     return ['musteri' => Customer::factory()->create(['email' => 'alici@ornek.test'])];
-}
-
-/**
- * Belirli sayıda satılabilir ürün açar.
- *
- * @return Collection<int, Product>
- */
-function bolumUrunleri(int $adet, ?string $onek = null): Collection
-{
-    return collect(range(1, $adet))->map(function (int $i) use ($onek) {
-        $urun = app(ProductService::class)
-            ->olustur(['title' => ($onek ?? 'Ürün').' '.$i]);
-
-        app(VariantService::class)
-            ->ekle($urun, ['sku' => ($onek ?? 'U').'-'.$i, 'price' => 100, 'stock' => 10]);
-
-        app(ProductService::class)
-            ->durumDegistir($urun->refresh(), ProductStatus::Active);
-
-        return $urun->refresh();
-    });
 }
 
 // ─────────────────────────────────────────────────────────────────────

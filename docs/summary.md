@@ -3586,3 +3586,39 @@ B1 ✅ ANA SAYFA BÖLÜMLERİ — 1013 test
       ⚠ Yol üstünde: 7 derlenmiş Blade dosyası git'te TAKİPLİYDİ ve
         klasörü ayakta tutan .gitignore DİSKTE YOKTU — 4A'da kapatılan
         kusurun geri sızmış hâli. İkisi de düzeltildi
+
+B2 ✅ TEMBEL YÜKLEME VE ANA SAYFA SAYFALAMASI — 1021 test
+      İSTENEN: "aşağı kaydırdıkça ürünler yüklensin, açılış hızını uçurur"
+
+      ★ ÖLÇÜM İSTEĞİ İKİYE AYIRDI, İKİNCİSİ ASIL KUSURDU:
+        HTML 57 KB / 0,5 sn · 30 görsel ~284 KB · loading=lazy HİÇ YOK
+        limit(24) → 25. ürün ana sayfadan HİÇ görünmüyor
+        Yani HIZ bu katalogda sorun değil, EKSİKLİK sorun
+
+      ✅ TEMBEL YÜKLEME — ama İLK SATIR HARİÇ
+        ⚠ "Her şeye lazy" YANLIŞ: ekranın üstündeki görsele lazy vermek
+          onu GECİKTİRİYOR. Sayfanın ilk ızgarasının ilk satırı istekli
+        ölçüldü: 4 istekli, 25 tembel
+      ✅ SAYFALAMA + kaydırmayla yükleme
+        ⚠ SAF SONSUZ KAYDIRMA YAZILMADI: vitrin SEO için sunucuda render
+          ediliyor (4-K1); ürünler yalnızca JS'le gelseydi 25. üründen
+          sonrası TARANAMAZ olurdu. Bağlantı gerçek <a href>, betik onu
+          üstleniyor (IntersectionObserver); JS kapalıysa tıklanıyor
+        ⚠ withQueryString() şart — yoksa sayfa 2'de arama kaybolur
+        ⚠ Bölümler YALNIZCA ilk sayfada: karşılama öğesi, listenin
+          devamı değil
+      ✅ KART İŞARETLEMESİ ORTAK PARÇAYA: iki ana sayfada birebir aynı
+        kopyaydı; kopya kaldıkça her düzeltme ÜÇ yere yazılacaktı ve
+        4.6AL'de bir düzen tam bu yüzden geride kalmıştı
+
+      6 kırma denemesi; BİRİ ÜÇ TURDA düştü
+      ⚠ "Her bölüm ilk satırını istekli yüklesin" denemesi iki kez
+        tutmadı: (1) testte hiç bölüm çizilmiyordu, tek ızgara vardı
+        (2) tek bölüm de yetmedi — $loop->first ancak İKİ bölümle
+        anlam kazanıyor. Üç ızgara kurulunca düştü
+      ⚠ Bir iddia kendini ölçtü: bağlantıyı arayan regex ÖZNİTELİK
+        SIRASINA bağlıydı ve boş dönüyordu
+
+      DOĞRULANDI (iki düzen, limit geçici 8): sayfa 1 → 14 kart, "Daha
+      fazla" var, eager 4 / lazy 25 · bağlantı ?sayfa=2 (arama varsa
+      ?q= korunuyor) · sayfa 2 → 8 kart, bölüm YOK

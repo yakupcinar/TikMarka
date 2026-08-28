@@ -13,7 +13,7 @@
 
     @if ($arama)
         <p style="padding-top:24px">
-            <strong>“{{ $arama }}”</strong> için {{ $urunler->count() }} sonuç
+            <strong>“{{ $arama }}”</strong> için {{ $urunler->total() }} sonuç
             · <a href="{{ route('vitrin.anasayfa') }}">aramayı temizle</a>
         </p>
     @endif
@@ -46,37 +46,19 @@
             @endif
         </p>
     @else
-        <div class="izgara">
-            @foreach ($urunler as $urun)
-                <a class="kart" href="{{ route('vitrin.urun', $urun->slug) }}">
-                    @if ($urun->images->first())
-                        <img src="{{ $urun->images->first()->url() }}" alt="{{ $urun->title }}">
-                    @else
-                        {{--
-                            ⚠️ Boş SVG veri adresi yerine GERÇEK yer tutucu:
-                            tarayıcı boş görseli kırık kare olarak çiziyordu
-                            ve müşteriye "yüklenemedi" izlenimi veriyordu.
-                        --}}
-                        <div class="yok">Görsel yok</div>
-                    @endif
+        {{-- 
+            ⚠️ ORTAK PARÇA (B2). Bu ızgara iki ana sayfada da KOPYAYDI ve
+            işaretlemesi birebir aynıydı; `partials/urun-izgarasi` zaten
+            kategori, koleksiyon ve ana sayfa bölümlerinde kullanılıyordu.
+        
+            Kopya kaldığı sürece tembel yükleme gibi her düzeltme ÜÇ yere
+            yazılacaktı — ve 4.6AL'de tam bu yüzden bir düzen geride kaldı.
+        --}}
+        {{-- ⚠️ `istekliSayisi` bölümlerin varlığına bağlı: bölüm çizildiyse bu
+     ızgara ekranın altında kalıyor ve hiçbir görseli istekli olmamalı. --}}
+@include('storefront.partials.urun-izgarasi', ['istekliSayisi' => empty($bolumler) ? 4 : 0])
 
-                    <div class="govde">
-                        <span class="ad">{{ $urun->title }}</span>
-
-                        {{--
-                            ⚠️ Fiyat EN DÜŞÜK varyanttan. Tek fiyat yazılsaydı
-                            çok varyantlı üründe hangi fiyatın gösterildiği
-                            rastgele olurdu.
-                        --}}
-                        @if ($urun->variants->isNotEmpty())
-                            <span class="fiyat">
-                                {{ number_format((float) $urun->variants->min('price'), 2, ',', '.') }} TL
-                            </span>
-                        @endif
-                    </div>
-                </a>
-            @endforeach
-        </div>
+        @include('storefront.partials.daha-fazla')
     @endif
 
 @endsection

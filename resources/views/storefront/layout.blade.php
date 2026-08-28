@@ -403,6 +403,10 @@
         | piksel değeri yazılsaydı vitrinin altı basamaklı ölçeği yedi
         | olurdu ve hiyerarşi yeniden bulanırdı.
         */
+        /* ⚠️ "Daha fazla" ortalanıyor ve nefes alıyor: ızgaranın hemen
+           dibinde durursa son satırın parçası gibi görünüyor. */
+        .daha-fazla { margin: 28px 0 8px; text-align: center; }
+
         .bolum { margin-top: 40px; }
 
         .bolum-baslik {

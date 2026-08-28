@@ -1129,6 +1129,24 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   tutan `storage/framework/views/.gitignore` **diskte yoktu**. Kontrol:
   `git ls-files storage/framework/views/`.
 
+- **"HER GÖRSELE `lazy`" YANLIŞ — ekranın üstündekini GECİKTİRİR.** Tarayıcı
+  `lazy` görselde önce yerleşimi hesaplayıp sonra indirmeye başlıyor; yani
+  en çok görülen görselleri yavaşlatmış olursun. Sayfanın **ilk
+  ızgarasının ilk satırı** `eager`, gerisi `lazy` (B2). ⚠️ Her ızgara kendi
+  ilk satırını istekli yüklerse kazancın çoğu gider — istekli sayısı
+  ızgaraya değil SAYFAYA ait bir karardır.
+- **SONSUZ KAYDIRMA SEO'YU ÖLDÜRÜR — bağlantı GERÇEK kalmalı.** Vitrin
+  sunucuda render ediliyor (4-K1) ve tek sebebi arama motorunun sayfayı
+  görebilmesi; ürünler yalnızca JavaScript'le gelseydi ilk sayfadan
+  sonrası taranamaz olurdu. Doğrusu gerçek bir `<a href="?sayfa=2">` ve
+  onu **üstlenen** bir betik (B2): JS kapalıysa tıklanıyor, motor
+  tarayabiliyor.
+  ⚠️ `withQueryString()` unutulursa arama sayfa 2'de kayboluyor.
+- **`limit()` İLE LİSTELEMEK SESSİZ BİR KESİNTİDİR.** Ana sayfa `limit(24)`
+  ile çiziliyordu: 25. ürün hiç görünmüyordu ve bunu söyleyen bir şey de
+  yoktu (B2). Sayfalanabilir bir liste `paginate()` ister; `limit()`
+  yalnızca gerçekten "ilk N" istendiğinde doğrudur.
+
 ## Yapı
 
 ```

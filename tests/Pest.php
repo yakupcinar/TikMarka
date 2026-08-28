@@ -31,6 +31,7 @@ use App\Platform\Models\PlatformUser;
 use App\Platform\Models\Tenant;
 use App\Platform\TenantProvisioning;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
@@ -1032,4 +1033,27 @@ function seciciUrunu(): Product
     app(ProductService::class)->durumDegistir($urun->refresh(), ProductStatus::Active);
 
     return $urun->refresh();
+}
+
+/**
+ * Belirli sayıda satılabilir ürün açar.
+ *
+ * ⚠️ BURADA — `AnasayfaTembelYuklemeTest` de kullanıyor.
+ *
+ * @return Collection<int, Product>
+ */
+function bolumUrunleri(int $adet, ?string $onek = null): Collection
+{
+    return collect(range(1, $adet))->map(function (int $i) use ($onek) {
+        $urun = app(ProductService::class)
+            ->olustur(['title' => ($onek ?? 'Ürün').' '.$i]);
+
+        app(VariantService::class)
+            ->ekle($urun, ['sku' => ($onek ?? 'U').'-'.$i, 'price' => 100, 'stock' => 10]);
+
+        app(ProductService::class)
+            ->durumDegistir($urun->refresh(), ProductStatus::Active);
+
+        return $urun->refresh();
+    });
 }

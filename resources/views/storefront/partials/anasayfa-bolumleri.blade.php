@@ -14,6 +14,15 @@
     <section class="bolum" id="bolum-{{ $bolum['anahtar'] }}">
         <h2 class="bolum-baslik">{{ $bolum['baslik'] }}</h2>
 
-        @include('storefront.partials.urun-izgarasi', ['urunler' => $bolum['urunler']])
+        {{--
+            ⚠️ İSTEKLİ GÖRSEL YALNIZCA İLK BÖLÜMDE. Her ızgara kendi ilk
+            satırını istekli yükleseydi ekranın ALTINDAKİ bölümler de
+            görselleri hemen indirir ve tembel yüklemenin kazancı
+            büyük ölçüde giderdi.
+        --}}
+        @include('storefront.partials.urun-izgarasi', [
+            'urunler' => $bolum['urunler'],
+            'istekliSayisi' => $loop->first ? 4 : 0,
+        ])
     </section>
 @endforeach

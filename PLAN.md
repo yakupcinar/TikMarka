@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6AL BİTTİ — vitrinli ürün sayfası düzeldi ──────┐
+┌─ YOL HARİTASI ──────── şu an: B2 BİTTİ — tembel yükleme ve sayfalama ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6910,6 +6910,80 @@ takipliydi** ve klasörü ayakta tutan `.gitignore` **diskte yoktu** —
 4A'da kapatılan kusurun geri sızmış hâli. İkisi de düzeltildi.
 
 **1015 test.**
+
+---
+
+### B2 — tembel yükleme ve ana sayfa sayfalaması
+
+**İstenen:** *"Ana sayfada çok fazla ürün listeleneceği için aşağı
+kaydırdıkça ürünlerin yüklenmesini sağla. Bu, uygulamanın açılış hızını
+uçurur."*
+
+**ÖLÇÜM İSTEĞİ İKİYE AYIRDI — ve ikincisi asıl kusurdu.**
+
+```
+HTML          57 KB, 0,5 sn        ← bu ölçekte sayfa YAVAŞ DEĞİL
+görsel        30 adet, ~284 KB     ← hepsi istekli iniyordu
+loading=lazy  HİÇ YOK
+limit(24)     25. ürün ana sayfadan HİÇ görünmüyor, söyleyen de yok
+```
+
+Yani *hız* bu katalogda bir sorun değil; **eksiklik** sorun. Ana sayfa
+24'te sessizce kesiliyordu.
+
+**1 · Tembel yükleme — ama ilk satır hariç.**
+
+⚠️ "Her şeye `lazy`" yanlış olurdu: ekranın üstündeki görsele `lazy`
+vermek onu **geciktiriyor** (tarayıcı önce yerleşimi hesaplayıp sonra
+indirmeye başlıyor). Sayfanın **ilk ızgarasının ilk satırı** istekli,
+gerisi tembel. Ölçüldü: 4 istekli, 25 tembel.
+
+**2 · Sayfalama + kaydırmayla yükleme.**
+
+⚠️ **SAF SONSUZ KAYDIRMA YAZILMADI.** Vitrin sunucuda render ediliyor
+(4-K1) ve bunun tek sebebi SEO; ürünler yalnızca JavaScript'le gelseydi
+25. üründen sonrası **taranamaz** olurdu — yani SSR'ı seçmenin gerekçesi
+çöpe giderdi. Bağlantı gerçek bir `<a href="?sayfa=2">`; betik yalnızca
+onu üstleniyor ve `IntersectionObserver` ile kaydırınca yüklüyor.
+JavaScript kapalıysa müşteri tıklayarak devam ediyor.
+
+⚠️ `withQueryString()` şart: arama yapılmışken sayfa 2'ye geçen bağlantı
+`?q=` olmadan üretilirdi ve müşteri **aramasını kaybederdi**.
+
+⚠️ Bölümler **yalnızca ilk sayfada**: karşılama öğesi, listenin devamı
+değil. Çizilseydi "Daha fazla"ya basan müşteri aynı "çok satanlar"ı
+ikinci kez görür ve her sayfa üç gereksiz sorgu daha açardı.
+
+**3 · Kart işaretlemesi ORTAK PARÇAYA taşındı.**
+
+⚠️ İki ana sayfada da **birebir aynı kopya** duruyordu. Kopya kaldığı
+sürece tembel yükleme gibi her düzeltme **üç yere** yazılacaktı — ve
+4.6AL'de bir düzen tam bu yüzden geride kalmıştı. Artık tek yer.
+
+**Altı kırma denemesi; biri ÜÇ TURDA düştü.**
+
+> ⚠️ "Her bölüm kendi ilk satırını istekli yüklesin" denemesi iki kez
+> tutmadı. Sebep sırayla ortaya çıktı: (1) testte hiç bölüm çizilmiyordu
+> — B1 bölümlerinin verisi yoktu, yani sayfada TEK ızgara vardı;
+> (2) tek bölüm açıldığında da yetmedi, çünkü `$loop->first` ayrımı
+> ancak **iki** bölümle anlam kazanıyor. Üç ızgara kurulunca düştü.
+>
+> Ders 4.6AJ ve B1'dekiyle aynı: **bir korumayı ölçen test, o korumanın
+> tek başına geçerli olduğu senaryoyu kurmalı.**
+
+⚠️ Bir test iddiası da kendini ölçtü: sonraki-sayfa bağlantısını arayan
+regex **öznitelik sırasına** bağlıydı (`data-sonraki`yi `href`ten önce
+arıyordu) ve eşleşme boş dönüyordu.
+
+DOĞRULANDI (gerçek vitrin, iki düzen, limit geçici 8'e indirilerek):
+
+```
+sayfa 1   14 kart · "Daha fazla" var · eager 4 / lazy 25
+bağlantı  ?sayfa=2  (arama varsa ?q= korunuyor)
+sayfa 2   8 kart · bölüm YOK
+```
+
+**1021 test.**
 
 ---
 

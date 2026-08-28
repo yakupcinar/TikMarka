@@ -9,8 +9,28 @@
     @foreach ($urunler as $urun)
         <a class="kart" href="{{ route('vitrin.urun', $urun->slug) }}">
             @if ($urun->images->first())
-                {{-- ⚠️ Adres modelin `url()`'inden: `tenant_asset()` orada (M-2.7). --}}
-                <img src="{{ $urun->images->first()->url() }}" alt="{{ $urun->title }}">
+                {{--
+                    ⚠️ Adres modelin `url()`'inden: `tenant_asset()` orada (M-2.7).
+
+                    ★ TEMBEL YÜKLEME (B2) — ama İLK SATIR HARİÇ.
+
+                    ⚠️ Ekranın üstündeki görsele `lazy` vermek onu
+                    GECİKTİRİR: tarayıcı önce yerleşimi hesaplayıp sonra
+                    indirmeye başlıyor. Yani "her şeye lazy" demek, en
+                    çok görülen görselleri yavaşlatmak demek. İlk satır
+                    `eager`, gerisi `lazy`.
+
+                    ⚠️ `decoding="async"` çözümlemeyi ana iş parçacığından
+                    çıkarıyor; çok kartlı ızgarada kaydırma takılmıyor.
+
+                    ⚠️ Yer tutucu ölçü `aspect-ratio: 1` ile CSS'te
+                    (`layout.blade.php`); olmasaydı görseller yüklendikçe
+                    sayfa zıplardı.
+                --}}
+                <img src="{{ $urun->images->first()->url() }}"
+                     alt="{{ $urun->title }}"
+                     loading="{{ $loop->index < ($istekliSayisi ?? 4) ? 'eager' : 'lazy' }}"
+                     decoding="async">
             @else
                 <div class="yok">Görsel yok</div>
             @endif
