@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-14**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: B1 BİTTİ — ana sayfa bölümlere ayrıldı  ──────┐
+┌─ YOL HARİTASI ──────── şu an: 4.6AL BİTTİ — vitrinli ürün sayfası düzeldi ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6839,6 +6839,77 @@ Sizin için          ⊘ çizilmedi  (misafir)
 Yani eşikler gerçek veride de tasarlandığı gibi davranıyor.
 
 **1013 test.**
+
+---
+
+### 4.6AL — vitrinli düzende ürün sayfası bozuktu
+
+Kullanıcının *"pahalı varyantı seçtim, fiyat hâlâ 50 gösteriyor"* bildirimi
+kapanmamış duruyordu. Kodda seçici `vitrinli`'ye eklenmiş görünüyordu —
+ama **destekleyici alanlar eklenmemişti**.
+
+**4.6A'NIN AYNI DERSİ, ÜÇÜNCÜ KEZ.** 4.6A'da seçici yalnızca `sade`'ye
+uygulanmıştı; 4.6A.1 onu `vitrinli`'ye taşıdı ama betiğin aradığı
+işaretleri (`data-fiyat`, `data-ekle-dugme`) taşımadı. *"Bitti kaydı
+bittiğinin kanıtı değildir."*
+
+⚠️ **Marka-a tam olarak `vitrinli` kullanıyor — kusur canlıydı.**
+
+Gerçek tarayıcıda ölçülen sonuçlar, bildirilenden ağır:
+
+```
+seçim yok      → gizli variant_uuid BOŞ, "Sepete ekle" düğmesi AÇIK
+                 (müşteri boş gönderip doğrulama hatası alabiliyordu)
+seçim yapıldı  → Uncaught TypeError: Cannot set properties of null
+                 (setting 'disabled')
+                 → fiyat güncellenmiyor VE uyarı mesajı hiç çıkmıyor
+```
+
+⚠️ Hata `data-fiyat`'ta değil **`data-ekle-dugme`'de** patlıyordu — yani
+tek bir eksik işaret, ondan **sonraki** bütün mantığı da öldürüyordu.
+
+**İki katmanlı düzeltme:**
+
+| | |
+|---|---|
+| İşaretler `vitrinli`'ye eklendi | kusurun kendisi |
+| Betiğe `null` koruması | bir işaret eksikse geri kalanı çalışsın |
+| `VaryantSeciciKancaTest` | işaretlerin iki düzende de bulunduğunu ölçer |
+
+⚠️ **KANCA LİSTESİ BETİKTEN OKUNUYOR.** Elle yazılsaydı betiğe yeni bir
+kanca eklenince liste bayat kalır ve test yine yalan söylerdi. Kırma
+denemesi bunu doğruladı: betiğe var olmayan bir kanca eklemek testi
+düşürüyor.
+
+**Beş kırma denemesi; üçü ilk turda DÜŞMEDİ.**
+
+> ⚠️ Sebep bu oturumda tekrarlayan aile: **iddia, kancaları arayan betiğin
+> kendi metnini okuyordu.** Varyant betiği sayfanın içinde ve kancaları
+> adıyla arıyor (`document.querySelector('[data-ekle-dugme]')`), yani
+> aranan dizge öznitelik silinse bile HTML'de duruyordu.
+> `<script>` blokları ayıklanınca üçü de düştü.
+>
+> 4.6AE'de iddia kuralı ANLATAN yorumu okuyordu; burada kuralı ARAYAN
+> betiği okuyor.
+
+⚠️ **KENDİ ÖLÇÜMÜM İKİ KEZ YANILTTI.** "Fiyat hâlâ değişmiyor" diye iki
+kez kaydetmeye yaklaştım; ikisi de test kurgumun eseriydi — aynı değere
+ikinci tıklama seçimi KALDIRIYOR, bir de satılamayan bir kombinasyon
+seçmiştim. Temiz turda fiyat **18.999,00 → 20.999,00 TL** değişti.
+
+DOĞRULANDI (gerçek tarayıcı, `vitrinli`, gerçek ürün):
+
+```
+açılış            18.999,00 TL   düğme KAPALI
+8gb/256gb seçildi 20.999,00 TL   düğme AÇIK
+konsol hatası     YOK
+```
+
+⚠️ Ayrıca yol üstünde bulundu: **7 derlenmiş Blade dosyası git'te
+takipliydi** ve klasörü ayakta tutan `.gitignore` **diskte yoktu** —
+4A'da kapatılan kusurun geri sızmış hâli. İkisi de düzeltildi.
+
+**1015 test.**
 
 ---
 

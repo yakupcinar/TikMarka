@@ -47,7 +47,14 @@
                 {{-- ⚠️ Varyantsız ürün satılamaz; "sepete ekle" gösterilmiyor. --}}
                 <p class="bos">Bu ürün şu anda satışta değil.</p>
             @else
-                <p class="fiyat-buyuk">
+                {{--
+                    ⚠️ `data-fiyat` ŞART — ve yokluğu 4.6AL'de ölçüldü.
+                    Varyant betiği seçim değişince fiyatı BU işareti arayarak
+                    güncelliyor. İşaret olmayınca `sade` düzeninde çalışan
+                    şey burada çalışmıyordu: müşteri pahalı varyantı seçse de
+                    ekranda en ucuz fiyat kalıyordu.
+                --}}
+                <p class="fiyat-buyuk" data-fiyat>
                     {{ number_format((float) $urun->variants->min('price'), 2, ',', '.') }} TL
                 </p>
 
@@ -74,7 +81,20 @@
                                max="{{ \App\Domain\Cart\CartService::MAKS_ADET }}">
                     </label>
 
-                    <button class="dugme buyuk" type="submit">Sepete ekle</button>
+                    {{--
+                        ⚠️ `data-ekle-dugme` ŞART. Betik seçim tamamlanana
+                        kadar düğmeyi KAPALI tutuyor; işaret olmayınca iki
+                        şey birden bozuluyordu:
+
+                        1. Düğme hep açık kalıyor — müşteri hiç seçim
+                           yapmadan gönderebiliyor ve BOŞ `variant_uuid`
+                           doğrulama hatası alıyordu.
+                        2. `dugme.disabled = ...` satırı `null` üzerinde
+                           TypeError fırlatıyor ve ALTINDAKİ uyarı mantığı
+                           hiç çalışmıyordu — yani müşteri neden
+                           ekleyemediğini de göremiyordu.
+                    --}}
+                    <button class="dugme buyuk" type="submit" data-ekle-dugme>Sepete ekle</button>
                 </form>
             @endif
 

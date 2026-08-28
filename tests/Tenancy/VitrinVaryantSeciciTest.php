@@ -8,7 +8,6 @@ use App\Domain\Settings\SettingsService;
 use App\Domain\Settings\StorePublication;
 use App\Enums\ProductStatus;
 use App\Enums\SettingGroup;
-use App\Models\Product;
 
 /*
 | VİTRİNDE VARYANT SEÇİCİSİ (4.6A)
@@ -17,36 +16,6 @@ use App\Models\Product;
 | ekseni birden okumak zorundaydı ve STOKTA OLMAYAN birleşimler de
 | seçilebiliyordu — seçiyor, sepete ekliyor, hata alıyordu.
 */
-
-/**
- * Eksenli, bazı birleşimleri tükenmiş ürün.
- *
- * ⚠️ Ad çakışması kontrol edildi (`grep -rn "function seciciUrunu" tests/`).
- */
-function seciciUrunu(): Product
-{
-    markaKur('marka-a.test');
-    magazayiHazirla();
-    app(StorePublication::class)->yayinla();
-
-    $renk = eksenliDeger('Renk', ['Kırmızı', 'Mavi']);
-    $beden = eksenliDeger('Beden', ['S', 'M']);
-
-    $urun = app(ProductService::class)->olustur(['title' => 'Tişört', 'brand' => 'Demo']);
-    app(ProductService::class)->eksenleriAyarla($urun, [$renk, $beden]);
-
-    $varyantlar = app(VariantService::class);
-
-    foreach ([['kirmizi', 's', 5], ['kirmizi', 'm', 0], ['mavi', 's', 3], ['mavi', 'm', 4]] as [$r, $b, $stok]) {
-        $varyantlar->ekle($urun->refresh(), [
-            'sku' => "TS-{$r}-{$b}", 'price' => 100, 'stock' => $stok,
-        ], ['renk' => $r, 'beden' => $b]);
-    }
-
-    app(ProductService::class)->durumDegistir($urun->refresh(), ProductStatus::Active);
-
-    return $urun->refresh();
-}
 
 it('★★★ EKSEN BASINA secim: her eksen ayri grup, degerler kutucuk', function () {
     $urun = seciciUrunu();

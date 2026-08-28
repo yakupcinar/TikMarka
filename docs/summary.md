@@ -3545,3 +3545,44 @@ B1 ✅ ANA SAYFA BÖLÜMLERİ — 1013 test
       DOĞRULANDI (gerçek marka): Çok satanlar çizildi · popüler
       çizilmedi (20 görüntüleme, eşik 50) · yeni gelenler çizilmedi
       (katalogun tamamı yeni) · sizin için çizilmedi (misafir)
+
+4.6AL ✅ VİTRİNLİ DÜZENDE ÜRÜN SAYFASI BOZUKTU — 1015 test
+      Kullanıcının "pahalı varyantı seçtim, fiyat hâlâ 50" bildirimi
+      kapanmamıştı. Seçici vitrinli'ye eklenmişti ama DESTEKLEYİCİ
+      ALANLAR eklenmemişti (data-fiyat, data-ekle-dugme).
+
+      ⚠ 4.6A'NIN AYNI DERSİ, ÜÇÜNCÜ KEZ. 4.6A.1 seçiciyi taşıdı,
+        işaretleri taşımadı. "Bitti kaydı bittiğinin kanıtı değildir."
+      ⚠ MARKA-A TAM OLARAK VİTRİNLİ KULLANIYOR — kusur canlıydı
+
+      GERÇEK TARAYICIDA ÖLÇÜLDÜ, bildirilenden ağır:
+        seçim yok     → variant_uuid BOŞ, "Sepete ekle" düğmesi AÇIK
+        seçim yapıldı → TypeError: Cannot set properties of null
+                        (setting 'disabled')
+                        → fiyat güncellenmiyor VE uyarı hiç çıkmıyor
+      ⚠ Hata data-fiyat'ta değil data-ekle-dugme'de patlıyordu: tek
+        eksik işaret ondan SONRAKİ bütün mantığı da öldürüyordu
+
+      ✅ işaretler vitrinli'ye eklendi
+      ✅ betiğe null koruması (bir işaret eksikse geri kalanı çalışsın)
+      ✅ VaryantSeciciKancaTest — KANCA LİSTESİNİ BETİKTEN OKUYOR,
+        elle yazılsaydı yeni kanca eklenince liste bayat kalırdı
+
+      5 kırma denemesi; ÜÇÜ İLK TURDA DÜŞMEDİ
+      ⚠ Sebep: iddia, kancaları ARAYAN betiğin kendi metnini okuyordu.
+        Betik sayfanın içinde ve kancaları adıyla arıyor, yani dizge
+        öznitelik silinse bile HTML'de duruyordu. <script> blokları
+        ayıklanınca üçü de düştü. 4.6AE'nin kardeşi: orada iddia kuralı
+        ANLATAN yorumu okuyordu, burada kuralı ARAYAN betiği
+
+      ⚠ KENDİ ÖLÇÜMÜM İKİ KEZ YANILTTI: "fiyat değişmiyor" diye iki kez
+        kaydetmeye yaklaştım, ikisi de test kurgumun eseriydi (aynı
+        değere ikinci tıklama seçimi KALDIRIYOR; ayrıca satılamayan
+        kombinasyon seçmiştim)
+
+      DOĞRULANDI: açılış 18.999,00 düğme KAPALI → 8gb/256gb seçildi
+      20.999,00 düğme AÇIK → konsol hatası YOK
+
+      ⚠ Yol üstünde: 7 derlenmiş Blade dosyası git'te TAKİPLİYDİ ve
+        klasörü ayakta tutan .gitignore DİSKTE YOKTU — 4A'da kapatılan
+        kusurun geri sızmış hâli. İkisi de düzeltildi

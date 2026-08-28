@@ -1107,6 +1107,28 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   o başlığın vaadini bozar (B1). Tekrar bir kusur değil; küçük katalogda
   rahatsız ediyorsa çözüm eşikleri yükseltmek, listeyi çarpıtmak değil.
 
+- **BİR ÖZELLİĞİ İKİNCİ DÜZENE TAŞIMAK, DESTEKLEYİCİ İŞARETLERİNİ DE
+  TAŞIMAKTIR.** 4.6A'da varyant seçicisi yalnızca `sade`'deydi; 4.6A.1 onu
+  `vitrinli`'ye taşıdı ama betiğin aradığı `data-fiyat` ve
+  `data-ekle-dugme` işaretlerini taşımadı — kusur 4.6AL'ye kadar **canlı**
+  kaldı (marka-a `vitrinli` kullanıyor). ⚠️ Bedeli fiyatın güncellenmemesi
+  değildi: `data-ekle-dugme` yokken düğme hiç kapanmıyor ve müşteri
+  **boş `variant_uuid`** gönderebiliyordu; üstelik `null` üzerindeki
+  TypeError ondan **sonraki** uyarı mantığını da öldürüyordu.
+- **KANCA LİSTESİNİ ELLE YAZMA, BETİKTEN OKU.** Bir betiğin
+  `document.querySelector('[data-...]')` ile aradığı işaretleri ölçen test,
+  listeyi betikten çıkarmalı; elle yazılırsa betiğe yeni kanca eklenince
+  liste bayat kalır ve test yine yalan söyler (4.6AL).
+- **ÇİZİLEN SAYFAYI OKUYAN İDDİA `<script>` BLOKLARINI AYIKLAMALI.**
+  4.6AL'de üç kırma denemesi tutmadı: sayfadaki betik kancaları **adıyla**
+  arıyor (`querySelector('[data-ekle-dugme]')`), yani aranan dizge
+  öznitelik silinse bile HTML'de duruyordu. ⚠️ 4.6AE'nin kardeşi — orada
+  iddia kuralı ANLATAN yorumu okuyordu, burada kuralı ARAYAN betiği.
+- **DERLENMİŞ BLADE DOSYALARI GERİ SIZABİLİYOR.** 4A'da takipten
+  çıkarılmıştı; 4.6AL'de **7 tanesi yeniden takipliydi** ve klasörü ayakta
+  tutan `storage/framework/views/.gitignore` **diskte yoktu**. Kontrol:
+  `git ls-files storage/framework/views/`.
+
 ## Yapı
 
 ```

@@ -1001,3 +1001,35 @@ function sonucKodu(Order $siparis): string
 
     return (string) preg_replace('!/\*.*?\*/!s', '', $html);
 }
+
+/**
+ * Eksenli, bazı birleşimleri tükenmiş ürün.
+ *
+ * ⚠️ BURADA — `VaryantSeciciKancaTest` de kullanıyor. Kural yazılı ve
+ * `YardimciKonumuTest` ölçüyor: iki dosyanın kullandığı yardımcı
+ * `tests/Pest.php`'ye taşınır.
+ */
+function seciciUrunu(): Product
+{
+    markaKur('marka-a.test');
+    magazayiHazirla();
+    app(StorePublication::class)->yayinla();
+
+    $renk = eksenliDeger('Renk', ['Kırmızı', 'Mavi']);
+    $beden = eksenliDeger('Beden', ['S', 'M']);
+
+    $urun = app(ProductService::class)->olustur(['title' => 'Tişört', 'brand' => 'Demo']);
+    app(ProductService::class)->eksenleriAyarla($urun, [$renk, $beden]);
+
+    $varyantlar = app(VariantService::class);
+
+    foreach ([['kirmizi', 's', 5], ['kirmizi', 'm', 0], ['mavi', 's', 3], ['mavi', 'm', 4]] as [$r, $b, $stok]) {
+        $varyantlar->ekle($urun->refresh(), [
+            'sku' => "TS-{$r}-{$b}", 'price' => 100, 'stock' => $stok,
+        ], ['renk' => $r, 'beden' => $b]);
+    }
+
+    app(ProductService::class)->durumDegistir($urun->refresh(), ProductStatus::Active);
+
+    return $urun->refresh();
+}

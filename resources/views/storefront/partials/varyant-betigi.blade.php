@@ -81,9 +81,23 @@
                 var secilen = tam ? uyanlar(secim)[0] : null
 
                 gizli.value = secilen && secilen.satilabilir ? secilen.uuid : ''
-                dugme.disabled = !gizli.value
 
-                if (secilen) fiyatAlani.textContent = paraFormat(secilen.fiyat)
+                /*
+                | ⚠️ EKSİK İŞARETE KARŞI KORUMA (4.6AL).
+                |
+                | Bu satırlar `null` üzerinde TypeError fırlatıyordu ve
+                | ALTINDAKİ uyarı mantığı hiç çalışmıyordu — yani bir
+                | düzende işaret unutulunca yalnızca o özellik değil,
+                | ondan sonrası da sessizce ölüyordu.
+                |
+                | ⚠️ Koruma sorunu GİZLEMİYOR: işaretlerin iki düzende de
+                | bulunduğunu ölçen test ayrı (`VaryantSeciciKancaTest`).
+                | Buradaki guard yalnızca "bir şey eksikse geri kalanı
+                | çalışmaya devam etsin" diyor.
+                */
+                if (dugme) dugme.disabled = !gizli.value
+
+                if (secilen && fiyatAlani) fiyatAlani.textContent = paraFormat(secilen.fiyat)
 
                 /* ⚠️ Müşteri NEDEN ekleyemediğini görmeli. */
                 if (!tam) {

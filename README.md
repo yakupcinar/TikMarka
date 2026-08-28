@@ -134,9 +134,15 @@ veya dağıtım için izin gerekir.
 > "ürünüm nerede" sorusunu doğuruyor. Artık satır adıyla görünüyor,
 > çıkarılabiliyor ve satılamıyor.
 
-* Yeni ürün açtım adı "a" 2 varyant verdim depolaması farklı fiyatları 50 100 olacak şekilde ana sayfaya baktım ürünün fiyatı 50 diye gözüküyor bence bu mantıklı sonuçta ürünün en düşük depolu hali öyle; sonra ürüne tıkladım ve içindeki deposu büyük olana tıkladım fiyat hala 50 gösterdi ama fiyatı 100 tl bu fiyat tıkladığım varyanta göre fiyatı alsın standart ana sayfada en ucuz varyantı göstersin.
+* ~~Varyant seçilince fiyat güncellenmiyor~~ → **4.6AL'de kapandı**
 
-* Yeni ürün açtım adı "a" 2 varyant verdim depolaması farklı fiyatları 50 100 olacak şekilde ana sayfaya baktım ürünün fiyatı 50 diye gözüküyor bence bu mantıklı sonuçta ürünün en düşük depolu hali öyle; sonra ürüne tıkladım ve içindeki deposu büyük olana tıkladım fiyat hala 50 gösterdi ama fiyatı 100 tl bu fiyat tıkladığım varyanta göre fiyatı alsın standart ana sayfada en ucuz varyantı göstersin ama ürü
+> ⚠️ Kusur bildirdiğinden ağırmış ve **canlıydı**: marka-a `vitrinli` düzenini
+> kullanıyor ve o düzende varyant betiğinin aradığı iki işaret hiç yoktu.
+> Sonucu yalnızca fiyatın sabit kalması değildi — **"Sepete ekle" düğmesi
+> hiç kapanmıyordu**, yani seçim yapmadan gönderip doğrulama hatası
+> alabiliyordun; üstelik JavaScript hata fırlattığı için "neden
+> ekleyemiyorum" uyarısı da hiç çıkmıyordu.
+
 
 * Mailime bu düştü ama neden bu düştü anlamadım işlemleri mi sanki zaten maili doğru kaydettiğim hesaptan yapıyorum bu şaşırttı şimdi: "Address not found Your message wasn't delivered to vazgec@marka-a.localhost because the domain marka-a.localhost couldn't be found. Check for typos or unnecessary spaces and try again"
 
