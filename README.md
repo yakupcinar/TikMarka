@@ -122,7 +122,12 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
-Ürün durumları kusurlu gözüküyor ve işleniyor;
+* Ödeme işleminde genel sorun hatası veriyor sebebini araştır ve çözümleyelim.
+
+* Ayrı okunabilir bir loglama servisi gelmesi lazım bu bir e-ticaret appi çok fazla data çıkabilir kullanıcı kaynaklı bunun okuması
+ve yönetmesi zorlaşır uygun bir servis olmadan
+
+* Ürün durumları kusurlu gözüküyor ve işleniyor;
 Ödeme ekranına kadar geliyorum ama ödeme yapmıyorum, baktım siparişlerime ödeme yap-iptal et duruyor mesela
 iptal et diyorum hazırlanıyor durumunda kalıyor ama normalde iptal et dediğinde direkt iptal olması lazım niye onay beklesin
 satıcıdan zaten ödemesini yapmamış yani kargolamaya hiç geçilmemiş ayrıca ödemeyi öyle orda istediği kadar tutamaz ki
@@ -314,6 +319,29 @@ belli bir süresi yok muydu 1 gün kaldı mesela öde deyince de hata verdi en b
 > app/worker/scheduler aynı dosyaya yazıyor. İkinci sunucu eklendiği an
 > bu biter — bir siparişin hikâyesi ikiye bölünür ve toplayıcı zorunlu
 > olur.
+
+* ~~Günlükleri toplayan/arayan bir servis yok~~ → **B6'da kapandı**
+
+> **Loki + Grafana** kuruldu. `make gozlem` ile açılıyor, arayüz
+> `https://gozlem.localhost` — sunucuda kendi alt alan adından, tarayıcıdan.
+> Kullanıcı adı ve parola `.env`de (`GRAFANA_KULLANICI` / `GRAFANA_PAROLA`).
+>
+> ⚠️ **Üretimde `GRAFANA_PAROLA` mutlaka değiştirilmeli.**
+>
+> Artık `istek_id` ile tek sorguda app + worker + caddy satırları yan yana
+> görünüyor; `marka` bir etiket olduğu için marka bazında filtre bedava.
+>
+> ⚠️ **Portlar dışarı açılmıyor ve bu pazarlık dışı.** Loki'nin kimlik
+> doğrulaması *hiç yok* — portu yayınlansaydı sunucunun IP'sine ulaşan
+> herkes bütün markaların günlüğünü okurdu. Erişim yalnızca Caddy üzerinden.
+>
+> ⚠️ **Bir mimari istisna kabul edildi:** bugüne kadar marka izolasyonu
+> fiziksel (ayrı şema); günlükler ilk kez tek depoda toplanıyor ve ayrım
+> yalnızca bir etiket. Markaya kendi günlüğü gösterilmek istendiği gün bu
+> kurulum yetmez — gerekçesi ve sınırı `PLAN.md`'de yazılı.
+>
+> ⚠️ Alarm kuralları henüz kurulmadı; asıl kazanç orada (hata olduğunda
+> günlüğe *gitmek* yerine haberin gelmesi).
 
 > Açık kusurlar ve fikirler. Biten maddeler **silinmiyor** — aşağıdaki
 > "Yapıldı" bölümüne taşınıyor ki tekrar kontrol edilebilsin.

@@ -8,6 +8,7 @@ use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Context;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\FormattableHandlerInterface;
 use Monolog\LogRecord;
 use Throwable;
 
@@ -52,6 +53,21 @@ final class IstekBaglami
 
         foreach ($logger->getHandlers() as $isleyici) {
             if (! method_exists($isleyici, 'setFormatter')) {
+                continue;
+            }
+
+            /*
+            | ⚠️ BAŞKA BİÇİMLENDİRİCİ SEÇİLMİŞSE DOKUNULMUYOR. `json`
+            | kanalı makine için yazılıyor (toplayıcı okuyor) ve orada
+            | satır biçimi bozulursa bağlam alanları ayrıştırılamaz —
+            | üstelik bu HATA VERMEZ, sadece Loki'de her satır tek bir
+            | metin olur ve `marka` diye bir alan hiç doğmaz.
+            */
+            if (! $isleyici instanceof FormattableHandlerInterface) {
+                continue;
+            }
+
+            if (! $isleyici->getFormatter() instanceof LineFormatter) {
                 continue;
             }
 

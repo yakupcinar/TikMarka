@@ -1,0 +1,100 @@
+// Toplayıcı — günlük DOSYALARINI okur, Loki'ye yazar. (B6)
+//
+// ⚠️ DOCKER SOKETİ BAĞLANMIYOR — ve bu bilinçli.
+//    Alloy'un standart yolu `loki.source.docker` ile `/var/run/docker.sock`
+//    bağlamak. O soket konteynere host üzerinde root eşdeğeri yetki verir:
+//    toplayıcıda bir açık, doğrudan makinenin tamamı demek. Bu projede
+//    kullanıcının yazdığı Blade bile RCE riski yüzünden reddedildi (4-K5);
+//    aynı ölçüyle burada da soket bağlanmıyor.
+//
+//    Bedeli: konteyner etiketleri (isim, imaj) kendiliğinden gelmiyor,
+//    kaynak dosyaya göre elle etiketleniyor. Kazancı: salt-okunur iki
+//    bağlama ve sıfır ayrıcalık.
+
+// ── Uygulama günlüğü (app · worker · scheduler — üçü de AYNI dosya) ──
+//
+// ⚠️ `logs/json/` klasörü, `logs/*.log` DEĞİL: ikincisi insan günlüğünü
+//    de çeker ve her satır İKİ KEZ toplanırdı.
+local.file_match "uygulama" {
+	path_targets = [{
+		__path__ = "/logs/json/app*.json",
+		job      = "uygulama",
+	}]
+}
+
+loki.source.file "uygulama" {
+	targets    = local.file_match.uygulama.targets
+	forward_to = [loki.process.uygulama.receiver]
+}
+
+loki.process "uygulama" {
+	stage.json {
+		expressions = {
+			seviye = "level_name",
+			marka  = "extra.marka",
+		}
+	}
+
+	// ★ ETİKET KARDİNALİTESİ — Loki'de en pahalı hata burada yapılır.
+	//
+	// Etiketler indeksleniyor ve her benzersiz birleşim ayrı bir akış
+	// (stream) açıyor. `marka` düşük kardinaliteli (marka sayısı kadar),
+	// `seviye` beş değer — ikisi de güvenli.
+	//
+	// ⚠️ `istek_id` BİLEREK ETİKET DEĞİL: her isteğe ayrı değer, yani
+	//    SINIRSIZ kardinalite. Etiket yapılsaydı Loki her istek için bir
+	//    akış açar, indeks şişer ve sorgular yavaşlar. Satırın içinde
+	//    duruyor ve LogQL ile aranıyor:
+	//        {job="uygulama"} | json | extra_istek_id = "..."
+	stage.labels {
+		values = {
+			seviye = "",
+			marka  = "",
+		}
+	}
+
+	forward_to = [loki.write.varsayilan.receiver]
+}
+
+// ── Caddy erişim günlüğü ────────────────────────────────────────────
+//
+// Vitrin isteğinin HTTP tarafı burada: hangi adres, hangi durum kodu.
+// Uygulama günlüğüyle birlikte okunduğunda "müşteri ne gördü" sorusu
+// cevaplanabiliyor.
+local.file_match "caddy" {
+	path_targets = [{
+		__path__ = "/caddy-logs/access.log",
+		job      = "caddy",
+	}]
+}
+
+loki.source.file "caddy" {
+	targets    = local.file_match.caddy.targets
+	forward_to = [loki.process.caddy.receiver]
+}
+
+loki.process "caddy" {
+	stage.json {
+		expressions = {
+			durum   = "status",
+			alanadi = "request.host",
+		}
+	}
+
+	// `alanadi` marka sayısı kadar, `durum` HTTP kodu kadar — ikisi de
+	// sınırlı. Buraya `request.uri` KONMAZ: her ürün sayfası ayrı değer.
+	stage.labels {
+		values = {
+			durum   = "",
+			alanadi = "",
+		}
+	}
+
+	forward_to = [loki.write.varsayilan.receiver]
+}
+
+loki.write "varsayilan" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}

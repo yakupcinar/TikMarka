@@ -1,0 +1,13 @@
+# Grafana'nın Loki bağlantısı — elle kurulmasın diye önceden tanımlı.
+#
+# ⚠️ Elle kurulsaydı taze bir makinede Grafana açıldığında "veri kaynağı
+#    yok" ekranı gelirdi ve bunu kuran kişi hatırlamak zorunda kalırdı.
+apiVersion: 1
+
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+    editable: false

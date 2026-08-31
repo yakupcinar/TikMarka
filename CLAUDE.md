@@ -801,6 +801,13 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   'remember_token')` yazılmıştı ve `remember_token` zaten hiç
   yüklenmediği için iddia **`password` varken bile yeşil kalıyordu**.
   Olumsuz iddiaları **tek tek** yaz.
+  ⚠️ **KURAL YAZILI OLMASINA RAĞMEN B6'DA TEKRARLANDI** ve bu kez projenin
+  en sert kararını ölçen test hiçbir şey ölçmüyordu:
+  `->not->toContain('ports:', "servis: {$servis}")`. İkinci argüman
+  **mesaj sanılmıştı** — `toContain()` mesaj almıyor, o ikinci ARANAN
+  DEĞER. Yani "port dışarı açılmasın" iddiası, port açıkken de geçiyordu.
+  Olumsuz iddiaya **mesaj argümanı geçirme**; mesaj gerekiyorsa değeri
+  dizgeye katıp `toBe()` kullan.
 - **KIRMA DENEMESİ TUTMUYORSA TESTİ SUÇLA, KODU DEĞİL.** Denemenin hiçbir
   testi düşürmemesi "kod fazladan korunuyor" demek değil; genellikle
   "iddia başka bir şeyi ölçüyor" demek. 4.6AC'de iki kez oldu: kolon
@@ -1142,6 +1149,37 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   onu **üstlenen** bir betik (B2): JS kapalıysa tıklanıyor, motor
   tarayabiliyor.
   ⚠️ `withQueryString()` unutulursa arama sayfa 2'de kayboluyor.
+- **`restart` BİRİM BAĞLAMASINI UYGULAMAZ — `up -d` GEREKİR.** B6'da ısırdı:
+  Caddy'ye günlük birimi eklendi, `restart caddy` yapıldı, Caddy dosyayı
+  yazdı ama **konteynerin kendi katmanına** — birime değil; toplayıcı boş
+  klasör gördü. ⚠️ Kayıtlı tuzağın **TERS YÜZÜ**: bağlı yapılandırma
+  DOSYASI değişince `restart` gerekir (`up -d` yetmez), compose TANIMI
+  değişince `up -d` gerekir (`restart` yetmez). Ayırt etmenin yolu:
+  değiştirdiğin şey dosyanın İÇERİĞİ mi, compose'daki TANIM mı?
+- **`mb_strpos` KARAKTER, `preg_match` BAYT ofseti kullanır.** İkisi bir
+  arada kullanılınca Türkçe karakter/emoji içeren dosyada arama yanlış
+  yerden başlıyor. B6'da test yardımcısı `grafana` bloğunu keserken
+  `loki`de bitirdi ve **doğru yapılandırmayı yanlış sandı**. Yapı ayrıştıran
+  yerde `strpos`/`substr` kullan (ASCII iskelet), `mb_` ile karıştırma.
+- **`Log::build()` `tap`'İ UYGULAMAZ.** Yapılandırmadan gelmeyen bir kanal
+  ürettiği için `tap` hiç devreye girmiyor. B6'da bir kırma denemesi bu
+  yüzden tutmadı: test, işleyicinin biçimlendiriciyi ezip ezmediğini
+  sınadığını sanıyordu ama işleyici **hiç yüklü değildi**. Bir tap'i ölçen
+  test kanalı `Log::channel('<ad>')` ile, yani uygulamanın kendi çözdüğü
+  yoldan almalı.
+- **LOKI'NİN `auth_enabled: false` AYARI "GİRİŞ KAPALI" DEĞİL, "GİRİŞ DİYE
+  BİR ŞEY YOK" DEMEK.** Ona ağdan ulaşabilen herkes **bütün markaların**
+  günlüğünü okur. Bu yüzden `loki`/`grafana` servislerine `ports:`
+  YAZILMAZ — erişim yalnızca Caddy üzerinden. ⚠️ Ayarın gerçek anlamı çok
+  kiracılık: `true` olsaydı her istek `X-Scope-OrgID` isterdi; markaya
+  kendi günlüğü gösterilmek istendiği gün açılacak kapı budur.
+- **LOKI ETİKETİ = İNDEKS; SINIRSIZ DEĞER ALAN ALAN ETİKET OLMAZ.** Her
+  benzersiz etiket birleşimi ayrı bir akış açıyor. `istek_id` her istekte
+  farklı — etiket yapılırsa indeks şişer, sorgular yavaşlar. Satırın içinde
+  durur ve LogQL ile aranır. Etiket olabilecekler: `marka`, `seviye`,
+  `alanadi`, `durum` (hepsi sınırlı).
+  ⚠️ `retention_period` TEK BAŞINA ETKİSİZ: silmeyi compactor yapıyor,
+  `retention_enabled: true` olmadan süre dolsa da hiçbir şey silinmiyor.
 - **`git checkout` İZLENMEYEN DOSYAYI GERİ ALMAZ — SESSİZCE HİÇBİR ŞEY
   YAPMAZ.** B5'te ısırdı: o oturumda yeni yazılan (henüz commit'lenmemiş)
   bir middleware'e kırma denemesi uygulandı, `git checkout` ile geri

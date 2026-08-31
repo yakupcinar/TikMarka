@@ -40,6 +40,16 @@ class ReservedSubdomains
         'pay', 'odeme', 'payment', 'secure', 'guvenli', 'login', 'giris',
         'account', 'hesap', 'billing', 'fatura',
 
+        /*
+        | Operasyon yüzeyleri (B6) — Grafana bu adreste yayınlanıyor.
+        |
+        | ⚠️ Bu satır olmadan bir marka `gozlem` alt alan adını KENDİ
+        | mağazası olarak alabilirdi. O an Caddy'deki gözlem bloğu ile
+        | marka mağazası aynı adrese bakar; `tenant:create` BAŞARILI
+        | görünür ve izleme arayüzü sessizce erişilemez olur.
+        */
+        'gozlem', 'grafana', 'loki', 'logs', 'log', 'metrics', 'monitoring',
+
         // Yerel geliştirme
         'localhost',
     ];

@@ -92,7 +92,12 @@
 	# PHP-FPM bunu yapamaz.
 	file_server
 
-	log
+	log {
+		# ⚠️ DOSYAYA — stdout'a değil. Toplayıcı Docker soketi bağlamadan
+		# okuyabilsin diye (B6, gerekçe `docker/alloy/config.alloy`).
+		output file /var/log/caddy/access.log
+		format json
+	}
 }
 
 # ── ngrok tüneli (1E-K10) — YALNIZCA HTTP ──────────────────────────────
@@ -123,5 +128,39 @@ http://{$NGROK_DOMAIN:tunel-kapali.invalid} {
 	php_fastcgi {$FPM_HOST:app}:{$FPM_PORT:9000}
 
 	file_server
-	log
+	log {
+		# ⚠️ DOSYAYA — stdout'a değil. Toplayıcı Docker soketi bağlamadan
+		# okuyabilsin diye (B6, gerekçe `docker/alloy/config.alloy`).
+		output file /var/log/caddy/access.log
+		format json
+	}
+}
+
+# ── GÖZLEM ARAYÜZÜ (B6) ────────────────────────────────────────────────
+#
+# Grafana kendi başına bir web uygulaması; dışarıya YALNIZCA buradan
+# açılıyor. Konteynerinde `ports:` yok, yani Caddy'yi atlayan bir yol da
+# yok — TLS ve tek giriş kapısı korunuyor.
+#
+# ⚠️ AÇIK BLOK, JOKERİN İÇİNDEN GELMİYOR. `*.localhost` bu adresi de
+#    eşliyor ama Caddy DAHA ÖZEL olanı seçiyor; blok yazılmasaydı istek
+#    Laravel'e gider ve "böyle bir marka yok" derdi.
+#
+# ⚠️ ALT ALAN ADI AYRILMIŞ LİSTEDE OLMAK ZORUNDA. Olmasaydı bir marka
+#    `gozlem` alt alan adını kendi mağazası olarak alabilirdi; o an bu
+#    blok ile marka mağazası çakışır ve `tenant:create` BAŞARILI görünür.
+#    (`App\Platform\ReservedSubdomains::AYRILMIS`)
+#
+# ⚠️ `tls internal` YAZILMIYOR: Caddy `.localhost` için kendi iç
+#    otoritesini ZATEN kullanıyor, gerçek bir alan adı verildiğinde ise
+#    normal sertifika alması gerekiyor. Sabit yazılsaydı üretimde
+#    tarayıcı her seferinde uyarı verirdi.
+{$GOZLEM_DOMAIN:gozlem.localhost} {
+
+	reverse_proxy grafana:3000
+
+	log {
+		output file /var/log/caddy/access.log
+		format json
+	}
 }

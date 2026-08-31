@@ -1,7 +1,9 @@
 <?php
 
 use App\Logging\IstekBaglami;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
@@ -83,6 +85,40 @@ return [
             | gerçek hatalar hangi markaya, hangi müşteriye ve hangi
             | isteğe ait olduğunu SÖYLEMİYORDU — teşhis edilemiyorlardı.
             */
+            'tap' => [IstekBaglami::class],
+        ],
+
+        /*
+        |----------------------------------------------------------------
+        | MAKİNE İÇİN GÜNLÜK — toplayıcı bunu okuyor (B6)
+        |----------------------------------------------------------------
+        |
+        | ★ `daily` insan için, bu makine için. İkisi birden yazılıyor:
+        | yerelde hata ayıklarken okunabilir satır lazım, toplayıcıya ise
+        | ayrıştırılabilir alan.
+        |
+        | ⚠️ `driver: monolog` KULLANILIYOR — `daily` sürücüsünde
+        | `formatter` anahtarı ÇALIŞMIYOR (Laravel onu yalnızca monolog
+        | sürücüsünde okuyor). `daily` yazılıp `formatter` eklenseydi ayar
+        | sessizce yok sayılır, dosya satır biçiminde yazılır ve toplayıcı
+        | hiçbir alan çıkaramazdı.
+        |
+        | ⚠️ AYRI KLASÖR (`logs/json/`): toplayıcı `logs/*.log` desenini
+        | okusaydı insan günlüğünü de çeker ve her satır iki kez
+        | toplanırdı.
+        |
+        | ⚠️ `maxFiles` insan günlüğüyle AYNI (14): biri döner öteki
+        | dönmezse 72 MB problemi yeni bir yerde geri gelir.
+        */
+        'json' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => RotatingFileHandler::class,
+            'handler_with' => [
+                'filename' => storage_path('logs/json/app.json'),
+                'maxFiles' => (int) env('LOG_DAILY_DAYS', 14),
+            ],
+            'formatter' => JsonFormatter::class,
             'tap' => [IstekBaglami::class],
         ],
 

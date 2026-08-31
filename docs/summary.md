@@ -3772,3 +3772,74 @@ B5 · günlük bağlamı ve döndürme                                     ✅
   KAPSAM DIŞI (kullanıcı "1 ve 2"): testlerin ayrı dosyaya yazması.
 
   Test: tests/Tenancy/GunlukBaglamiTest.php — 11 test · süit 1045 yeşil
+
+────────────────────────────────────────────────────────────────────────
+B6 · gözlemlenebilirlik — Loki + Grafana                            ✅
+────────────────────────────────────────────────────────────────────────
+
+  B5 bağlamı ekledi ama ARAYACAK YER YOKTU; bu blok onu tamamlıyor.
+
+  SEÇİM
+    ✅ Loki + Grafana + Alloy   ~400 MB · OSS · UI + ALARM
+                                etiket bazlı indeks `marka` alanımıza
+                                birebir oturuyor
+    ❌ ELK · Graylog            JVM + 2 GB; Docker'a ayrılmış toplam
+                                3,8 GB ve 820 MB'ı postgres'te
+    ❌ Sentry (self-host)       ~20 konteyner, 4 GB+
+    ❌ Sentry (bulut)           log toplama değil hata takibi; ayrıca
+                                satırlar müşteri kimliği taşıyor →
+                                yurt dışına aktarım
+    ❌ OpenObserve/VictoriaLogs UI olgunluğu geride
+
+  ⚠ İZOLASYON MODELİNE İSTİSNA — kararla kabul edildi
+    Bugüne kadar marka izolasyonu FİZİKSEL (ayrı şema; M-2.4'te pgBouncer
+    tam bu yüzden reddedildi). Loki'yle bütün markaların verisi İLK KEZ
+    tek depoda ve ayrım yalnızca bir ETİKET.
+    Kabul: satırlar müşteri KİMLİĞİ taşıyor, e-posta taşımıyor, sipariş
+    içeriği yok, erişim yalnızca bizde.
+    SINIR: markaya kendi günlüğü gösterilecekse `auth_enabled: true` +
+    `X-Scope-OrgID` gerekir. Bugün açılmıyor, kapı bilerek kapatılıyor.
+
+  KARARLAR
+    portlar dışarı AÇILMIYOR   Loki'nin kimlik doğrulaması HİÇ YOK
+                               ölçüldü: localhost:3000 · :3100 → yok
+    uygulama Loki'yi BİLMİYOR  dosyaya yazar, toplayıcı okur
+                               (HTTP push olsaydı Loki çökünce istek
+                                yavaşlardı — 1F-K3'ün aynı gerekçesi)
+    docker soketi BAĞLANMIYOR  host'ta root eşdeğeri yetki demek;
+                               4-K5'in ölçüsü burada da uygulandı
+    istek_id ETİKET DEĞİL      sınırsız kardinalite → indeks şişer
+                               etiketler: marka·seviye·alanadi·durum
+    parola ZORUNLU (`:?`)      yoksa compose durur; varsayılan
+                               bırakılsaydı admin/admin
+    alt alan adları AYRILMIŞ   yoksa marka `gozlem`i kendi mağazası
+                               olarak alabilirdi
+    saklama 14 gün             ⚠ retention_period TEK BAŞINA ETKİSİZ,
+                               retention_enabled de gerekiyor
+    ayrı `json` kanalı         daily insan için, json makine için;
+                               logs/*.log okunsa her satır İKİ KEZ
+    profil arkasında           make gozlem / make gozlem-kapat
+    CI'a EKLENMİYOR            testler Loki'ye ihtiyaç duymuyor
+
+  UÇTAN UCA ÖLÇÜLDÜ
+    job → caddy · uygulama          marka → gerçek kiracı anahtarı
+    etiketlerde istek_id YOK ✓      gozlem.localhost → 302 /login
+
+  ⚠ KURULUMDA ISIRAN İKİ ŞEY
+    · `restart` BİRİM bağlamasını uygulamıyor — compose TANIMI değişince
+      `up -d` gerekiyor. Kayıtlı tuzağın TERS YÜZÜ.
+    · `mb_strpos` karakter, `preg_match` BAYT ofseti kullanıyor; Türkçe
+      karakterli dosyada test `grafana` ararken `loki`de bitti.
+
+  KIRMA DENEMELERİ 10/10 — İKİSİ ancak test düzeltilince
+
+    1. deneme (Grafana portu açıldı) DÜŞMEDİ ve bu en kötüsüydü:
+       `->not->toContain('ports:', "servis: …")` — ikinci argüman MESAJ
+       sanılmıştı, oysa ikinci ARANAN DEĞER. Yani projenin en sert
+       kararını ölçen test, port AÇIKKEN de geçiyordu.
+       ⚠ 4.6AC'de KAYITLI tuzağın birebir tekrarı.
+
+    8. deneme DÜŞMEDİ: test kanalı `Log::build()` ile kuruyordu ve o
+       yol `tap`'i HİÇ uygulamıyor — işleyici devrede bile değildi.
+
+  Test: tests/Tenancy/GozlemKurulumuTest.php — 11 test · süit 1056 yeşil

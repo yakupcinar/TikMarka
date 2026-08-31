@@ -7,6 +7,8 @@ services:
       FPM_PORT: ${FPM_PORT:-9000}
 
       NGROK_DOMAIN: ${NGROK_DOMAIN:-tunel-kapali.invalid}
+
+      GOZLEM_DOMAIN: ${GOZLEM_DOMAIN:-gozlem.localhost}
     ports:
       - "80:80"
       - "443:443"
@@ -15,6 +17,10 @@ services:
       - ./public:/var/www/html/public:ro
       - caddy_data:/data          # ⚠ sertifikalar burada — kalıcı olmalı (M-4.1/2)
       - caddy_config:/config
+
+      # Erişim günlüğü DOSYAYA yazılıyor (B6): toplayıcı Docker soketi
+      # bağlamadan okuyabilsin diye. Ayrıntı `docker/alloy/config.alloy`.
+      - caddy_logs:/var/log/caddy
     depends_on:
       - app
 
@@ -91,6 +97,68 @@ services:
       - "8025:8025"
 
   # ── ngrok tüneli — YALNIZCA ödeme sağlayıcısı testi için (1E-K10) ──
+  # ── Gözlemlenebilirlik (B6) — `--profile gozlem` ───────────────────
+  #
+  # ⚠️ PROFİL ARKASINDA: ölçüldü, üçü birlikte ~400 MB istiyor ve
+  #    Docker'a ayrılmış toplam 3,8 GB'ın 820 MB'ını zaten postgres
+  #    kullanıyor. Varsayılan `make ayaga` bu maliyeti ödemesin.
+  #
+  # ⚠️ ÜÇÜNÜN DE `ports:` YOK — pazarlık dışı. Loki'nin kimlik
+  #    doğrulaması HİÇ yok; portu dışarı açılsaydı sunucunun IP'sine
+  #    ulaşan herkes BÜTÜN markaların günlüklerini okurdu. Grafana'ya
+  #    da yalnızca Caddy üzerinden, TLS ile giriliyor.
+
+  loki:
+    image: grafana/loki:3.5.1
+    profiles: ["gozlem"]
+    command: -config.file=/etc/loki/loki.yaml
+    volumes:
+      - ./docker/loki/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki_data:/loki
+
+  grafana:
+    image: grafana/grafana:11.6.1
+    profiles: ["gozlem"]
+    environment:
+      # ⚠️ `:?` İLE ZORUNLU — değişken yoksa compose HATA VERİP DURUYOR.
+      #    Varsayılan bırakılsaydı Grafana kendi varsayılanına (admin/admin)
+      #    düşerdi ve bu, "herkes bütün markaların günlüğünü okur"
+      #    senaryosunun ta kendisi. Sessiz varsayılan yerine gürültülü hata.
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PAROLA:?Grafana yonetici parolasi .env'de tanimli olmali}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_KULLANICI:-yonetim}
+
+      # Kayıt olma AÇIK geliyor — kapatılıyor.
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+
+      # Caddy'nin arkasında olduğu için kök adres açıkça veriliyor;
+      # verilmezse üretilen bağlantılar `localhost:3000`'e çıkar.
+      GF_SERVER_ROOT_URL: ${GOZLEM_URL:-https://gozlem.localhost}
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - loki
+
+  alloy:
+    image: grafana/alloy:v1.7.5
+    profiles: ["gozlem"]
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./docker/alloy/config.alloy:/etc/alloy/config.alloy:ro
+
+      # ⚠️ İKİSİ DE SALT-OKUNUR ve Docker soketi YOK — gerekçesi
+      #    `config.alloy`'un başında.
+      - ./storage/logs:/logs:ro
+      - caddy_logs:/caddy-logs:ro
+
+      - alloy_data:/var/lib/alloy
+    depends_on:
+      - loki
+
   ngrok:
     image: ngrok/ngrok:latest
     profiles: ["tunel"]
@@ -104,6 +172,10 @@ services:
 
 volumes:
   blade_cache:
+  caddy_logs:
+  loki_data:
+  grafana_data:
+  alloy_data:
   node_modules:
   pg_data:
   redis_data:

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ───── şu an: B5 BİTTİ — sırada Faz 5 (kargo · e-fatura) ─────┐
+┌─ YOL HARİTASI ───── şu an: B6 BİTTİ — sırada Faz 5 (kargo · e-fatura) ─────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7180,6 +7180,114 @@ tuzağın ters yüzü: orada `checkout` fazlasını geri almıştı, burada
 
 **Kapsam dışı bırakıldı** (kullanıcı "1 ve 2'yi yap" dedi): testlerin ayrı
 günlük dosyasına yazması. Gürültü hâlâ %99,4.
+
+---
+
+### B6 — gözlemlenebilirlik: Loki + Grafana ✅
+
+**İstenen:** *"loglama için yeni servis eklemeye karar verdim… bedava,
+basit, scale olabilir, UI'ı da işlevsel."*
+
+B5 bağlamı ekledi ama **arayacak yer yoktu**; bu blok onu tamamlıyor.
+
+#### Seçim
+
+| Seçenek | Karar |
+|---|---|
+| **Loki + Grafana + Alloy** | ✅ Seçildi. OSS, ~400 MB, Grafana UI + **alarm**, etiket bazlı indeks bizim `marka` alanımıza birebir oturuyor |
+| ELK · Graylog | ❌ JVM + 2 GB taban. Docker'a ayrılmış toplam **3,8 GB** ve 820 MB'ı zaten postgres'te |
+| Sentry (kendi sunucumuzda) | ❌ ~20 konteyner, önerilen 4 GB+ |
+| Sentry (bulut, ücretsiz) | ❌ Log toplama değil hata takibi; ayrıca satırlarımız müşteri kimliği taşıyor ve bu **yurt dışına aktarım** demek |
+| OpenObserve · VictoriaLogs | ❌ Daha hafif ama UI olgunluğu geride — istenen "işlevsel UI"ydı |
+
+#### ⚠️ İZOLASYON MODELİNE AÇILAN İSTİSNA — kararla kabul edildi
+
+Bugüne kadar marka izolasyonu **fiziksel**: ayrı PostgreSQL şeması.
+M-2.4'te pgBouncer tam bu yüzden reddedildi. Loki'yle birlikte **bütün
+markaların verisi ilk kez tek bir depoda** toplanıyor ve ayrım yalnızca
+bir **etiket**.
+
+Kabul gerekçesi: satırlar müşteri **kimliği** taşıyor, e-posta taşımıyor
+(B5'te bilerek), sipariş içeriği hiç yok; erişim yalnızca bizde.
+
+**Sınır şimdi çiziliyor:** markaya "kendi günlüğünü göster" denmek
+istendiği gün bu kurulum yetmez — Loki'nin gerçek çok kiracılığı
+(`auth_enabled: true` + `X-Scope-OrgID`) açılmalı. Bugün açılmıyor ama
+kapı bilerek kapatılıyor.
+
+#### Kararlar
+
+| Karar | Gerekçe |
+|---|---|
+| **Portlar dışarı açılmıyor** — pazarlık dışı | Loki'nin `auth_enabled: false` ayarı "giriş kapalı" değil **"giriş diye bir şey yok"**. Portu yayınlansaydı sunucunun IP'sine ulaşan herkes bütün markaların günlüğünü okurdu. Ölçüldü: `localhost:3000` ve `:3100` → bağlantı yok |
+| **Uygulama Loki'yi bilmiyor** | Dosyaya yazıyor, toplayıcı okuyor. HTTP ile doğrudan gönderilseydi **Loki'nin çökmesi isteği yavaşlatırdı** — 1F-K3'ün aynı gerekçesi, ve hata yazarken hata üretmek en kötü hâl. Yan faydası: kilitlenme yok, Loki değişirse yalnızca toplayıcı değişir |
+| **Docker soketi bağlanmıyor** | Alloy'un standart yolu `/var/run/docker.sock` bağlamak; o soket konteynere host üzerinde **root eşdeğeri** yetki verir. Bu projede kullanıcının yazdığı Blade bile RCE riski yüzünden reddedildi (4-K5). Bedeli: konteyner etiketleri elle veriliyor. Bağlamalar salt-okunur |
+| **`istek_id` ETİKET DEĞİL** | Loki'de etiketler indeksleniyor ve her benzersiz birleşim ayrı bir akış açıyor. `istek_id` her istekte farklı — **sınırsız kardinalite**. Satırın içinde duruyor, LogQL ile aranıyor. Etiketler: `marka`, `seviye`, `alanadi`, `durum` — dördü de sınırlı |
+| **Grafana parolası zorunlu** | `${GRAFANA_PAROLA:?…}` — değişken yoksa compose **hata verip duruyor**. Varsayılan bırakılsaydı Grafana kendi varsayılanına (`admin/admin`) düşerdi ve Loki'nin hiç kimlik doğrulaması olmadığı için bu doğrudan "herkes her şeyi okur" demekti |
+| **Alt alan adları ayrılmış** | `gozlem` listede olmasaydı bir marka onu **kendi mağazası olarak alabilirdi**; o an Caddy bloğu ile mağaza çakışır ve `tenant:create` BAŞARILI görünür |
+| **Saklama süresi 14 gün** | `retention_period` **tek başına yetmiyor** — silmeyi compactor yapıyor ve `retention_enabled` olmadan hiçbir şey silinmiyor. Konmasaydı 72 MB problemi yeni bir yerde dönerdi |
+| **Ayrı `json` kanalı** | `daily` insan için, `json` makine için. Toplayıcı `logs/*.log` okusaydı her satır **iki kez** toplanırdı |
+| **Profil arkasında** | Üçü birlikte ~400 MB; `make ayaga` bu maliyeti ödemesin. `make gozlem` / `make gozlem-kapat` |
+| **CI'a eklenmiyor** | Testler Loki'ye ihtiyaç duymuyor; ölçtükleri şey servisin çalışması değil **kararların yerinde durması** |
+
+#### Uçtan uca ölçüldü
+
+```
+etiketler   alanadi · durum · job · marka · seviye     ← istek_id YOK ✓
+job         caddy · uygulama                            ← ikisi de akıyor
+marka       4c68b373-…                                  ← gerçek kiracı anahtarı
+gozlem.localhost → 302 /login  ·  /api/health → database: ok
+localhost:3000 ve :3100        → bağlantı YOK
+```
+
+#### ⚠️ Kurulum sırasında ısıran iki şey
+
+**1. `restart` birim bağlamasını uygulamıyor.** Caddy'ye günlük birimi
+eklendi ve `docker compose restart caddy` yapıldı; Caddy dosyayı yazdı
+ama **konteynerin kendi katmanına**, birime değil — toplayıcı boş klasör
+gördü. Compose *tanımı* değiştiğinde `up -d` gerekiyor. Kayıtlı tuzağın
+(`bağlı yapılandırma değişince restart gerekir`) **ters yüzü**: orada
+`up -d` yetmiyordu, burada `restart` yetmedi.
+
+**2. `mb_strpos` karakter, `preg_match` BAYT ofseti kullanıyor.** Test
+yardımcısı compose servisini kesip alırken ikisini karıştırdı; dosyada
+Türkçe karakter ve emoji olduğu için arama yanlış yerden başladı,
+`grafana` bloğu ararken `loki`de bitti ve test **doğru yapılandırmayı
+yanlış sandı**.
+
+#### Kırma denemeleri — 10/10 düştü, ikisi ancak test düzeltilince
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | Grafana portu dışarı açıldı | **önce DÜŞMEDİ** ↓ |
+| 2 | parola sessiz varsayılana düştü | 1 düştü |
+| 3 | `gozlem` ayrılmış listeden çıkarıldı | 1 düştü |
+| 4 | `istek_id` etiket yapıldı | 1 düştü |
+| 5 | Loki saklama süresi kapatıldı | 1 düştü |
+| 6 | toplayıcıya docker soketi bağlandı | 1 düştü |
+| 7 | bağlamalar yazılabilir yapıldı | 1 düştü |
+| 8 | tap JSON biçimlendiriciyi de eziyor | **önce DÜŞMEDİ** ↓ |
+| 9 | toplayıcı `logs/*.log` okuyor | 1 düştü |
+| 10 | Caddy günlüğü stdout'a döndü | 1 düştü |
+
+**1. deneme — ve bu en kötüsüydü, çünkü projenin en sert kararını ölçen
+test hiçbir şey ölçmüyormuş.** İddia
+`->not->toContain('ports:', "servis: {$servis}")` yazılmıştı; `toContain()`
+çok argümanlı ve ikinci argüman **mesaj değil ikinci aranan değer**.
+İkincisi zaten yok olduğu için iddia `ports:` **varken bile** geçiyordu.
+⚠️ Bu **4.6AC'de kayıtlı tuzağın birebir tekrarı** — kural yazılı olmasına
+rağmen yeniden yapıldı.
+
+**8. deneme** `Log::build()` ile kurulan bir kanalı ölçüyordu; ölçüldü ki
+`build()` yapılandırmadan gelmeyen bir kanal ürettiği için **`tap` hiç
+uygulanmıyor**. Test, ezilip ezilmediğini sınadığını sanıyordu ama
+işleyici hiç devrede değildi. Gerçek `json` kanalına satır yazıp dosyadan
+okuyan hâle çevrildi.
+
+**Test:** `tests/Tenancy/GozlemKurulumuTest.php` — 11 test.
+
+**Kapsam dışı:** alarm kuralları (Grafana'da elle ya da ayrı blok) ve
+testlerin ayrı günlük dosyasına yazması.
 
 ---
 
