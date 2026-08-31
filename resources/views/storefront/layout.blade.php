@@ -21,6 +21,8 @@
 
     <meta name="description" content="@yield('aciklama', $tema['ad'])">
 
+    @include('storefront.partials.seo')
+
     {{--
         ⚠️ TEMA BETİĞİ CSS'TEN ÖNCE VE SENKRON. (4.6AB)
 

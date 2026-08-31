@@ -79,7 +79,7 @@ it('★★★ BASKASININ siparisine iade acilamiyor', function () {
     ['siparis' => $siparis] = iadelikSiparis();
 
     $yabanci = Customer::create([
-        'name' => 'Yabanci', 'email' => 'yabanci@ornek.test', 'password' => bcrypt('sifre1234'),
+        'name' => 'Yabanci', 'email' => 'yabanci@ornek.com', 'password' => bcrypt('sifre1234'),
     ]);
 
     iadeciGirisi($yabanci);

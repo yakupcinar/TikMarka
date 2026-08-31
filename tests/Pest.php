@@ -455,7 +455,7 @@ function odemeAsamasiSiparisiMusteriyle(string $alanAdi, Customer $musteri): arr
 function odemeVerisi(int $sozlesmeId): array
 {
     return [
-        'email' => 'ayse@ornek.test',
+        'email' => 'ayse@ornek.com',
         'legal_version_id' => $sozlesmeId,
         'shipping' => [
             'full_name' => 'Ayşe Yılmaz',
@@ -758,7 +758,7 @@ function teslimAlmisMusteri(string $alanAdi): array
     $marka = markaKur($alanAdi);
     magazayiHazirla();
 
-    $musteri = Customer::factory()->create(['email' => 'alici@ornek.test']);
+    $musteri = Customer::factory()->create(['email' => 'alici@ornek.com']);
 
     $hazir = odemeAsamasiSiparisiMusteriyle($alanAdi, $musteri);
     $siparis = $hazir['siparis'];
@@ -848,7 +848,7 @@ function vitrinYorumGirisi(Customer $musteri): void
 | göremiyor ve `phpstan.neon`'daki istisna YALNIZCA bu dosya için tanımlı.
 | (4.6W ve 4.6C'de aynı sebeple iki yardımcı daha taşınmıştı.)
 */
-function favoriGirisi(string $eposta = 'favori@ornek.test'): void
+function favoriGirisi(string $eposta = 'favori@ornek.com'): void
 {
     test()->post('http://marka-a.test/giris', ['email' => $eposta, 'password' => 'sifre12345'])
         ->assertRedirect();

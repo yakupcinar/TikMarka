@@ -38,7 +38,7 @@ function bolumlerHazir(): array
     // ⚠️ Önbellek testler arasında taşınmasın: bölümler 5 dk önbellekli.
     Cache::flush();
 
-    return ['musteri' => Customer::factory()->create(['email' => 'alici@ornek.test'])];
+    return ['musteri' => Customer::factory()->create(['email' => 'alici@ornek.com'])];
 }
 
 // ─────────────────────────────────────────────────────────────────────

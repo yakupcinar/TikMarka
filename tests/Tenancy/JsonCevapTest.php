@@ -44,7 +44,7 @@ it('★ PANEL ucu da başlıksız 401 dönüyor', function () {
 it('★ DOĞRULAMA hatası da başlıksız JSON dönüyor — 422', function () {
     $marka = markaKur('json-c.test');
 
-    $musteri = Customer::factory()->create(['email' => 'json@ornek.test']);
+    $musteri = Customer::factory()->create(['email' => 'json@ornek.com']);
     $token = $musteri->createToken('test')->plainTextToken;
 
     /*

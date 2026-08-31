@@ -240,13 +240,13 @@ it('A markasinin tokeni B markasinda gecersiz', function () {
 it('Türkçe büyük İ ile yazılan e-posta AYNI hesaba düşüyor', function () {
     markaKur('eposta-a.test');
 
-    $musteri = Customer::factory()->create(['email' => 'ismail@ornek.test', 'password' => 'sifre1234']);
+    $musteri = Customer::factory()->create(['email' => 'ismail@ornek.com', 'password' => 'sifre1234']);
 
     // Kullanıcı Türkçe klavyeyle büyük yazdı. Düzeltilmeseydi eşleşme
     // bulunamaz, "parola yanlış" derdik ve hesabı dururken kilitlenirdi.
     guardOnbelleginiTemizle();
     $this->postJson('http://eposta-a.test/api/login', [
-        'email' => 'İSMAIL@ornek.test',
+        'email' => 'İSMAIL@ornek.com',
         'password' => 'sifre1234',
     ])->assertOk()->assertJsonPath('customer.uuid', $musteri->uuid);
 });
@@ -254,13 +254,13 @@ it('Türkçe büyük İ ile yazılan e-posta AYNI hesaba düşüyor', function (
 it('Türkçe büyük İ ile İKİNCİ hesap açılamıyor', function () {
     markaKur('eposta-b.test');
 
-    Customer::factory()->create(['email' => 'ismail@ornek.test']);
+    Customer::factory()->create(['email' => 'ismail@ornek.com']);
 
     // Düzeltmeden önce burası 201 dönüyordu: iki ayrı müşteri, aynı kişi.
     guardOnbelleginiTemizle();
     $this->postJson('http://eposta-b.test/api/register', [
         'name' => 'İsmail',
-        'email' => 'İSMAIL@ornek.test',
+        'email' => 'İSMAIL@ornek.com',
         'password' => 'sifre1234',
         'password_confirmation' => 'sifre1234',
     ])->assertStatus(422)->assertJsonValidationErrors(['email']);
@@ -269,7 +269,7 @@ it('Türkçe büyük İ ile İKİNCİ hesap açılamıyor', function () {
 it('e-posta normalleştirme PostgreSQL lower ile aynı sonucu veriyor', function () {
     markaKur('eposta-c.test');
 
-    foreach (['İSMAIL@ornek.test', 'ISMAIL@ornek.test', 'Işık@ornek.test', 'ŞÜKRÜ@ornek.test'] as $ham) {
+    foreach (['İSMAIL@ornek.com', 'ISMAIL@ornek.com', 'Işık@ornek.com', 'ŞÜKRÜ@ornek.com'] as $ham) {
         $php = EmailNormalizer::normallestir($ham);
         $pg = DB::selectOne('SELECT lower(?) AS v', [$ham])->v;
 
@@ -288,7 +288,7 @@ it('Türkçe karakterli e-posta REDDEDİLİYOR — teslim edilemeyeceği için',
     */
     $this->postJson('http://eposta-d.test/api/register', [
         'name' => 'Şükrü',
-        'email' => 'şükrü@ornek.test',
+        'email' => 'şükrü@ornek.com',
         'password' => 'sifre1234',
         'password_confirmation' => 'sifre1234',
     ])->assertStatus(422)->assertJsonValidationErrors(['email']);
@@ -302,6 +302,6 @@ it('ASCII kısıtı VERİTABANINDA da zorlanıyor', function () {
     | içe aktarma işi doğrudan Customer::create() çağırırsa onu atlar —
     | 1A'daki `email = lower(email)` emniyetinin aynısı.
     */
-    expect(fn () => Customer::factory()->create(['email' => 'şükrü@ornek.test']))
+    expect(fn () => Customer::factory()->create(['email' => 'şükrü@ornek.com']))
         ->toThrow(QueryException::class);
 });

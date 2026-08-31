@@ -181,7 +181,7 @@ it('başlatma yönlendirme adresi ve referans üretiyor', function () {
     $sonuc = app(FakePaymentProvider::class)->baslat(new PaymentRequest(
         siparisNumarasi: 'TM-2026-000001',
         tutar: '200.00',
-        eposta: 'misafir@ornek.test',
+        eposta: 'misafir@ornek.com',
         idempotanslikAnahtari: 'TM-2026-000001',
         donusAdresi: 'http://odeme-i.test/odeme/donus',
     ));

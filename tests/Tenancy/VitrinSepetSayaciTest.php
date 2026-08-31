@@ -24,7 +24,7 @@ use App\Models\Order;
 function sayacMusterisi(): Customer
 {
     return Customer::create([
-        'email' => 'sayac@ornek.test', 'password' => bcrypt('sifre1234'), 'name' => 'Ayşe Yılmaz',
+        'email' => 'sayac@ornek.com', 'password' => bcrypt('sifre1234'), 'name' => 'Ayşe Yılmaz',
     ]);
 }
 
@@ -142,7 +142,7 @@ it('★★ BASKASININ siparisi iptal edilemiyor', function () {
     $siparis = bekleyenSiparis($varyant, $kurban);
 
     $saldirgan = Customer::create([
-        'email' => 'saldirgan@ornek.test', 'password' => bcrypt('sifre1234'), 'name' => 'S',
+        'email' => 'saldirgan@ornek.com', 'password' => bcrypt('sifre1234'), 'name' => 'S',
     ]);
 
     $this->post('http://marka-a.test/giris', ['email' => $saldirgan->email, 'password' => 'sifre1234']);

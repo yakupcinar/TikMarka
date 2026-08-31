@@ -49,7 +49,7 @@ function saatTestiSiparisi(): array
     $varyant = sayacMagazasi();
 
     $musteri = Customer::create([
-        'email' => 'saat@ornek.test', 'password' => bcrypt('sifre1234'), 'name' => 'Ayşe Yılmaz',
+        'email' => 'saat@ornek.com', 'password' => bcrypt('sifre1234'), 'name' => 'Ayşe Yılmaz',
     ]);
 
     $siparis = bekleyenSiparis($varyant, $musteri);

@@ -32,7 +32,7 @@ function dogrulamaMagazasi(string $alanAdi = 'marka-a.test'): array
     return $marka;
 }
 
-function dogrulanmamisMusteri(string $eposta = 'ayse@ornek.test'): Customer
+function dogrulanmamisMusteri(string $eposta = 'ayse@ornek.com'): Customer
 {
     return Customer::create([
         'name' => 'Ayşe', 'email' => $eposta, 'password' => bcrypt('sifre12345'),
@@ -45,7 +45,7 @@ it('★★★ KAYIT doğrulama postasi TETIKLIYOR — kuyruktan ve MARKA adiyla'
 
     $this->post('http://marka-a.test/kayit', [
         'name' => 'Yeni Müşteri',
-        'email' => 'yeni@ornek.test',
+        'email' => 'yeni@ornek.com',
         'password' => 'sifre12345',
         'password_confirmation' => 'sifre12345',
     ])->assertRedirect();
@@ -53,10 +53,10 @@ it('★★★ KAYIT doğrulama postasi TETIKLIYOR — kuyruktan ve MARKA adiyla'
     // ⚠️ `assertQueued` — `assertSent` DEĞİL. BrandMail ShouldQueue;
     // gönderim kuyruktan yapılıyor ve `assertSent` hiçbir şey görmez.
     Mail::assertQueued(EmailVerificationMail::class, function ($posta) {
-        return $posta->hasTo('yeni@ornek.test');
+        return $posta->hasTo('yeni@ornek.com');
     });
 
-    $musteri = Customer::where('email', 'yeni@ornek.test')->firstOrFail();
+    $musteri = Customer::where('email', 'yeni@ornek.com')->firstOrFail();
     expect($musteri->hasVerifiedEmail())->toBeFalse();
 });
 
@@ -127,7 +127,7 @@ it('★★★ A MARKASININ baglantisi B MARKASINDA calismiyor — APP_KEY ortak'
     tenancy()->end();
     tenancy()->initialize($markaA['tenant']);
 
-    expect(Customer::where('email', 'ayse@ornek.test')->firstOrFail()->hasVerifiedEmail())->toBeFalse();
+    expect(Customer::where('email', 'ayse@ornek.com')->firstOrFail()->hasVerifiedEmail())->toBeFalse();
 });
 
 it('★★★ E-POSTA DEGISINCE eski baglanti OLUYOR', function () {
@@ -139,7 +139,7 @@ it('★★★ E-POSTA DEGISINCE eski baglanti OLUYOR', function () {
     | ⚠️ Hash olmasaydı "adresi değiştir, eski postadaki bağlantıya tıkla"
     | ile DOĞRULANMAMIŞ bir adres doğrulanmış olurdu.
     */
-    $musteri->email = 'baska@ornek.test';
+    $musteri->email = 'baska@ornek.com';
     $musteri->save();
 
     $this->get($adres)->assertRedirect('http://marka-a.test/giris');
@@ -177,7 +177,7 @@ it('★★★ ODEME doğrulanmamis musteriye ACIK — misafir odemesi varken kap
     */
     $musteri = dogrulanmamisMusteri();
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'sifre12345',
+        'email' => 'ayse@ornek.com', 'password' => 'sifre12345',
     ])->assertRedirect();
 
     expect($musteri->refresh()->hasVerifiedEmail())->toBeFalse();
@@ -258,7 +258,7 @@ it('★★★ HESAP SAYFASINDAKI formun ADRESI POST kabul ediyor — tarayici gi
     dogrulanmamisMusteri();
 
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'sifre12345',
+        'email' => 'ayse@ornek.com', 'password' => 'sifre12345',
     ])->assertRedirect();
 
     $html = (string) $this->get('http://marka-a.test/hesabim')->assertOk()->getContent();
@@ -291,7 +291,7 @@ it('★★★ YENIDEN GONDERME sinirli — 4. istek 429', function () {
     dogrulanmamisMusteri();
 
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'sifre12345',
+        'email' => 'ayse@ornek.com', 'password' => 'sifre12345',
     ])->assertRedirect();
 
     /*
@@ -309,10 +309,10 @@ it('★★★ YENIDEN GONDERME sinirli — 4. istek 429', function () {
 it('★★ YENIDEN GONDERME ucu ADRESI ISTEKTEN ALMIYOR — oturumdan aliyor', function () {
     dogrulamaMagazasi();
     dogrulanmamisMusteri();
-    dogrulanmamisMusteri('kurban@ornek.test');
+    dogrulanmamisMusteri('kurban@ornek.com');
 
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'sifre12345',
+        'email' => 'ayse@ornek.com', 'password' => 'sifre12345',
     ])->assertRedirect();
 
     Mail::fake();
@@ -322,9 +322,9 @@ it('★★ YENIDEN GONDERME ucu ADRESI ISTEKTEN ALMIYOR — oturumdan aliyor', f
     | aracı olurdu: saldırgan istediği adrese, marka adıyla, sınırsız
     | posta tetiklerdi.
     */
-    $this->post('http://marka-a.test/e-posta-dogrula/gonder', ['email' => 'kurban@ornek.test'])
+    $this->post('http://marka-a.test/e-posta-dogrula/gonder', ['email' => 'kurban@ornek.com'])
         ->assertRedirect();
 
-    Mail::assertQueued(EmailVerificationMail::class, fn ($posta) => $posta->hasTo('ayse@ornek.test'));
-    Mail::assertNotQueued(EmailVerificationMail::class, fn ($posta) => $posta->hasTo('kurban@ornek.test'));
+    Mail::assertQueued(EmailVerificationMail::class, fn ($posta) => $posta->hasTo('ayse@ornek.com'));
+    Mail::assertNotQueued(EmailVerificationMail::class, fn ($posta) => $posta->hasTo('kurban@ornek.com'));
 });

@@ -122,6 +122,12 @@ veya dağıtım için izin gerekir.
 
 ## İyileştirme
 
+Ürün durumları kusurlu gözüküyor ve işleniyor;
+Ödeme ekranına kadar geliyorum ama ödeme yapmıyorum, baktım siparişlerime ödeme yap-iptal et duruyor mesela
+iptal et diyorum hazırlanıyor durumunda kalıyor ama normalde iptal et dediğinde direkt iptal olması lazım niye onay beklesin
+satıcıdan zaten ödemesini yapmamış yani kargolamaya hiç geçilmemiş ayrıca ödemeyi öyle orda istediği kadar tutamaz ki
+belli bir süresi yok muydu 1 gün kaldı mesela öde deyince de hata verdi en baştan onun kalkması gerekiyor ödeme süresi bitince(e-ticaretler nasıl işliyor burayı)
+
 * ~~Silinen ürün sepette kalınca "variant uuid zorunludur" hatası~~ → **4.6AJ'de kapandı**
 
 > **Sorunun cevabı: evet, soft delete atıyoruz** — ürün de varyant da yumuşak
@@ -254,6 +260,35 @@ veya dağıtım için izin gerekir.
 > satanlar" çıkıyor, ötekiler veri biriktikçe kendiliğinden açılacak.
 
 
+
+* ~~SEO~~ → **B3'te kapandı**
+
+> Ölçtüm: canonical, robots meta, Open Graph, JSON-LD ve sitemap **hiç
+> yoktu**; `robots.txt` ise `public/`te duruyordu — yani statik ve çok
+> kiracılıkta **markaya göre değişemiyordu**, her marka aynı `Sitemap:`
+> satırını görüyordu. Dosya silindi, iki uç kiracı rotalarına taşındı.
+>
+> ⚠️ Fiyat yapısal veride **yalnızca satılabilir varyanttan** alınıyor:
+> tükenmiş ucuz varyanttan alınsaydı arama sonucundaki fiyat sayfadakiyle
+> tutmaz, Google bunu yanıltıcı fiyat sayıp zengin sonuçtan düşürürdü.
+>
+> ⚠️ **Blade `@context`'i kendi yönergesi sandı** ve yapısal veriyi
+> sessizce bozdu — sayfa açılıyor, hata çıkmıyor, üretilen JSON geçersiz.
+> Üretim bir PHP sınıfına taşındı.
+
+* ~~"Address not found" posta iadesi~~ → **B4'te kapandı**
+
+> Senin aldığın iade gerçek bir kusurdu: test siparişi
+> `vazgec@marka-a.localhost` adresiyle verilmişti ve sistem **gerçekten
+> posta göndermeye çalışıyordu**. Artık RFC 6761 ve RFC 2606 adresleri
+> gönderimden önce eleniyor.
+>
+> ⚠️ Eleme **doğrulamada değil gönderimde**: kural doğrulamaya konsaydı
+> gerçek müşteri yazım hatasında sipariş **veremezdi**.
+>
+> ⚠️ **Demo hesabı gerçek e-posta almaz** — tohumlayıcının adresleri
+> bilerek ayrılmış uzantıda. Sunumda posta akışı gösterilecekse gerçek bir
+> adresle kayıt ol.
 
 > Açık kusurlar ve fikirler. Biten maddeler **silinmiyor** — aşağıdaki
 > "Yapıldı" bölümüne taşınıyor ki tekrar kontrol edilebilsin.

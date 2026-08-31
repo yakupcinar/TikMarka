@@ -26,7 +26,7 @@ beforeEach(function () {
 it('★★★ SELF-SERVIS KAYIT markayi ONAY BEKLER durumda aciyor', function () {
     $cevap = $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Deneme Marka',
-        'email' => 'sahip@ornek.test',
+        'email' => 'sahip@ornek.com',
         'password' => 'sifre1234',
         'subdomain' => 'deneme-marka',
     ])->assertCreated();
@@ -51,7 +51,7 @@ it('★★★ ONAY BEKLEYEN markanin PANELI ve VITRINI kapali', function () {
 
 it('★★★ ONAY denemeyi BASLATIYOR', function () {
     $marka = app(TenantProvisioning::class)->ac(
-        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.test', 'sifre1234', onayBekliyor: true,
+        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.com', 'sifre1234', onayBekliyor: true,
     );
 
     $yonetici = merkezKullanici();
@@ -68,7 +68,7 @@ it('★★★ ONAY denemeyi BASLATIYOR', function () {
 
 it('★★★ RED markayi KAPATIYOR ve sebebi saklıyor', function () {
     $marka = app(TenantProvisioning::class)->ac(
-        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.test', 'sifre1234', onayBekliyor: true,
+        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.com', 'sifre1234', onayBekliyor: true,
     );
 
     $yonetici = merkezKullanici();
@@ -89,7 +89,7 @@ it('★★★ RED markayi KAPATIYOR ve sebebi saklıyor', function () {
 
 it('★★★ ONAY BEKLEMEYEN marka onaylanamiyor', function () {
     $marka = app(TenantProvisioning::class)->ac(
-        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.test', 'sifre1234',
+        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.com', 'sifre1234',
     );
 
     $yonetici = merkezKullanici();
@@ -110,7 +110,7 @@ it('★★★ ONAY BEKLEMEYEN marka onaylanamiyor', function () {
 
 it('★★★ ONAY BEKLEYEN markanin alan adi SERTIFIKA ALAMIYOR', function () {
     $marka = app(TenantProvisioning::class)->ac(
-        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.test', 'sifre1234', onayBekliyor: true,
+        'Deneme Marka', 'deneme.localhost', 'sahip@ornek.com', 'sifre1234', onayBekliyor: true,
     );
 
     /*
@@ -133,7 +133,7 @@ it('★★★ ONAY BEKLEYEN markanin alan adi SERTIFIKA ALAMIYOR', function () {
 
 it('★★ tenant:create ONAY ISTEMIYOR — operasyon komutu kilitlenmemeli', function () {
     $marka = app(TenantProvisioning::class)->ac(
-        'Komut Marka', 'komut.localhost', 'sahip@ornek.test', 'sifre1234',
+        'Komut Marka', 'komut.localhost', 'sahip@ornek.com', 'sifre1234',
     );
 
     /*

@@ -294,7 +294,7 @@ it('misafir siparişinde e-posta DOLU, customer_id boş', function () {
 
     // E-posta misafir siparişinin TEK iletişim kanalı.
     expect($siparis->misafirSiparisiMi())->toBeTrue()
-        ->and($siparis->email)->toBe('ayse@ornek.test');
+        ->and($siparis->email)->toBe('ayse@ornek.com');
 });
 
 it('iki markanın siparişleri karışmıyor', function () {

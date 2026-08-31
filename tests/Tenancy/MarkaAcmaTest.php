@@ -27,7 +27,7 @@ it('★ ZİYARETÇİ marka açabiliyor — kendi parolasıyla', function () {
 
     $cevap = $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Ayşe’nin Butiği',
-        'email' => 'ayse@ornek.test',
+        'email' => 'ayse@ornek.com',
         'password' => 'guclu-parola-123',
     ])->assertCreated();
 
@@ -66,7 +66,7 @@ it('★ ZİYARETÇİ marka açabiliyor — kendi parolasıyla', function () {
     | bilinen parolayla doğardı.
     */
     $marka->run(function (): void {
-        $sahip = User::where('email', 'ayse@ornek.test')->firstOrFail();
+        $sahip = User::where('email', 'ayse@ornek.com')->firstOrFail();
 
         expect($sahip->is_owner)->toBeTrue()
             ->and(Hash::check('guclu-parola-123', $sahip->password))->toBeTrue();
@@ -80,7 +80,7 @@ it('★ MAĞAZA KAPALI doğuyor ve bu SÖYLENİYOR', function () {
 
     $cevap = $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Kapalı Doğan',
-        'email' => 'kapali@ornek.test',
+        'email' => 'kapali@ornek.com',
         'password' => 'guclu-parola-123',
     ])->assertCreated();
 
@@ -115,7 +115,7 @@ it('★ AYRILMIŞ alt alan adı alınamıyor — kendi panelimizi kaybetmeyiz', 
     foreach (['panel', 'admin', 'api', 'www', 'odeme'] as $ayrilmis) {
         $this->postJson('http://localhost/platform/signup', [
             'brand_name' => 'Deneme',
-            'email' => 'deneme@ornek.test',
+            'email' => 'deneme@ornek.com',
             'password' => 'guclu-parola-123',
             'subdomain' => $ayrilmis,
         ])->assertStatus(422);
@@ -124,7 +124,7 @@ it('★ AYRILMIŞ alt alan adı alınamıyor — kendi panelimizi kaybetmeyiz', 
     // ⚠️ Büyük harfle de kaçamıyor — karşılaştırma slug üzerinden.
     $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Deneme',
-        'email' => 'deneme@ornek.test',
+        'email' => 'deneme@ornek.com',
         'password' => 'guclu-parola-123',
         'subdomain' => 'PANEL',
     ])->assertStatus(422);
@@ -150,13 +150,13 @@ it('★ AYNI ADDA iki marka — ikincisi SONEK alıyor', function () {
 
     $ilk = $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Çakışan Ad',
-        'email' => 'ilk@ornek.test',
+        'email' => 'ilk@ornek.com',
         'password' => 'guclu-parola-123',
     ])->assertCreated();
 
     $ikinci = $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Çakışan Ad',
-        'email' => 'ikinci@ornek.test',
+        'email' => 'ikinci@ornek.com',
         'password' => 'guclu-parola-123',
     ])->assertCreated();
 
@@ -182,7 +182,7 @@ it('★ DOLU alan adı reddediliyor — 500 değil 422', function () {
     | ⚠️ Veritabanı UNIQUE kısıtına bırakılsaydı kullanıcı 500 görürdü.
     | Kontrol kısıtın YERİNE değil ÖNÜNDE.
     */
-    expect(fn () => app(TenantProvisioning::class)->ac('X', 'dolu-adres.test', 'x@ornek.test', 'parola-123'))
+    expect(fn () => app(TenantProvisioning::class)->ac('X', 'dolu-adres.test', 'x@ornek.com', 'parola-123'))
         ->toThrow(DomainUnavailableException::class);
 });
 
@@ -216,7 +216,7 @@ it('★ HAFTALIK TAVAN gürültülü — sessizce kırık marka açılmıyor', f
 
     $cevap = $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Tavanı Aşan',
-        'email' => 'tavan@ornek.test',
+        'email' => 'tavan@ornek.com',
         'password' => 'guclu-parola-123',
     ])->assertStatus(503);
 
@@ -268,7 +268,7 @@ it('★ KURULUM YARIDA KALIRSA arkası TOPLANIYOR', function () {
     | ⚠️ `toThrow(Throwable::class)` ÇALIŞMIYOR — Pest somut sınıf istiyor.
     | 2C'de aynı şeye takılmıştık.
     */
-    expect(fn () => app(TenantProvisioning::class)->ac('Yarım Kalan', $cokUzun, 'x@ornek.test', 'parola-123'))
+    expect(fn () => app(TenantProvisioning::class)->ac('Yarım Kalan', $cokUzun, 'x@ornek.com', 'parola-123'))
         ->toThrow(QueryException::class);
 
     /*
@@ -305,7 +305,7 @@ it('★ ZAYIF PAROLA reddediliyor', function () {
 
     $this->postJson('http://localhost/platform/signup', [
         'brand_name' => 'Zayıf',
-        'email' => 'zayif@ornek.test',
+        'email' => 'zayif@ornek.com',
         'password' => '123',
     ])->assertStatus(422);
 });

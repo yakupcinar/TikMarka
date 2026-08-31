@@ -56,6 +56,20 @@ class StorefrontViewData
             'tema' => $goruntu,
 
             /*
+            | ★ CANONICAL ADRES (B3) — burada üretiliyor, görünümde değil.
+            |
+            | ⚠️ Sorgu dizesi TEMİZLENİYOR ama `sayfa` KORUNUYOR. Hepsini
+            | 1. sayfaya işaret etmek 2. sayfadaki ürünleri dizinden
+            | düşürürdü; hiçbirini korumamak ise her sayfayı ana sayfanın
+            | kopyası yapardı. B2 `?sayfa=` adreslerini yeni ekledi, yani
+            | bu ayrım bugün gerekli hâle geldi.
+            |
+            | ⚠️ `q` ve UTM gibi parametreler DIŞARIDA: her etiket ayrı
+            | bir "asıl adres" üretemez.
+            */
+            'seoCanonical' => $this->canonical(),
+
+            /*
             | ★ OKUNUR MARKA RENGİ (4.6AD) — tema başına AYRI.
             |
             | ⚠️ Marka rengi metin olarak kullanıldığında okunmayabiliyor:
@@ -151,5 +165,22 @@ class StorefrontViewData
         $sepet = $this->coz->bul($istek);
 
         return $sepet === null ? 0 : (int) $sepet->items()->sum('quantity');
+    }
+
+    /**
+     * Sayfanın kendini işaret eden adresi.
+     *
+     * ⚠️ `url()->current()` sorgu dizesini zaten atıyor; `sayfa` elle
+     * geri konuyor.
+     */
+    private function canonical(): string
+    {
+        $sayfa = request()->query('sayfa');
+
+        $adres = url()->current();
+
+        return is_string($sayfa) && ctype_digit($sayfa) && (int) $sayfa > 1
+            ? $adres.'?sayfa='.(int) $sayfa
+            : $adres;
     }
 }

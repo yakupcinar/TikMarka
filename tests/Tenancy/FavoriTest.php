@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
 */
 
 /** @return array{musteri: Customer, urun: Product} */
-function favoriHazir(string $eposta = 'favori@ornek.test'): array
+function favoriHazir(string $eposta = 'favori@ornek.com'): array
 {
     markaKur('marka-a.test');
     magazayiHazirla();
@@ -79,9 +79,9 @@ it('★★★ MISAFIR favorileyemiyor — giris ekranina yonlendiriliyor', funct
 });
 
 it('★★★ BASKASININ favorisi ETKILENMIYOR', function () {
-    ['musteri' => $ilk, 'urun' => $urun] = favoriHazir('ilk@ornek.test');
+    ['musteri' => $ilk, 'urun' => $urun] = favoriHazir('ilk@ornek.com');
 
-    $ikinci = Customer::create(['name' => 'Zeynep', 'email' => 'ikinci@ornek.test', 'password' => bcrypt('sifre12345')]);
+    $ikinci = Customer::create(['name' => 'Zeynep', 'email' => 'ikinci@ornek.com', 'password' => bcrypt('sifre12345')]);
     $ikinci->forceFill(['email_verified_at' => now()])->save();
 
     app(FavoriteService::class)->degistir($ilk, $urun);

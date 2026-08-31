@@ -203,7 +203,7 @@ it('★★ BASKA musterinin olayi dokume GIRMIYOR', function () {
     | uydurma kimlik veritabanından geri döner. Kısıtın kendisi de bu
     | testin ölçtüğü şeyin bir parçası.
     */
-    $baskasi = Customer::factory()->create(['email' => 'baskasi@ornek.test']);
+    $baskasi = Customer::factory()->create(['email' => 'baskasi@ornek.com']);
 
     olayYaz($baskasi->id, EventType::ProductViewed->value, ['product_id' => $urun->id]);
 

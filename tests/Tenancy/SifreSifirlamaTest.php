@@ -32,7 +32,7 @@ it('★★★ MUSTERI sifresini sifirlayabiliyor — UCTAN UCA', function () {
     sifreMagazasi();
 
     $musteri = Customer::create([
-        'name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('eskisifre'),
+        'name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('eskisifre'),
     ]);
 
     /*
@@ -41,10 +41,10 @@ it('★★★ MUSTERI sifresini sifirlayabiliyor — UCTAN UCA', function () {
     | tutar ama "müşteri bu jetonu nereden bulacak" sorusunu sormaz
     | (1D.6'nın dersi).
     */
-    $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'ayse@ornek.test'])
+    $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'ayse@ornek.com'])
         ->assertRedirect();
 
-    $kayit = DB::table('password_reset_tokens')->where('email', 'ayse@ornek.test')->first();
+    $kayit = DB::table('password_reset_tokens')->where('email', 'ayse@ornek.com')->first();
     expect($kayit)->not->toBeNull();
 
     // ⚠️ Ham jeton veritabanında HASH'li duruyor; postadaki hâlini
@@ -53,7 +53,7 @@ it('★★★ MUSTERI sifresini sifirlayabiliyor — UCTAN UCA', function () {
 
     $this->post('http://marka-a.test/sifre-sifirla', [
         'token' => $jeton,
-        'email' => 'ayse@ornek.test',
+        'email' => 'ayse@ornek.com',
         'password' => 'yenisifre123',
         'password_confirmation' => 'yenisifre123',
     ])->assertRedirect('http://marka-a.test/giris');
@@ -61,7 +61,7 @@ it('★★★ MUSTERI sifresini sifirlayabiliyor — UCTAN UCA', function () {
     // ★ ASIL ÖLÇÜM: GERÇEK giriş isteği. `Hash::check` yazmak yetmezdi —
     // çift hash'lenmiş bir parola orada da doğru görünebilirdi.
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'yenisifre123',
+        'email' => 'ayse@ornek.com', 'password' => 'yenisifre123',
     ])->assertRedirect();
 
     expect(auth('customer-web')->check())->toBeTrue();
@@ -76,7 +76,7 @@ it('★★★ MUSTERI jetonu PERSONEL sifresini DEGISTIREMIYOR — ayri tablo', 
     | ★ AYNI E-POSTA hem müşteri hem personel. Gerçek hayatta olağan:
     | marka çalışanı kendi mağazasından alışveriş yapıyor.
     */
-    $ortakEposta = 'ortak@ornek.test';
+    $ortakEposta = 'ortak@ornek.com';
 
     Customer::create(['name' => 'Ortak', 'email' => $ortakEposta, 'password' => bcrypt('musteri-sifre')]);
 
@@ -107,10 +107,10 @@ it('★★★ MUSTERI jetonu PERSONEL sifresini DEGISTIREMIYOR — ayri tablo', 
 it('★★★ HESAP VARLIGI SIZDIRILMIYOR — olan ve olmayan AYNI cevabi aliyor', function () {
     sifreMagazasi();
 
-    Customer::create(['name' => 'Var', 'email' => 'var@ornek.test', 'password' => bcrypt('x')]);
+    Customer::create(['name' => 'Var', 'email' => 'var@ornek.com', 'password' => bcrypt('x')]);
 
-    $varCevap = $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'var@ornek.test']);
-    $yokCevap = $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'yok@ornek.test']);
+    $varCevap = $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'var@ornek.com']);
+    $yokCevap = $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'yok@ornek.com']);
 
     /*
     | ⚠️ Laravel'in hazır davranışı "bu e-posta kayıtlı değil" diyor;
@@ -127,9 +127,9 @@ it('★★★ SIFIRLAMA POSTASI MARKA adiyla ve KUYRUKTAN gidiyor', function () 
     sifreMagazasi();
     Mail::fake();
 
-    Customer::create(['name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('x')]);
+    Customer::create(['name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('x')]);
 
-    $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'ayse@ornek.test']);
+    $this->post('http://marka-a.test/sifremi-unuttum', ['email' => 'ayse@ornek.com']);
 
     /*
     | ⚠️ `assertQueued` — `assertSent` DEĞİL. Tüm postalar kuyrukta
@@ -147,9 +147,9 @@ it('★★★ PERSONEL postasi PANEL adresine gidiyor — musteri ekranina DEGIL
     markaKur('marka-a.test');
     Mail::fake();
 
-    User::factory()->create(['email' => 'personel@ornek.test']);
+    User::factory()->create(['email' => 'personel@ornek.com']);
 
-    $this->post('http://marka-a.test/yonetim/sifremi-unuttum', ['email' => 'personel@ornek.test']);
+    $this->post('http://marka-a.test/yonetim/sifremi-unuttum', ['email' => 'personel@ornek.com']);
 
     /*
     | ⚠️ Tek adres yazılsaydı personel müşteri ekranına düşerdi ve orada
@@ -165,14 +165,14 @@ it('★★★ JETON TEK KULLANIMLIK — ikinci deneme reddediliyor', function ()
     sifreMagazasi();
 
     $musteri = Customer::create([
-        'name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('eski'),
+        'name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('eski'),
     ]);
 
     $jeton = Password::broker('customers')->createToken($musteri);
 
     $veri = [
         'token' => $jeton,
-        'email' => 'ayse@ornek.test',
+        'email' => 'ayse@ornek.com',
         'password' => 'birinci123',
         'password_confirmation' => 'birinci123',
     ];
@@ -222,7 +222,7 @@ it('★★★ SILINEMEYEN "users" BROKERI capraz bagli DEGIL — kanitlanmis aci
     */
     markaKur('marka-a.test');
 
-    $eposta = 'capraz@ornek.test';
+    $eposta = 'capraz@ornek.com';
 
     $musteri = Customer::create(['name' => 'M', 'email' => $eposta, 'password' => bcrypt('musteri')]);
     $personel = User::factory()->create(['email' => $eposta, 'password' => bcrypt('personel-gizli')]);
@@ -265,12 +265,12 @@ it('★★★ SIFIRLAMA FORMUNUN adresi POST KABUL EDIYOR — tarayici gibi', fu
     sifreMagazasi();
 
     $musteri = Customer::create([
-        'name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('eski'),
+        'name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('eski'),
     ]);
 
     $jeton = Password::broker('customers')->createToken($musteri);
 
-    $html = $this->get("http://marka-a.test/sifre-sifirla/{$jeton}?email=ayse@ornek.test")
+    $html = $this->get("http://marka-a.test/sifre-sifirla/{$jeton}?email=ayse@ornek.com")
         ->assertOk()
         ->getContent();
 
@@ -283,14 +283,14 @@ it('★★★ SIFIRLAMA FORMUNUN adresi POST KABUL EDIYOR — tarayici gibi', fu
 
     $this->post($adres, [
         'token' => $jeton,
-        'email' => 'ayse@ornek.test',
+        'email' => 'ayse@ornek.com',
         'password' => 'yenisifre123',
         'password_confirmation' => 'yenisifre123',
     ])->assertRedirect('http://marka-a.test/giris');
 
     // ★ Gerçek giriş: parola gerçekten değişmiş mi.
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'yenisifre123',
+        'email' => 'ayse@ornek.com', 'password' => 'yenisifre123',
     ])->assertRedirect();
 
     expect(auth('customer-web')->check())->toBeTrue();
@@ -306,7 +306,7 @@ it('★★★ ISTEK FORMUNUN adresi de POST KABUL EDIYOR', function () {
     $adres = $eslesme[1] ?? '';
     expect($adres)->not->toBe('');
 
-    $this->post($adres, ['email' => 'kimse@ornek.test'])
+    $this->post($adres, ['email' => 'kimse@ornek.com'])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 });
@@ -315,12 +315,12 @@ it('★★ E-POSTA form ALANI DEGIL — degeri gizli alanda tasiniyor', function
     sifreMagazasi();
 
     $musteri = Customer::create([
-        'name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('eski'),
+        'name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('eski'),
     ]);
 
     $jeton = Password::broker('customers')->createToken($musteri);
 
-    $html = (string) $this->get("http://marka-a.test/sifre-sifirla/{$jeton}?email=ayse@ornek.test")
+    $html = (string) $this->get("http://marka-a.test/sifre-sifirla/{$jeton}?email=ayse@ornek.com")
         ->assertOk()->getContent();
 
     /*
@@ -331,5 +331,5 @@ it('★★ E-POSTA form ALANI DEGIL — degeri gizli alanda tasiniyor', function
     expect($html)->toContain('name="email"')
         ->and($html)->toContain('type="hidden"')
         ->and($html)->not->toContain('readonly')
-        ->and($html)->toContain('ayse@ornek.test');
+        ->and($html)->toContain('ayse@ornek.com');
 });

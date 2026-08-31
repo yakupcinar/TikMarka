@@ -99,12 +99,12 @@ it('★★★ SATIN ALMAYAN musteri SEBEBINI goruyor — form YOK', function () 
     ['urun' => $urun] = vitrinYorumHazir();
 
     $baskasi = Customer::create([
-        'name' => 'Zeynep', 'email' => 'zeynep@ornek.test', 'password' => bcrypt('sifre12345'),
+        'name' => 'Zeynep', 'email' => 'zeynep@ornek.com', 'password' => bcrypt('sifre12345'),
     ]);
     $baskasi->forceFill(['email_verified_at' => now()])->save();
 
     $this->post('http://marka-a.test/giris', [
-        'email' => 'zeynep@ornek.test', 'password' => 'sifre12345',
+        'email' => 'zeynep@ornek.com', 'password' => 'sifre12345',
     ])->assertRedirect();
 
     $html = (string) $this->get("http://marka-a.test/urun/{$urun->slug}")->assertOk()->getContent();

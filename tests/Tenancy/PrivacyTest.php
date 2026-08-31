@@ -29,7 +29,7 @@ it('★ ASIL İŞ ORDERS\'TA — sipariş adresi de tanınmaz oluyor', function 
 
     // Ödeme öncesi de olsa kişisel veri siparişte duruyor.
     expect($siparis->shipping_full_name)->toBe('Ayşe Yılmaz')
-        ->and($siparis->email)->toBe('ayse@ornek.test');
+        ->and($siparis->email)->toBe('ayse@ornek.com');
 
     app(Anonymizer::class)->siparisiAnonimlestir($siparis);
 
@@ -43,7 +43,7 @@ it('★ ASIL İŞ ORDERS\'TA — sipariş adresi de tanınmaz oluyor', function 
     expect($siparis->shipping_full_name)->toBe(Anonymizer::SILINDI)
         ->and($siparis->shipping_phone)->toBe(Anonymizer::SILINDI)
         ->and($siparis->shipping_line1)->toBe(Anonymizer::SILINDI)
-        ->and($siparis->email)->not->toContain('ayse@ornek.test');
+        ->and($siparis->email)->not->toContain('ayse@ornek.com');
 });
 
 it('★ TUTAR ve SATIRLAR duruyor — silme değil anonimleştirme', function () {
@@ -81,7 +81,7 @@ it('★ sipariş MİSAFİR SİPARİŞİNE dönüşüyor', function () {
     markaKur('kvkk-d.test');
     magazayiHazirla();
 
-    $musteri = Customer::factory()->create(['email' => 'ali@ornek.test', 'name' => 'Ali Veli']);
+    $musteri = Customer::factory()->create(['email' => 'ali@ornek.com', 'name' => 'Ali Veli']);
     ['siparis' => $siparis] = odemeAsamasiSiparisiMusteriyle('kvkk-d.test', $musteri);
 
     expect($siparis->customer_id)->toBe($musteri->id);
@@ -91,7 +91,7 @@ it('★ sipariş MİSAFİR SİPARİŞİNE dönüşüyor', function () {
     // ⚠️ 2G-K2: yapı zaten hazırdı — misafir siparişi Faz 1'den beri var.
     expect($siparis->refresh()->customer_id)->toBeNull()
         ->and($musteri->refresh()->name)->toBe(Anonymizer::SILINDI)
-        ->and($musteri->email)->not->toContain('ali@ornek.test');
+        ->and($musteri->email)->not->toContain('ali@ornek.com');
 });
 
 it('★ DOĞRULANMAMIŞ talep HİÇBİR ŞEYİ silmiyor', function () {
@@ -200,7 +200,7 @@ it('★ TANINMAYAN kişi için talep AÇILMIYOR', function () {
     */
     expect(fn () => app(DataRequestService::class)->talepAc(
         DataRequestType::Anonymize,
-        'yabanci@ornek.test',
+        'yabanci@ornek.com',
         'TM-2026-999999',
         'http://kvkk-i.test/gizlilik/onay',
     ))->toThrow(UnknownDataSubjectException::class);

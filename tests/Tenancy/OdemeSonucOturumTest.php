@@ -77,7 +77,7 @@ it('★★★ GIRIS YAPMIS musteri "Siparisimi goruntule" dugmesini GORUYOR', fu
     app(StorePublication::class)->yayinla();
 
     $musteri = Customer::factory()->create([
-        'email' => 'alici@ornek.test',
+        'email' => 'alici@ornek.com',
         'password' => 'sifre1234',
     ]);
 

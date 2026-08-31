@@ -1142,6 +1142,33 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   onu **üstlenen** bir betik (B2): JS kapalıysa tıklanıyor, motor
   tarayabiliyor.
   ⚠️ `withQueryString()` unutulursa arama sayfa 2'de kayboluyor.
+- **BLADE `@context`'İ KENDİ YÖNERGESİ SANIYOR — JSON-LD BLADE'DE ÜRETİLMEZ.**
+  Derleyici `@` ile başlayan her adı yönerge diye deniyor; JSON-LD'nin
+  `"@context"` anahtarı derlemede `<?php $__contextArgs = []; …` oluyor.
+  ⚠️ Belirti tamamen sessiz: sayfa açılıyor, hata çıkmıyor, üretilen yapısal
+  veri **geçersiz**. `@section('ad', ifade)` tuzağıyla aynı aile. Üretimi
+  PHP sınıfına taşı (B3 · `ProductStructuredData`).
+- **`public/robots.txt` ÇOK KİRACILIKTA YANLIŞ.** Statik dosya markaya göre
+  değişemiyor: her marka aynı `Sitemap:` satırını görüyordu (B3). `robots.txt`
+  ve `sitemap.xml` kiracı rotasıdır.
+- **AYRILMIŞ ALAN ADINA POSTA GÖNDERMEK GERÇEK BİR BEDEL.** `.localhost`
+  `.test` `.invalid` `.example` `.local` (RFC 6761) ve `example.com/.net/.org`
+  (RFC 2606) tanımı gereği çözülmüyor; her deneme gönderen hesapta bir iade
+  biriktirip itibarını düşürüyor — kullanıcı gerçek bir "Address not found"
+  aldı (B4). ⚠️ **Eleme DOĞRULAMADA değil GÖNDERİMDE:** doğrulama
+  sıkılaştırılırsa gerçek müşteri yazım hatasında sipariş **veremez**.
+  ⚠️ **Uzantı taraması RFC 2606'yı GÖRMEZ** — `example.com` `.com`
+  uzantısında ve elemeden geçiyordu; ikinci düzey adlar ayrıca yazılır.
+  ⚠️ DNS sorgusu YOK: liste statik (4.5C'nin "ödeme akışında ağa çıkılmaz"
+  kararı).
+- **AYNI DEĞERİ TAŞIYAN FIXTURE, İKİ FORMÜLÜ AYIRT EDEMEZ.** `seciciUrunu()`
+  bütün varyantları aynı fiyatta açıyor; "tüm varyantların min'i" ile
+  "satılabilir varyantların min'i" aynı sayı çıkıyor ve fiyatı yanlış
+  kaynaktan alan kırma denemesi **hiçbir testi düşürmüyor** (B3). İki yolu
+  ayıran testte fixture'ın o iki yolda **farklı** sonuç vermesini sağla.
+- **TOPLU E-POSTA DEĞİŞTİRMEDEN ÖNCE KİMİN OKUDUĞUNU ARA.** B4'te fixture
+  adresleri toptan çevrildi ve **25 test kırıldı**: sahip adresi
+  (`sahip@'.$alanAdi`) çağıranlar tarafından da türetiliyordu.
 - **`limit()` İLE LİSTELEMEK SESSİZ BİR KESİNTİDİR.** Ana sayfa `limit(24)`
   ile çiziliyordu: 25. ürün hiç görünmüyordu ve bunu söyleyen bir şey de
   yoktu (B2). Sayfalanabilir bir liste `paginate()` ister; `limit()`

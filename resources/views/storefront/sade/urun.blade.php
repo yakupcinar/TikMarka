@@ -8,6 +8,14 @@
     hâle geliyor. Belirtisi sinsi: sayfa çalışıyor gibi görünüyor ama
     Larastan görünümü bulamıyor. Blok biçimi bu sorunu yaşamıyor.
 --}}
+@section('og_tur', 'product')
+
+@section('og_gorsel', $urun->images->first()?->url() ?? '')
+
+@push('yapisal_veri')
+    @include('storefront.partials.urun-yapisal-veri')
+@endpush
+
 @section('aciklama')
     {{ \Illuminate\Support\Str::limit(strip_tags((string) $urun->description), 150) }}
 @endsection

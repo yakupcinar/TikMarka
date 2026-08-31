@@ -2,10 +2,10 @@
 
 > **Bu dosya projenin tek yol haritasıdır.** Tüm geliştirme buna göre ilerler.
 > Kararların gerekçeleri `docs/pre-setup.md`'de, veri modeli `docs/domain-model.md`'de.
-> Son güncelleme: **2026-08-14**
+> Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ──────── şu an: 4.6G BİTTİ — sırada SEO etiketleri (B3) ──────┐
+┌─ YOL HARİTASI ─── şu an: B3+B4 BİTTİ — sırada Faz 5 (kargo · e-fatura) ────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -6984,6 +6984,117 @@ sayfa 2   8 kart · bölüm YOK
 ```
 
 **1021 test.**
+
+---
+
+### B3 + B4 — SEO etiketleri · çözülemez alan adına posta çıkmıyor ✅
+
+**İstenen (B3):** README'deki *"SEO"* maddesi. **İstenen (B4):** kullanıcının
+bildirdiği **"Address not found"** posta iadesi.
+
+İki iş tek blokta: ikisi de "dışarıya ne gönderiyoruz" sorusunun cevabı.
+
+---
+
+#### B3 — vitrin arama motoruna ne söylüyor
+
+Ölçümle başladı, ve ölçüm listeyi kısalttı:
+
+```
+canonical        HİÇ YOK    → ?sayfa=2 ve ?q=... aynı sayfanın kopyası sayılıyordu
+robots meta      HİÇ YOK    → arama sonuç sayfaları indeksleniyordu
+og:*/twitter:*   HİÇ YOK    → paylaşımda başlıksız/görselsiz kutu
+JSON-LD          HİÇ YOK    → fiyat/stok zengin sonuçta görünmüyordu
+sitemap.xml      HİÇ YOK
+robots.txt       public/    → ⚠️ TÜM markalar için AYNI dosya
+```
+
+Son satır asıl kusurdu: `public/robots.txt` statik ve çok kiracılıkta
+**markaya göre değişemez** — her marka aynı `Sitemap:` satırını görüyordu.
+Dosya silindi, iki uç kiracı rotalarına taşındı.
+
+| Yapılan | Karar ve gerekçe |
+|---|---|
+| `partials/seo.blade.php` | Tek yerde: her sayfa `@section` ile besliyor. İki düzen (`sade`/`vitrinli`) de aynı parçayı çekiyor — 4.6A'nın "iki düzeni de kapsa" dersi |
+| canonical | `?sayfa=2` **kendini** kanonik gösteriyor (sayfa 1'i değil): 2. sayfa 1'in kopyası değil, ayrı içerik. `?q=` kanonikten **düşürülüyor** |
+| `noindex, follow` | Yalnızca arama sonucu sayfasında. `follow` kalıyor: sayfa indekslenmesin ama üstündeki ürün bağlantıları **taransın** |
+| JSON-LD | `ProductStructuredData.php` — **Blade'de üretilemedi**, aşağıdaki tuzak |
+| fiyat | **Yalnızca satılabilir varyanttan.** Tükenmiş ucuz varyanttan alınsaydı arama sonucundaki fiyat sayfadakiyle tutmazdı; Google bunu yanıltıcı fiyat sayıp zengin sonuçtan düşürüyor |
+| `aggregateRating` | Yalnızca `rating_count > 0` iken. Sıfır yorumla yazmak Google'ın "uydurma değerlendirme" kuralına giriyor |
+| `sitemap.xml` | Marka başına, `forStorefront()` kapsamıyla — yani taslak/pasif ürün girmiyor. `MAKS_URL = 40_000` (protokol sınırı 50.000) |
+| `robots.txt` | Panel, sepet, ödeme, hesabım, giriş, kayıt ve `*?q=` kapalı; `Sitemap:` **mutlak** adres |
+
+**⚠️ TUZAK — Blade `@context`'i KENDİ YÖNERGESİ sanıyor.** JSON-LD'nin ilk
+hâli Blade'de yazılmıştı ve çıktı şuydu:
+
+```
+"<?php $__contextArgs = []; ..."
+```
+
+Yani `@context` anahtarı **derleme sırasında** bozuluyordu — sayfa açılıyor,
+hata çıkmıyor, üretilen yapısal veri geçersiz. `@section('ad', ifade)`
+tuzağıyla aynı aile: Blade metni okuyup yönerge arıyor. Çözüm üretimi
+PHP sınıfına taşımak.
+
+---
+
+#### B4 — çözülemez alan adına posta çıkmıyor
+
+Kullanıcı gerçek bir **"Address not found"** iadesi aldı: test siparişi
+`vazgec@marka-a.localhost` adresiyle verilmişti ve sistem **gerçekten posta
+göndermeye çalıştı**.
+
+`Notifier::gonder()` artık RFC 6761 (`.localhost` `.test` `.invalid`
+`.example` `.local`) ve RFC 2606 (`example.com/.net/.org`) adreslerini
+gönderimden **önce** eliyor.
+
+> ⚠️ **Eleme DOĞRULAMADA değil GÖNDERİMDE.** `DeliverableEmail` (4.5C)
+> bunları geçirmeye devam ediyor: kural orada sıkılaştırılsaydı bütün test
+> verisi kırılırdı ve gerçek müşteri yazım hatasında sipariş **veremezdi**.
+>
+> ⚠️ **DNS sorgusu yok** — liste statik. RFC'ler bu adları "asla
+> çözülmeyecek" diye ayırmış; 4.5C'nin "ödeme akışında ağa çıkılmaz" kararı
+> korunuyor (orada tek sorgu 24 saniye sürmüştü).
+>
+> ⚠️ **RFC 2606 ikinci düzey adlar sonradan eklendi** ve bu bir boşluktu:
+> ilk hâl yalnızca UZANTIYA bakıyordu, `example.com` `.com` uzantısında
+> olduğu için **geçiyordu**. Test verisinin çoğu o adresi kullanıyor — yani
+> eleme yarım kalsaydı geliştirmede her sipariş bir teslim edilemez posta
+> denemesi üretmeye devam ederdi.
+
+**⚠️ MUHAFIZ YEDİ TESTİ DÜŞÜRDÜ — ve düşmesi gereken TESTTİ.** Fixture'lar
+`@ornek.test` kullanıyordu, yani "bildirim gidiyor" diyen testler
+**tanımı gereği teslim edilemez** bir adrese bakıyordu. Fixture teslim
+edilebilir alan adına çevrildi. ⚠️ İlk denemede sahip adresi de toptan
+çevrildi ve **25 test kırıldı**: o adres çağıranlar tarafından da
+türetiliyor. Toplu değiştirmede değişikliğin **kimin okuduğunu** önce ara.
+
+**⚠️ TOHUMLAYICI BİLEREK `@ornek.test`'te KALDI.** Demo markasının müşterileri
+posta almamalı. ⚠️ Bunun sunum sonucu var: **demo hesabı gerçek e-posta
+almaz**; posta akışı gösterilecekse gerçek bir adresle kayıt olunmalı.
+
+---
+
+#### Kırma denemeleri — 8/8 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | canonical kaldırıldı | 2 test düştü |
+| 2 | canonical hep 1. sayfayı gösteriyor | 1 düştü |
+| 3 | arama sayfası `noindex` değil | 1 düştü |
+| 4 | og etiketleri kaldırıldı | 1 düştü |
+| 5 | fiyat TÜM varyantlardan | **önce DÜŞMEDİ** ↓ |
+| 6 | robots panel/ödemeyi kısıtlamıyor | 1 düştü |
+| 7 | ayrılmış uzantı elemesi kaldırıldı | 1 düştü |
+| 8 | RFC 2606 elemesi kaldırıldı | 1 düştü |
+
+**5. deneme tutmadı ve suçlu koddu değil TESTTİ.** `seciciUrunu()` bütün
+varyantları **aynı fiyatta** (100) açıyor; o hâlde "tüm varyantların min'i"
+ile "satılabilir varyantların min'i" aynı sayı ve iddia ikisini **ayırt
+edemiyor**. Tükenmiş varyant 40'a indirilince deneme düştü. *"Kırma denemesi
+tutmuyorsa testi suçla"* kuralının bu oturumdaki ikinci örneği.
+
+**Test:** `tests/Tenancy/SeoEtiketleriTest.php` — 13 test.
 
 ---
 

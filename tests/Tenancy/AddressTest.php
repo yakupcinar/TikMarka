@@ -135,12 +135,12 @@ it('eksik alanlar reddediliyor', function () {
 
 it('A markasının müşterisinin adresi B markasında yok', function () {
     markaKur('adres-j.test');
-    $a = musteriTokeni('adres-j.test', 'ortak@ornek.test');
+    $a = musteriTokeni('adres-j.test', 'ortak@ornek.com');
     $a['musteri']->addresses()->create(ornekAdres(['title' => 'A Evi']));
 
     tenancy()->end();
     markaKur('adres-k.test');
-    $b = musteriTokeni('adres-k.test', 'ortak@ornek.test');
+    $b = musteriTokeni('adres-k.test', 'ortak@ornek.com');
 
     // Aynı e-posta, iki ayrı şema, iki ayrı insan.
     $this->withToken($b['token'])

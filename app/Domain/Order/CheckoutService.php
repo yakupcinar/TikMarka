@@ -110,7 +110,6 @@ class CheckoutService
     }
 
     /**
-     *
      * @param  \Illuminate\Support\Collection<int, StockReservation>  $rezervasyonlar
      */
     private function stokAcigiVarMi(Order $siparis, $rezervasyonlar): bool

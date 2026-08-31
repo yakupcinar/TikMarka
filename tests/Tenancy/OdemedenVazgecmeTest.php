@@ -83,7 +83,7 @@ it('★★★ BASKASININ siparisi iptal EDILEMIYOR — 404', function () {
     ['siparis' => $siparis] = vazgecmeSiparisi();
 
     $musteri = Customer::create([
-        'name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('sifre12345'),
+        'name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('sifre12345'),
     ]);
 
     /*
@@ -91,7 +91,7 @@ it('★★★ BASKASININ siparisi iptal EDILEMIYOR — 404', function () {
     | iptal edememeli; `siparisiDogrula` kuralı ödeme sayfasıyla AYNI.
     */
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'sifre12345',
+        'email' => 'ayse@ornek.com', 'password' => 'sifre12345',
     ])->assertRedirect();
 
     $this->post("http://marka-a.test/odeme/ode/{$siparis->uuid}/iptal")->assertNotFound();

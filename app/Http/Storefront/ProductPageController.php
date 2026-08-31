@@ -33,6 +33,7 @@ class ProductPageController extends Controller
         private readonly SimilarProductQuery $oneriler,
         private readonly EventRecorder $olaylar,
         private readonly BotFilter $botlar,
+        private readonly ProductStructuredData $yapisalVeri,
     ) {}
 
     public function __invoke(Request $istek, string $slug): View
@@ -98,6 +99,19 @@ class ProductPageController extends Controller
 
         return view($gorunum, [
             'urun' => $urun,
+
+            /*
+            | ★ YAPISAL VERİ (B3) — gövde PHP'de üretiliyor.
+            |
+            | ⚠️ Blade'de üretilemiyor: schema.org anahtarları `@` ile
+            | başlıyor ve Blade `@context`i kendi yönergesi sanıp PHP
+            | koduna çeviriyor. Ölçüldü, JSON geçersiz çıktı.
+            */
+            'yapisalVeri' => $this->yapisalVeri->uret(
+                $urun,
+                url()->current(),
+                $this->tema->goruntu()['ad'],
+            ),
 
             /*
             | ★ VARYANT SEÇİCİSİ (4.6A) — veri DOMAIN'den.

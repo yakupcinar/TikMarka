@@ -24,7 +24,7 @@ it('★★★ BAGLI STOK YETMEYINCE tarayici SEPETE yonlendiriliyor — JSON DEG
     $varyant = sayacMagazasi();
 
     $rakip = Customer::create([
-        'email' => 'rakip@ornek.test', 'password' => bcrypt('sifre1234'), 'name' => 'Rakip',
+        'email' => 'rakip@ornek.com', 'password' => bcrypt('sifre1234'), 'name' => 'Rakip',
     ]);
 
     /*
@@ -42,7 +42,7 @@ it('★★★ BAGLI STOK YETMEYINCE tarayici SEPETE yonlendiriliyor — JSON DEG
     bekleyenSiparis($varyant, $rakip, 8);
 
     $musteri = Customer::create([
-        'email' => 'stok@ornek.test', 'password' => bcrypt('sifre1234'), 'name' => 'Ayşe',
+        'email' => 'stok@ornek.com', 'password' => bcrypt('sifre1234'), 'name' => 'Ayşe',
     ]);
 
     $this->post('http://marka-a.test/giris', ['email' => $musteri->email, 'password' => 'sifre1234']);
@@ -78,13 +78,13 @@ it('★★★ API ISTEMCISI hala JSON aliyor — 409', function () {
     $varyant = sayacMagazasi();
 
     $rakip = Customer::create([
-        'email' => 'rakip@ornek.test', 'password' => bcrypt('sifre1234'), 'name' => 'Rakip',
+        'email' => 'rakip@ornek.com', 'password' => bcrypt('sifre1234'), 'name' => 'Rakip',
     ]);
 
     bekleyenSiparis($varyant, $rakip, 8);
 
     $musteri = Customer::create([
-        'email' => 'api@ornek.test', 'password' => bcrypt('sifre1234'), 'name' => 'Api',
+        'email' => 'api@ornek.com', 'password' => bcrypt('sifre1234'), 'name' => 'Api',
     ]);
 
     $this->post('http://marka-a.test/giris', ['email' => $musteri->email, 'password' => 'sifre1234']);

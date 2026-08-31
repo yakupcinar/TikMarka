@@ -176,7 +176,7 @@ it('★★★ BASARISIZ ODEME gorunuyor ama RET GEREKCESI GORUNMUYOR', function 
     $siparis = bildirimeHazirSiparis('marka-a.test')['siparis'];
     $sahip = User::where('email', 'sahip@marka-a.test')->firstOrFail();
 
-    $musteri = Customer::create(['name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('sifre12345')]);
+    $musteri = Customer::create(['name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('sifre12345')]);
     $siparis->customer()->associate($musteri);
     $siparis->save();
 
@@ -255,7 +255,7 @@ it('★★★ ANONIMLESTIRILMIS musteri PANELDE de tanınmaz halde', function ()
 it('★★ ARAMA SOL ESLESME — kelime ortasindan bulmuyor', function () {
     ['sahip' => $sahip] = panelMusteriHazir();
 
-    Customer::create(['name' => 'Tişörtçü Ahmet', 'email' => 'ahmet@ornek.test', 'password' => bcrypt('x12345678')]);
+    Customer::create(['name' => 'Tişörtçü Ahmet', 'email' => 'ahmet@ornek.com', 'password' => bcrypt('x12345678')]);
 
     $bul = function (string $ara) use ($sahip): array {
         $veri = inertiaVerisi((string) $this->actingAs($sahip, 'staff-web')
@@ -269,5 +269,5 @@ it('★★ ARAMA SOL ESLESME — kelime ortasindan bulmuyor', function () {
 
     // ⚠️ 4.5P ve 4.5S'deki kararın aynısı: "iş" araması "Tişört"ü getirmemeli.
     expect($bul('iş'))->toHaveCount(0)
-        ->and(array_column($bul('tiş'), 'eposta'))->toContain('ahmet@ornek.test');
+        ->and(array_column($bul('tiş'), 'eposta'))->toContain('ahmet@ornek.com');
 });

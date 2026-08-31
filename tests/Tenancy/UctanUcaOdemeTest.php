@@ -48,7 +48,7 @@ it('★ UÇTAN UCA: misafir öder, stok düşer, personel sevk eder', function (
     // ── 4. SİPARİŞ ────────────────────────────────────────────────────
     $siparisCevabi = $this->withHeader('X-Cart-Token', $sepetToken)
         ->postJson('http://ode2e.test/api/checkout', [
-            'email' => 'misafir@ornek.test',
+            'email' => 'misafir@ornek.com',
             'legal_version_id' => $surumId,
             'shipping' => [
                 'full_name' => 'Ayşe Yılmaz',

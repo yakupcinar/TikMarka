@@ -142,7 +142,7 @@ it('★ sipariş olayı yazılıyor ve KİŞİSEL VERİ TAŞIMIYOR', function ()
     */
     $ham = json_encode($olay->payload);
 
-    expect($ham)->not->toContain('ayse@ornek.test')
+    expect($ham)->not->toContain('ayse@ornek.com')
         ->and($ham)->not->toContain('Ayşe')
         ->and($ham)->not->toContain('Moda Cad');
 });

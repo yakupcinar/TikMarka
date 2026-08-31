@@ -316,8 +316,8 @@ it('★★ GECERSIZ durum gecisi sunucuda REDDEDILIYOR', function () {
 it('★★★ MARKA ARAMASI kelime BASINDAN esliyor', function () {
     $yonetici = merkezKullanici();
 
-    app(TenantProvisioning::class)->ac('Deri Butik', 'deri-butik.localhost', 'a@ornek.test', 'sifre1234');
-    app(TenantProvisioning::class)->ac('Modern Deri Atölye', 'modern-deri.localhost', 'b@ornek.test', 'sifre1234');
+    app(TenantProvisioning::class)->ac('Deri Butik', 'deri-butik.localhost', 'a@ornek.com', 'sifre1234');
+    app(TenantProvisioning::class)->ac('Modern Deri Atölye', 'modern-deri.localhost', 'b@ornek.com', 'sifre1234');
 
     // ⚠️ "eri" ORTADAN eşleşseydi ikisi de gelirdi.
     $veri = inertiaVerisi(
@@ -343,7 +343,7 @@ it('★★★ MARKA ARAMASI kelime BASINDAN esliyor', function () {
 it('★★ MARKA ARAMASINDA duzenli ifade karakteri TUM LISTEYI acmiyor', function () {
     $yonetici = merkezKullanici();
 
-    app(TenantProvisioning::class)->ac('Deri Butik', 'deri-butik.localhost', 'a@ornek.test', 'sifre1234');
+    app(TenantProvisioning::class)->ac('Deri Butik', 'deri-butik.localhost', 'a@ornek.com', 'sifre1234');
 
     $veri = inertiaVerisi(
         $this->actingAs($yonetici, 'platform-web')

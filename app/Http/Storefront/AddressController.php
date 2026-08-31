@@ -49,6 +49,7 @@ class AddressController extends Controller
 
         return $kullanici;
     }
+
     private function sahipOl(Request $istek, string $uuid): Address
     {
         return $this->musteri($istek)->addresses()->where('uuid', $uuid)->firstOrFail();

@@ -3661,3 +3661,60 @@ B2 ✅ TEMBEL YÜKLEME VE ANA SAYFA SAYFALAMASI — 1021 test
         Pazaryeri panelinin çözdüğü bazı problemler D2C'de YOK.
 
       SONUÇ: tek iş çıktı — SEO etiketleri (B3)
+
+────────────────────────────────────────────────────────────────────────
+B3 + B4 · SEO etiketleri  ·  çözülemez alan adına posta çıkmıyor    ✅
+────────────────────────────────────────────────────────────────────────
+
+  B3 — vitrin arama motoruna ne söylüyor
+
+    EKLENEN
+      canonical        ?sayfa=2 KENDİNİ gösteriyor (1'i değil: ayrı içerik)
+                       ?q= kanonikten düşürülüyor
+      robots meta      arama sonucunda `noindex, follow`
+                       ⚠ follow KALIYOR: sayfa indekslenmesin ama
+                         üstündeki ürün bağlantıları TARANSIN
+      og:* / twitter:  paylaşım önizlemesi
+      JSON-LD          Product + offers (+ aggregateRating)
+      sitemap.xml      marka başına, forStorefront() kapsamıyla
+      robots.txt       KİRACI ROTASI — public/robots.txt SİLİNDİ
+
+    ⚠ public/robots.txt çok kiracılıkta YANLIŞTI: statik dosya markaya
+      göre değişemiyor, her marka aynı Sitemap: satırını görüyordu
+
+    ⚠ FİYAT yalnızca SATILABİLİR varyanttan. Tükenmiş ucuz varyanttan
+      alınsaydı arama sonucundaki fiyat sayfadakiyle tutmazdı — Google
+      bunu yanıltıcı fiyat sayıp zengin sonuçtan düşürüyor
+
+    ⚠ aggregateRating yalnızca rating_count > 0 iken (sıfır yorumla
+      yazmak "uydurma değerlendirme" kuralına giriyor)
+
+    ⚠ TUZAK: Blade `@context`'i KENDİ YÖNERGESİ sandı ve JSON-LD'yi
+      `<?php $__contextArgs = []; …` hâline getirdi. Sayfa açılıyor,
+      hata çıkmıyor, üretilen veri GEÇERSİZ. Üretim PHP sınıfına taşındı
+
+  B4 — çözülemez alan adına posta çıkmıyor
+
+    Kullanıcı GERÇEK bir "Address not found" iadesi aldı: test siparişi
+    vazgec@marka-a.localhost adresiyle verilmiş, sistem gerçekten posta
+    göndermeye çalışmıştı.
+
+      elenen   RFC 6761  .localhost .test .invalid .example .local
+               RFC 2606  example.com / .net / .org
+
+    ⚠ Eleme DOĞRULAMADA değil GÖNDERİMDE: doğrulama sıkılaştırılsaydı
+      gerçek müşteri yazım hatasında sipariş VEREMEZDİ
+    ⚠ RFC 2606 SONRADAN eklendi — uzantı taraması example.com'u
+      GÖRMÜYORDU (.com uzantısında) ve test verisinin çoğu orada
+    ⚠ DNS SORGUSU YOK: liste statik (4.5C'nin ağ kararı korunuyor)
+    ⚠ TOHUMLAYICI bilerek @ornek.test'te kaldı → DEMO HESABI GERÇEK
+      E-POSTA ALMAZ; posta akışı gösterilecekse gerçek adresle kayıt ol
+
+  KIRMA DENEMELERİ 8/8 düştü — biri ancak TEST düzeltilince
+
+    5. deneme (fiyat tüm varyantlardan) önce DÜŞMEDİ: seciciUrunu()
+    bütün varyantları AYNI fiyatta açıyor, yani iki formül aynı sayıyı
+    veriyordu ve iddia onları ayırt edemiyordu. Fixture'da tükenmiş
+    varyant ucuzlatılınca düştü.
+
+  Test: tests/Tenancy/SeoEtiketleriTest.php — 13 test · süit 1034 yeşil

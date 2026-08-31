@@ -62,6 +62,7 @@ use App\Http\Storefront\ProductPageController;
 use App\Http\Storefront\ReturnController as VitrinIade;
 use App\Http\Storefront\ReviewController as StorefrontReviewController;
 use App\Http\Storefront\ReviewPageController as StorefrontReviewPageController;
+use App\Http\Storefront\SeoFileController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -291,6 +292,21 @@ Route::middleware([
 
     'magaza-acik',
 ])->group(function () {
+
+    /*
+    | ★ SEO DOSYALARI (B3) — marka başına.
+    |
+    | ⚠️ `public/robots.txt` KALDIRILDI: statik dosya bütün markalarda
+    | aynı olurdu ve sitemap adresini markanın alan adıyla veremezdi.
+    | Caddy statik dosyayı rotadan ÖNCE sunuyor, yani dosya dururken bu
+    | rota hiç çalışmazdı.
+    |
+    | ⚠️ `magaza-acik` DIŞLANMIYOR: kapalı mağaza 503 + Retry-After
+    | dönüyor ve bu, arama motoruna "sonra tekrar gel" demenin DOĞRU
+    | yolu. Kapalı mağazanın ürünlerini taratmak istemiyoruz.
+    */
+    Route::get('/sitemap.xml', [SeoFileController::class, 'sitemap'])->name('vitrin.sitemap');
+    Route::get('/robots.txt', [SeoFileController::class, 'robots'])->name('vitrin.robots');
 
     Route::get('/', HomeController::class)->name('vitrin.anasayfa');
     Route::get('/urun/{slug}', ProductPageController::class)->name('vitrin.urun');

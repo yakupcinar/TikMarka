@@ -156,7 +156,7 @@ it('★★★ SAHIBI GIRIS YAPMISSA siparis baglantisi GORUNUYOR ve CALISIYOR', 
     magazayiHazirla();
 
     $musteri = Customer::create([
-        'name' => 'Ayşe', 'email' => 'ayse@ornek.test', 'password' => bcrypt('sifre12345'),
+        'name' => 'Ayşe', 'email' => 'ayse@ornek.com', 'password' => bcrypt('sifre12345'),
     ]);
 
     ['siparis' => $siparis] = odemeAsamasiSiparisiMusteriyle('marka-a.test', $musteri);
@@ -164,7 +164,7 @@ it('★★★ SAHIBI GIRIS YAPMISSA siparis baglantisi GORUNUYOR ve CALISIYOR', 
     app(CheckoutService::class)->odemeBasarili($siparis);
 
     $this->post('http://marka-a.test/giris', [
-        'email' => 'ayse@ornek.test', 'password' => 'sifre12345',
+        'email' => 'ayse@ornek.com', 'password' => 'sifre12345',
     ])->assertRedirect();
 
     $html = (string) $this->get(sonucAdresi($siparis))->assertOk()->getContent();

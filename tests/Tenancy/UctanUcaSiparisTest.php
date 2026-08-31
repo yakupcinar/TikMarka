@@ -94,7 +94,7 @@ it('★ UÇTAN UCA: misafir sipariş verir, personel kısmi sevk eder', function
     // ── 4. SİPARİŞ VERİYOR ────────────────────────────────────────────
     $siparisCevabi = $this->withHeader('X-Cart-Token', $sepetToken)
         ->postJson('http://uctan.test/api/checkout', [
-            'email' => 'misafir@ornek.test',
+            'email' => 'misafir@ornek.com',
             'legal_version_id' => $surumId,
             'shipping' => [
                 'full_name' => 'Ayşe Yılmaz',
@@ -206,7 +206,7 @@ it('★ AŞIRI SEVKİYAT uçtan da engelleniyor', function () {
 
     $siparisCevabi = $this->withHeader('X-Cart-Token', $sepetCevabi->json('cart_token'))
         ->postJson('http://uctan-b.test/api/checkout', [
-            'email' => 'a@ornek.test',
+            'email' => 'a@ornek.com',
             'legal_version_id' => $sozlesme?->id,
             'shipping' => [
                 'full_name' => 'A', 'phone' => '+900000000000',
@@ -271,7 +271,7 @@ it('iki markanın siparişleri uçlarda da karışmıyor', function () {
 
     $this->withHeader('X-Cart-Token', $sepetCevabi->json('cart_token'))
         ->postJson('http://uctan-e.test/api/checkout', [
-            'email' => 'a@ornek.test',
+            'email' => 'a@ornek.com',
             'legal_version_id' => $sozlesme?->id,
             'shipping' => [
                 'full_name' => 'A', 'phone' => '+900000000000',

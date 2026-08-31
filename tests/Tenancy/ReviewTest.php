@@ -38,7 +38,7 @@ it('★ TESLİM ALAN yazabiliyor, ALMAYAN yazamıyor', function () {
     | ⚠️ Hiç sipariş vermemiş müşteri REDDEDİLİYOR. Kontrol olmasaydı
     | rakip ve bot yorumu kaçınılmazdı — hiçbiri hata vermeden.
     */
-    $yabanci = Customer::factory()->create(['email' => 'yabanci@ornek.test']);
+    $yabanci = Customer::factory()->create(['email' => 'yabanci@ornek.com']);
 
     expect(fn () => app(ReviewService::class)->yaz($yabanci, $d['urun'], [
         'rating' => 1,
@@ -50,7 +50,7 @@ it('★ ÖDEDİ ama TESLİM ALMADI — yine yazamıyor', function () {
     $marka = markaKur('yor-b.test');
     magazayiHazirla();
 
-    $musteri = Customer::factory()->create(['email' => 'bekleyen@ornek.test']);
+    $musteri = Customer::factory()->create(['email' => 'bekleyen@ornek.com']);
     $hazir = odemeAsamasiSiparisiMusteriyle('yor-b.test', $musteri);
 
     app(CheckoutService::class)->odemeBasarili($hazir['siparis']);
@@ -270,7 +270,7 @@ it('★ VİTRİNDE tam ad ve moderasyon notu YOK', function () {
     */
     expect($cevap->json('reviews.0.author'))->toBe('Ahmet Y.')
         ->and($cevap->json('reviews.0'))->not->toHaveKey('moderation_note')
-        ->and(json_encode($cevap->json()))->not->toContain('alici@ornek.test');
+        ->and(json_encode($cevap->json()))->not->toContain('alici@ornek.com');
 });
 
 it('★ MİSAFİR yorum yazamıyor — 401', function () {
@@ -291,7 +291,7 @@ it('★ SATIN ALMAYAN uçtan 403 alıyor — 500 değil', function () {
     $d = teslimAlmisMusteri('yor-m.test');
     app(StorePublication::class)->yayinla();
 
-    $yabanci = Customer::factory()->create(['email' => 'gecen@ornek.test']);
+    $yabanci = Customer::factory()->create(['email' => 'gecen@ornek.com']);
     $token = $yabanci->createToken('test')->plainTextToken;
 
     $this->withToken($token)
