@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ─── şu an: B3+B4 BİTTİ — sırada Faz 5 (kargo · e-fatura) ────┐
+┌─ YOL HARİTASI ───── şu an: B5 BİTTİ — sırada Faz 5 (kargo · e-fatura) ─────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7095,6 +7095,91 @@ edemiyor**. Tükenmiş varyant 40'a indirilince deneme düştü. *"Kırma deneme
 tutmuyorsa testi suçla"* kuralının bu oturumdaki ikinci örneği.
 
 **Test:** `tests/Tenancy/SeoEtiketleriTest.php` — 13 test.
+
+---
+
+### B5 — günlük bağlamı ve döndürme ✅
+
+**Nereden çıktı:** kullanıcının sorusu — *"loglamayı nerede yapıyorsun,
+ayrı bir servisin yok, bu e-ticaret için sorun değil mi?"*
+
+Ölçüm soruyu ikiye böldü ve **asıl kusur "ayrı servis yok" değildi.**
+
+```
+storage/logs/laravel.log   72 MB, 12 günde     ← DÖNDÜRME YOK
+  6.232 girdi
+    6.195  testing.        ← test gürültüsü (%99,4)
+       37  local.          ← gerçek kullanım
+app · worker · scheduler   inode 4803 — ÜÇÜ DE aynı dosyaya
+caddy                      erişim günlüğü, docker logs'ta (JSON)
+events tablosu             iş olayları, marka şemasında
+Sentry/Loki/ELK            YOK
+```
+
+Dosyaya yazmak tek başına kusur değil — 12 Factor zaten "günlüğü akış
+olarak yaz, toplamayı altyapıya bırak" diyor ve tek makinede bu yeterli.
+Asıl kusur **satırın kendisiydi**:
+
+```
+[2026-08-19 08:29:28] local.ERROR: [iyzico] email hatalı format ile
+gönderilmiştir {"exception":"[object] (PaymentProviderException…
+```
+
+Hangi marka, hangi müşteri, hangi istek — **hiçbiri yok**. Günlükte
+4.944 kez "tenant" geçiyor ama hepsi yığın izindeki paket çerçeveleri,
+bağlam alanı değil. Yani e-ticaretin asıl sorusu — *"A markasının
+müşterisi 14:32'de neden ödeyemedi"* — bu günlükle **cevaplanamıyordu**.
+Yukarıdaki iyzico hatası bunun kanıtı: günlükten teşhis edilemedi,
+4.5C'de gerçek istek atılarak bulundu.
+
+| Yapılan | Karar ve gerekçe |
+|---|---|
+| `app/Logging/IstekBaglami.php` | **Monolog işleyicisi, middleware DEĞİL.** Middleware olsaydı kiracının başlatılmasından önce mi sonra mı koştuğu sıraya bağlı olurdu ve Laravel middleware'leri öncelik listesine göre yeniden sıralıyor (4H). İşleyici satır **yazılırken** çalışıyor — kiracı o an zaten çözülmüş |
+| `marka` | `tenant()->getTenantKey()` — şema adının (`tenant_<uuid>`) doğrudan karşılığı, yani sorguya çevrilebilir |
+| `musteri` / `personel` | **`hasUser()` ile, `user()` ile DEĞİL.** İkincisi kullanıcıyı çözmek için veritabanına gidiyor; günlük yazarken sorgu açmak, veritabanı çöktüğünde (ki hatanın sebebi genelde odur) günlüklemeyi de çökertir |
+| **e-posta YOK** | Günlük dosyası `Anonymizer`/`DataExporter`'ın göremediği bir yer. Müşteri "beni unut" dediğinde maskelenmeyen tek kopya orada kalırdı |
+| `istek_id` | `Context` ile — `Log::withContext()` değil. `Context` **kuyruk işine de taşınıyor** ve bu projede worker ile app aynı dosyaya yazıyor. Taşınmasaydı istek kimlikli, tetiklediği iş kimliksiz olurdu |
+| `X-Istek-Id` başlığı | Müşteri "ödeme başarısız" ekranı gördüğünde destek ondan bir kimlik isteyebilsin diye. Rastgele ve tek kullanımlık — kişisel veri taşımıyor |
+| Her okuma `try` içinde | Bu kod **hata yazılırken** çalışıyor. Bağlam toplarken kaçan bir istisna, asıl hatanın kaydını da yok eder |
+| `LOG_STACK=daily` + `LOG_DAILY_DAYS=14` | Yapılandırmada zaten duruyordu, açık değildi |
+
+**⚠️ BAĞLAM ÖNCE SATIRIN SONUNDAYDI — ölçülüp öne alındı.** Gerçek bir
+hata girdisi **10.351 karakter** ve bağlam onun son 100 karakterindeydi;
+yani teşhis için eklenen bilgi, teşhis edilecek gürültünün **arkasına**
+düşüyordu. `LineFormatter` biçimi `%extra%`yi seviyenin hemen arkasına
+aldı. CI anotasyonu dersinin (4A) aynısı: **bilgi konuma göre değil öneme
+göre yerleşir.**
+
+#### Kırma denemeleri — 8/8 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | marka bağlamı yazılmıyor | 1 düştü |
+| 2 | istek kimliği middleware'i kayıtlı değil | 4 düştü |
+| 3 | her isteğe aynı kimlik | 1 düştü |
+| 4 | `hasUser()` yerine `user()` + e-posta yazılıyor | 1 düştü |
+| 5 | bağlam istisnası yutulmuyor | 1 düştü |
+| 6 | bağlam satırın sonuna döndü | 1 düştü |
+| 7 | döndürme kapalı (`single`) | 1 düştü |
+| 8 | `tap` kanallara bağlı değil | **önce DÜŞMEDİ** ↓ |
+
+**8. deneme tutmadı ve suçlu yine TESTTİ.** Testler işleyiciyi
+`new IstekBaglami` ile **elle** kuruyordu: sınıfın davranışını ölçüyor ama
+uygulamanın onu gerçekten **kullandığını** hiç ölçmüyordu. Fark sessiz —
+sınıf yerinde durur, testler yeşil kalır, gerçek günlük bağlamsız yazılır.
+Uygulamanın kendi çözdüğü kanalın işleyicilerine bakan bir test eklendi.
+
+**⚠️ AYRICA: `git checkout` İZLENMEYEN DOSYAYI GERİ ALMIYOR.** 3. denemeyi
+geri almak için kullanıldı, dosya henüz commit'lenmemişti, komut sessizce
+hiçbir şey yapmadı ve **kırık kod beş deneme boyunca yerinde kaldı** —
+sonraki her koşuda fazladan bir kırmızı üretti. 4.6X.1/4.6Y'de kayıtlı
+tuzağın ters yüzü: orada `checkout` fazlasını geri almıştı, burada
+**hiçbir şeyi** geri almadı. Yedek `cp` ile alınmalı.
+
+**Test:** `tests/Tenancy/GunlukBaglamiTest.php` — 11 test.
+
+**Kapsam dışı bırakıldı** (kullanıcı "1 ve 2'yi yap" dedi): testlerin ayrı
+günlük dosyasına yazması. Gürültü hâlâ %99,4.
 
 ---
 

@@ -34,6 +34,7 @@ use App\Domain\Stock\InsufficientStockException;
 use App\Domain\Stock\StockLockTimeoutException;
 use App\Http\Middleware\ForceJson;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\IstekKimligi;
 use App\Http\Middleware\RequireActiveTenant;
 use App\Http\Middleware\RequireOwner;
 use App\Http\Middleware\RequirePermission;
@@ -108,6 +109,21 @@ return Application::configure(basePath: dirname(__DIR__))
         | (JSON) korumasız kalırdı.
         */
         $middleware->append(SecurityHeaders::class);
+
+        /*
+        | ★ İSTEK KİMLİĞİ — GÜNLÜKTE "BU HANGİ İSTEKTİ" SORUSU İÇİN.
+        |
+        | ⚠️ `append` ile TÜM gruplara ve TÜM yüzeylere: bir siparişin
+        | hikâyesi vitrin isteği + sağlayıcı dönüşü + kuyruk işi olarak
+        | üçe bölünüyor. Yalnızca bir gruba takılsaydı hikâyenin ortası
+        | kimliksiz kalırdı.
+        |
+        | ⚠️ Kiracı ve kimlik BURADA yazılmıyor — onlar Monolog
+        | işleyicisinde (`App\Logging\IstekBaglami`), çünkü middleware
+        | sırası Laravel tarafından yeniden düzenlenebiliyor (4H) ve
+        | kiracı bu noktada henüz çözülmemiş olabilir.
+        */
+        $middleware->append(IstekKimligi::class);
 
         $middleware->trustProxies(at: [
             '10.0.0.0/8',

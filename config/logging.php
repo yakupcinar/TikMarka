@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\IstekBaglami;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -63,6 +64,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            /*
+            | ★ HER SATIRA "BU HANGİ İSTEKTİ" BAĞLAMI. Ölçüldü: günlükteki
+            | gerçek hatalar hangi markaya, hangi müşteriye ve hangi
+            | isteğe ait olduğunu SÖYLEMİYORDU — teşhis edilemiyorlardı.
+            */
+            'tap' => [IstekBaglami::class],
         ],
 
         'daily' => [
@@ -71,6 +78,12 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            /*
+            | ★ HER SATIRA "BU HANGİ İSTEKTİ" BAĞLAMI. Ölçüldü: günlükteki
+            | gerçek hatalar hangi markaya, hangi müşteriye ve hangi
+            | isteğe ait olduğunu SÖYLEMİYORDU — teşhis edilemiyorlardı.
+            */
+            'tap' => [IstekBaglami::class],
         ],
 
         'slack' => [
@@ -103,6 +116,7 @@ return [
             ],
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'processors' => [PsrLogMessageProcessor::class],
+            'tap' => [IstekBaglami::class],
         ],
 
         'syslog' => [

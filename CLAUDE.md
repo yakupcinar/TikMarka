@@ -1142,6 +1142,27 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   onu **üstlenen** bir betik (B2): JS kapalıysa tıklanıyor, motor
   tarayabiliyor.
   ⚠️ `withQueryString()` unutulursa arama sayfa 2'de kayboluyor.
+- **`git checkout` İZLENMEYEN DOSYAYI GERİ ALMAZ — SESSİZCE HİÇBİR ŞEY
+  YAPMAZ.** B5'te ısırdı: o oturumda yeni yazılan (henüz commit'lenmemiş)
+  bir middleware'e kırma denemesi uygulandı, `git checkout` ile geri
+  alınmak istendi ve komut hiçbir şey yapmadı — **kırık kod beş deneme
+  boyunca yerinde kaldı** ve sonraki her koşuda fazladan bir kırmızı
+  üretti. ⚠️ 4.6X.1/4.6Y'deki tuzağın TERS YÜZÜ: orada `checkout`
+  fazlasını geri almıştı, burada hiçbir şeyi. Her iki durumun da çözümü
+  aynı: `cp <dosya> /tmp/x.bak` ile yedekle, `cp` ile geri al.
+- **GÜNLÜK SATIRI BAĞLAMSIZSA TEŞHİS EDİLEMEZ — ve bu hata vermez.**
+  B5'te ölçüldü: `[iyzico] email hatalı format` satırı hangi markaya,
+  hangi müşteriye, hangi isteğe ait olduğunu **söylemiyordu**; hata
+  günlükten teşhis edilemedi, 4.5C'de gerçek istek atılarak bulundu.
+  ⚠️ Bağlam **Monolog işleyicisiyle** eklenir, middleware'le DEĞİL:
+  middleware'in kiracı başlatılmadan önce mi sonra mı koştuğu sıraya
+  bağlı (4H) — işleyici satır yazılırken çalıştığı için kiracı o an zaten
+  çözülmüş. ⚠️ Kimlik `hasUser()` ile okunur, `user()` ile DEĞİL:
+  ikincisi veritabanına gidiyor ve hatanın sebebi genelde veritabanının
+  kendisi. ⚠️ **E-posta yazılmaz** — günlük dosyası `Anonymizer` ve
+  `DataExporter`'ın göremediği bir yer.
+  ⚠️ Bağlamı satırın SONUNA koymak işe yaramıyor: ölçüldü, tek hata
+  girdisi **10.351 karakter** ve bağlam son 100 karakterindeydi.
 - **BLADE `@context`'İ KENDİ YÖNERGESİ SANIYOR — JSON-LD BLADE'DE ÜRETİLMEZ.**
   Derleyici `@` ile başlayan her adı yönerge diye deniyor; JSON-LD'nin
   `"@context"` anahtarı derlemede `<?php $__contextArgs = []; …` oluyor.

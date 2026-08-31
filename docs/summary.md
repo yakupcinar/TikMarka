@@ -3718,3 +3718,57 @@ B3 + B4 · SEO etiketleri  ·  çözülemez alan adına posta çıkmıyor    ✅
     varyant ucuzlatılınca düştü.
 
   Test: tests/Tenancy/SeoEtiketleriTest.php — 13 test · süit 1034 yeşil
+
+────────────────────────────────────────────────────────────────────────
+B5 · günlük bağlamı ve döndürme                                     ✅
+────────────────────────────────────────────────────────────────────────
+
+  SORU: "loglamayı nerede yapıyorsun, ayrı servisin yok, sorun değil mi?"
+  ÖLÇÜM: asıl kusur "ayrı servis yok" DEĞİLDİ.
+
+    storage/logs/laravel.log   72 MB / 12 gün   ← DÖNDÜRME YOK
+      6232 girdi → 6195 testing (%99,4)  ·  37 gerçek
+    app · worker · scheduler   inode 4803 — üçü de aynı dosyaya
+    Sentry / Loki / ELK        yok
+
+    Gerçek satır:
+      local.ERROR: [iyzico] email hatalı format ile gönderilmiştir
+    → hangi marka, hangi müşteri, hangi istek: HİÇBİRİ YOK
+
+    Yani "A markasının müşterisi 14:32'de neden ödeyemedi" sorusu
+    cevaplanamıyordu. Bu hata günlükten teşhis EDİLEMEDİ; 4.5C'de
+    gerçek istek atılarak bulundu.
+
+  EKLENEN
+    marka        tenant()->getTenantKey() — şema adının karşılığı
+    musteri      hasUser() ile ⚠ user() DEĞİL (o veritabanına gidiyor;
+                 günlük yazarken sorgu açmak, DB çöktüğünde günlüğü de
+                 çökertir)
+    istek_id     Context ile ⚠ Log::withContext DEĞİL — Context KUYRUĞA
+                 da taşınıyor ve worker aynı dosyaya yazıyor
+    X-Istek-Id   cevap başlığında (destek müşteriden isteyebilsin)
+    ⚠ E-POSTA YAZILMIYOR — günlük, KVKK yollarının göremediği bir yer
+
+  ⚠ MONOLOG İŞLEYİCİSİ, MIDDLEWARE DEĞİL: middleware'in kiracıdan önce
+    mi sonra mı koştuğu sıraya bağlı (4H). İşleyici satır YAZILIRKEN
+    çalışıyor — kiracı o an zaten çözülmüş, sıraya hiç bağımlı değil.
+
+  ⚠ BAĞLAM ÖNCE SATIRIN SONUNDAYDI: gerçek bir girdi 10.351 karakter ve
+    bağlam son 100 karakterinde. Teşhis bilgisi, teşhis edilecek
+    gürültünün ARKASINDA. Öne alındı (CI anotasyonu dersinin aynısı).
+
+  DÖNDÜRME: LOG_STACK=daily + LOG_DAILY_DAYS=14
+
+  KIRMA DENEMELERİ 8/8 — biri ancak test düzeltilince
+
+    8. deneme (tap kanallardan silindi) DÜŞMEDİ: testler işleyiciyi ELLE
+    kuruyordu, yani sınıfın davranışını ölçüp uygulamanın onu KULLANDIĞINI
+    hiç ölçmüyordu. Sınıf yerinde durur, testler yeşil kalır, gerçek
+    günlük bağlamsız yazılır.
+
+  ⚠ AYRI TUZAK: `git checkout` İZLENMEYEN dosyayı geri almıyor — sessizce
+    hiçbir şey yapmadı ve kırık kod beş deneme boyunca yerinde kaldı.
+
+  KAPSAM DIŞI (kullanıcı "1 ve 2"): testlerin ayrı dosyaya yazması.
+
+  Test: tests/Tenancy/GunlukBaglamiTest.php — 11 test · süit 1045 yeşil

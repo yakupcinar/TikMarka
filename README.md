@@ -290,6 +290,31 @@ belli bir süresi yok muydu 1 gün kaldı mesela öde deyince de hata verdi en b
 > bilerek ayrılmış uzantıda. Sunumda posta akışı gösterilecekse gerçek bir
 > adresle kayıt ol.
 
+* ~~Günlükte hangi marka/müşteri/istek olduğu yazmıyor~~ → **B5'te kapandı**
+
+> Senin sorunun ("ayrı bir servisin yok, sorun değil mi") ölçümü başlattı
+> ve **asıl kusur ayrı servis olmaması değildi**. Günlük satırı şuydu:
+>
+> `local.ERROR: [iyzico] email hatalı format ile gönderilmiştir …`
+>
+> Hangi marka, hangi müşteri, hangi istek — hiçbiri yok. Yani
+> *"A markasının müşterisi 14:32'de neden ödeyemedi"* sorusu
+> **cevaplanamıyordu**; bu hata da günlükten teşhis edilememiş, gerçek
+> istek atılarak bulunmuştu.
+>
+> Artık her satır marka, müşteri/personel ve istek kimliği taşıyor;
+> kimlik `X-Istek-Id` başlığıyla cevaba da yazılıyor (destek müşteriden
+> isteyebilsin). **E-posta yazılmıyor** — günlük dosyası KVKK yollarının
+> göremediği bir yer.
+>
+> ⚠️ Döndürme de açıldı: dosya 12 günde **72 MB**'a ulaşmıştı ve diski
+> dolduran bir günlük siteyi komple durdurur.
+>
+> ⚠️ **Ayrı toplama servisi hâlâ yok ve şimdilik doğru:** tek makinede
+> app/worker/scheduler aynı dosyaya yazıyor. İkinci sunucu eklendiği an
+> bu biter — bir siparişin hikâyesi ikiye bölünür ve toplayıcı zorunlu
+> olur.
+
 > Açık kusurlar ve fikirler. Biten maddeler **silinmiyor** — aşağıdaki
 > "Yapıldı" bölümüne taşınıyor ki tekrar kontrol edilebilsin.
 
