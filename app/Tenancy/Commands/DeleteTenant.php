@@ -8,18 +8,6 @@ use App\Platform\TenantPurge;
 use Illuminate\Console\Command;
 use Stancl\Tenancy\Database\Models\Domain;
 
-/**
- * Bir markayı KALICI olarak siler. (3G)
- *
- * ★ 1A'dan devredilen TODO. Şema + dosyalar + merkez kayıt, tek yoldan.
- *
- * ⚠️ `marka:silinecekleri-temizle` ile AYNI servisi kullanıyor: iki ayrı
- * silme yolu yazılsaydı biri dosyaları unutur ve öksüz klasör bırakırdı —
- * bugün diskte tam bundan 38 tane var (ölçüldü).
- *
- * ⚠️ Saklama süresine BAKMIYOR: bu komut elle, bilerek çalıştırılıyor.
- * Zamanlanmış temizlik ayrı komut ve o süreye bakıyor.
- */
 class DeleteTenant extends Command
 {
     protected $signature = 'tenant:delete
@@ -56,10 +44,6 @@ class DeleteTenant extends Command
         if (! $this->option('onayla')) {
             $this->newLine();
 
-            /*
-            | ⚠️ Silme GERİ ALINAMAZ, bu yüzden varsayılan güvenli taraf.
-            | Diğer komutlarda kuru çalışma ayrı bayraktı; burada tersi.
-            */
             $this->comment('  Hiçbir şey silinmedi. Silmek için: --onayla');
 
             return self::SUCCESS;

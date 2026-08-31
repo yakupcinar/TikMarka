@@ -8,21 +8,8 @@ use App\Platform\TenantProvisioning;
 use App\Platform\WeeklyLimitReachedException;
 use Illuminate\Console\Command;
 
-/**
- * Yeni bir marka (kiracı) açar.
- *
- * M-1'in şartı: "her yeni müşteri elle kurulum gerektiriyorsa ürün değil,
- * taslaktır." Bu komut o kurulumun tamamı olacak.
- */
 class CreateTenant extends Command
 {
-    /**
-     * Komutun adı ve alacağı bilgiler.
-     *
-     * Süslü parantez içindekiler ARGÜMAN: komutu çalıştıran kişi bunları
-     * vermek zorunda. İki nokta üstünden sonrası `--help` çıktısında görünen
-     * açıklama.
-     */
     protected $signature = 'tenant:create
                             {ad : Markanın adı (ör. "A Markası")}
                             {alan-adi : Markanın alan adı (ör. marka-a.localhost)}
@@ -31,10 +18,6 @@ class CreateTenant extends Command
 
     protected $description = 'Yeni marka açar: şema oluşturur, tablolarını kurar, alan adını bağlar.';
 
-    /**
-     * Komut çalıştırıldığında burası koşar.
-     * Dönüş değeri kabuk için: 0 başarılı, 1 hatalı.
-     */
     public function handle(TenantProvisioning $kurulum): int
     {
         $ad = trim((string) $this->argument('ad'));
@@ -53,14 +36,6 @@ class CreateTenant extends Command
 
         $this->info("Marka oluşturuluyor: {$ad}");
 
-        /*
-        | ★ KURULUM TEK YOLDAN — [App\Platform\TenantProvisioning].
-        |
-        | ⚠️ Komut kendi kurulumunu yazsaydı self-servis kayıt ucuyla
-        | (3D) ayrışırdı ve bu SESSİZ olurdu: 1E.4'te `markaKur` ile
-        | `tenant:create` tam böyle ayrışmış, testler gerçekte var
-        | olmayan bir markayı ölçmüştü.
-        */
         try {
             $tenant = $kurulum->ac($ad, $alanAdi, $sahipEposta, $sahipParola);
         } catch (DomainUnavailableException|WeeklyLimitReachedException $e) {
@@ -85,12 +60,6 @@ class CreateTenant extends Command
         $this->warn('Mağaza KAPALI açıldı. Panelden şirket bilgilerini doldurup');
         $this->warn('üç yasal metni yayınlayınca /panel/store/publish çalışacak.');
 
-        /*
-        | ⚠️ Geliştirmede alan adları Caddyfile'da ELLE sayılı; yeni marka
-        | HTTPS'e çıkmıyor. Faz 3'te on-demand TLS gelince bu not düşecek.
-        | Uyarmasaydık "komut başarılı ama site açılmıyor" diye aranırdı —
-        | 1A.1'deki öksüz kiracı olayının aynısı.
-        */
         $this->warn("Geliştirme: {$alanAdi} adresini docker/caddy/Caddyfile'a ekleyip");
         $this->warn('"docker compose restart caddy" demeden HTTPS açılmaz (Faz 3: on-demand TLS).');
 

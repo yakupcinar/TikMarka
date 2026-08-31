@@ -1,22 +1,15 @@
 name: CI
 
-# NE ZAMAN çalışsın.
-#   push          → main'e her gönderimde
-#   pull_request  → her PR'da (birleştirmeden ÖNCE hata yakalansın)
 on:
   push:
     branches: [main]
   pull_request:
 
 jobs:
-  # Tek iş: lint + analyse + test. Hepsi geçmezse iş kırmızı döner.
   kontrol:
     name: lint · analyse · test
     runs-on: ubuntu-latest
 
-    # İşin YANINDA çalışacak konteynerler.
-    # Yereldeki docker-compose.yml'nin CI karşılığı — ama burada sadece
-    # testin ihtiyacı olanlar var (caddy, worker, mailpit gerekmiyor).
     services:
       postgres:
         image: postgres:17
@@ -26,8 +19,6 @@ jobs:
           POSTGRES_PASSWORD: secret
         ports:
           - 5432:5432
-        # Sağlık kontrolü: PostgreSQL hazır olana kadar adımlar başlamasın.
-        # Yereldeki healthcheck ile aynı fikir — "ayakta" ≠ "hazır".
         options: >-
           --health-cmd="pg_isready -U tikmarka -d tikmarka_test"
           --health-interval=5s
@@ -44,10 +35,6 @@ jobs:
           --health-timeout=5s
           --health-retries=12
 
-    # Uygulamanın ortam değişkenleri.
-    # ⚠ Yerelde servis adları (postgres/redis) kullanılıyor; CI'da servisler
-    #   aynı makinede olduğu için 127.0.0.1. phpunit.xml'de DB_HOST bu yüzden
-    #   force="true" DEĞİL — buradaki değer kazanıyor.
     env:
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
@@ -55,13 +42,9 @@ jobs:
       REDIS_PORT: 6379
 
     steps:
-      # 1) Depoyu makineye indir. Bu olmadan ortada kod yok.
       - name: Kodu indir
         uses: actions/checkout@v4
 
-      # 2) PHP kur. Makine boş geliyor — PHP bile yok.
-      #    Uzantılar docker/php/Dockerfile'daki listeyle AYNI olmalı,
-      #    yoksa CI ile yerel farklı davranır.
       - name: PHP 8.4 kur
         uses: shivammathur/setup-php@v2
         with:
@@ -69,17 +52,12 @@ jobs:
           extensions: pdo_pgsql, redis, intl, bcmath, gd, zip
           coverage: none
 
-      # 2b) NODE kur — panel derlemesi için (4C).
-      #     ⚠ Sürüm docker/php/Dockerfile'daki ile AYNI olmalı; ayrışırsa
-      #       "yerelde derleniyor, CI'da derlenmiyor" sınıfı hatalar çıkar.
       - name: Node 22 kur
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
 
-      # 3) Composer paketlerini önbellekten al (varsa).
-      #    composer.lock değişmediyse indirme adımı saniyeler sürer.
       - name: Composer önbelleği
         uses: actions/cache@v4
         with:
@@ -89,42 +67,17 @@ jobs:
       - name: Bağımlılıkları kur
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      # 4) .env yoksa Laravel açılmaz. Örnekten kopyalayıp anahtar üretiyoruz.
-      #    Gerçek sırlar burada YOK — testler sahte sağlayıcılarla çalışıyor.
       - name: Ortam dosyasını hazırla
         run: |
           cp .env.example .env
           php artisan key:generate
 
-      # 5) Uzantılar. Yerelde docker/postgres/init.sql yapıyordu; CI'daki
-      #    servis konteynerinde o dosya yok, elle kuruyoruz.
-      #
-      #    ⚠ İKİ DOSYA AYRI AYRI GÜNCELLENMEK ZORUNDA — bu unutuldu ve CI
-      #      kırıldı: 2C'de `pg_trgm` init.sql'e eklendi, buraya eklenmedi.
-      #      Yerelde 396 test yeşildi çünkü uzantı ORADA vardı. Yerel yeşil
-      #      ≠ CI yeşil kuralının ikinci örneği.
-      #
-      #    citext → docs/domain-model.md §0, e-posta benzersizliği
-      #    pg_trgm → 2C araması, yazım hatası toleransı
       - name: Uzantıları kur
         run: |
           PGPASSWORD=secret psql -h 127.0.0.1 -U tikmarka -d tikmarka_test \
             -c "CREATE EXTENSION IF NOT EXISTS citext;" \
             -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
-      # 6) Üç kontrol. Biri bile kırılırsa iş kırmızı döner.
-      #
-      #    ⚠ `lint` değil `lint:check` — CI dosyayı DÜZELTMEZ, sadece denetler.
-      #      Düzeltseydi hatayı gizlemiş olurduk.
-      #
-      #    ⚠ `if: always()` — adımlar normalde ilk hatada durur. O zaman
-      #      önemsiz bir boşluk hatası, asıl mantık hatasını GİZLER ve
-      #      hatayı iki turda öğrenirsin. Bu satırla üçü de çalışır,
-      #      tek bakışta bütün resmi görürsün. İş yine kırmızı döner.
-      #    ⚠ Sarmalayıcı: hata çıktısını ANOTASYONA da basıyor. Actions
-      #      günlüklerini indirmek depo yöneticiliği istiyor; anotasyonlar
-      #      herkese açık. Bu olmadan "CI neden kırmızı" sorusu yetkisiz
-      #      cevaplanamıyordu.
       - name: Biçim denetimi (Pint)
         run: bash .github/ci-kontrol.sh "pint" composer lint:check
 
@@ -136,16 +89,6 @@ jobs:
         if: always()
         run: bash .github/ci-kontrol.sh "pest" composer test
 
-      # 7) PANEL DERLEMESİ (4C-K2).
-      #
-      #    ⚠ Testler derlemeye BAĞLI DEĞİL: `withoutVite()` kullanıyorlar,
-      #      çünkü Inertia'nın sunucu tarafı iddiaları (hangi sayfa, hangi
-      #      prop) JS olmadan ölçülebiliyor ve süiti Node'a bağlamak
-      #      gereksiz yavaşlık olurdu.
-      #
-      #    ⚠ AMA DERLEME YİNE DE ÇALIŞTIRILIYOR: bu adım olmasaydı bozuk
-      #      bir Vue bileşeni bütün testler yeşilken CI'dan geçer ve
-      #      panelin açılmadığı ancak elle fark edilirdi.
       - name: Panel derlemesi (Vite)
         if: always()
         run: bash .github/ci-kontrol.sh "vite" sh -c "npm ci && npm run build"

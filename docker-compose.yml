@@ -1,19 +1,11 @@
 services:
 
-  # ── Ters vekil ─────────────────────────────────────────────────────
-  # Dış dünyaya açılan tek servis. TLS'i sonlandırır, statik dosyayı
-  # kendisi sunar, PHP isteklerini app:9000'e devreder.  (M-4)
   caddy:
     image: caddy:2-alpine
     environment:
-      # Caddyfile bu iki değeri okuyor. Değerler .env'den geliyor —
-      # FPM adresi hiçbir dosyada sabit yazılı değil. (M-4)
       FPM_HOST: ${FPM_HOST:-app}
       FPM_PORT: ${FPM_PORT:-9000}
 
-      # ⚠️ Varsayılan BOŞ DEĞİL. Boş bırakılsaydı Caddyfile'daki site
-      # bloğu adressiz kalır ve Caddy hiç açılmazdı — tünel kullanmayan
-      # geliştirici için de her şey dururdu.
       NGROK_DOMAIN: ${NGROK_DOMAIN:-tunel-kapali.invalid}
     ports:
       - "80:80"
@@ -30,42 +22,14 @@ services:
   app:
     build: ./docker/php
     volumes:
-      - .:/var/www/html           # kod canlı bağlı — kaydettiğin anda geçerli
+      - .:/var/www/html 
 
-      # ⚠️ PHP ayarları (4.6AA): yükleme sınırları ve bellek. Caddyfile ile
-      #   aynı desen — imaja gömülmüyor ki değişiklik yeniden derleme
-      #   gerektirmesin. Değişince `docker compose restart app` ŞART;
-      #   `up -d` yetmez (bağlı `:ro` dosya bayat kalıyor).
       - ./docker/php/tikmarka.ini:/usr/local/etc/php/conf.d/tikmarka.ini:ro
 
-      # ⚠️ node_modules BAĞLI KLASÖRÜN DIŞINDA — adlandırılmış birimde. (4E)
-      #
-      # macOS'ta bind mount üzerinden binlerce küçük dosya okumak hem çok
-      # yavaş hem de KİLİTLENİYOR: Vite derlemesi `Unknown system error -35`
-      # (errno=35, Resource deadlock avoided) ile düştü ve üç denemede de
-      # aynı yerde takıldı. Aynı hata composer ve phpstan'da da görülmüştü;
-      # orada tek dosyayı yeniden yazmak yetiyordu, burada yetmedi.
-      #
-      # ⚠️ Sonuç: `npm install` konteyner İÇİNDE yaşıyor. Host'taki
-      # node_modules klasörü (varsa) artık kullanılmıyor.
       - node_modules:/var/www/html/node_modules
 
-      # ⚠️ DERLENMİŞ BLADE ÖNBELLEĞİ de bağlı klasörün DIŞINDA. (4.5C)
-      #
-      # Aynı `errno=35 Resource deadlock avoided` kilidi burada DÖRT KEZ
-      # çıktı (4D · 4E · 4.5C ×2): panelin bütün sayfaları 500 veriyordu
-      # ve belirti yanıltıcıydı — hata `Filesystem::require()`'dan
-      # geliyor, yığın izinde sayfayı yazan kod hiç görünmüyor.
-      #
-      # ⚠️ Klasör TÜRETİLMİŞ veri: Blade kaynaktan yeniden üretiyor.
-      # Host'tan görünmemesi bir kayıp değil. (Diğer `storage/framework`
-      # klasörleri bağlı kalıyor — oturum ve önbellek zaten Redis'te,
-      # ama `testing` klasörünü ayırmak testleri etkilerdi.)
       - blade_cache:/var/www/html/storage/framework/views
-    # env_file YOK — bilerek. Laravel .env'i dosyadan kendisi okuyor.
-    # Konteyner ortamına enjekte edilirse $_SERVER'a yazılır ve
-    # phpunit.xml testlerde onu EZEMEZ → testler geliştirme
-    # veritabanında koşar.
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,13 +37,11 @@ services:
         condition: service_started
 
   # ── Kuyruk işçisi ──────────────────────────────────────────────────
-  # app ile AYNI imaj, tek farkı çalıştırdığı komut.
   worker:
     build: ./docker/php
     command: php artisan queue:work --tries=3 --timeout=90
     volumes:
       - .:/var/www/html           # ⚠ app ile aynı bağlama — storage/ ortak (M-2.4)
-    # env_file YOK — app ile aynı gerekçe (yukarı bak).
     depends_on:
       postgres:
         condition: service_healthy
@@ -87,12 +49,6 @@ services:
         condition: service_started
 
   # ── Zamanlayıcı ────────────────────────────────────────────────────
-  # Laravel'in zamanlanmış görevleri kendi kendine çalışmaz; dakikada bir
-  # tetikleyen bir süreç gerekir. `schedule:work` bunu konteyner içinde yapar
-  # (üretimde cron da kullanılabilir).
-  #
-  # ⚠ worker ile AYNI tuzak: kodu belleğe alır. Deploy sonrası yeniden
-  #   başlatılmazsa eski görev tanımlarını çalıştırmaya devam eder.
   scheduler:
     build: ./docker/php
     command: php artisan schedule:work
@@ -105,18 +61,13 @@ services:
         condition: service_started
 
   # ── Veritabanı ─────────────────────────────────────────────────────
-  # Tek veritabanı. Markalar içinde ayrı şemalarda duracak. (M-2)
   postgres:
     image: postgres:17-alpine
     environment:
-      # Değerler .env'den okunur; buradakiler yalnızca YEREL varsayılan.
-      # Üretimde gerçek sırlar ortam değişkeniyle verilir, bu dosya değişmez.
       POSTGRES_DB: ${DB_DATABASE:-tikmarka}
       POSTGRES_USER: ${DB_USERNAME:-tikmarka}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      # Mac'te 5432 doluydu → 5433'e alındı. Konteyner içi port 5432 kalıyor,
-      # bu yüzden .env'deki DB_PORT değişmiyor (app ağ içinden bağlanıyor).
       - "5433:5432"               # dışarıdan GUI ile bakabilmek için
     volumes:
       - pg_data:/var/lib/postgresql/data
@@ -134,28 +85,12 @@ services:
       - redis_data:/data
 
   # ── Yerel e-posta yakalayıcı ───────────────────────────────────────
-  # Giden mailleri tutar, gerçekten göndermez. Arayüz: localhost:8025
   mailpit:
     image: axllent/mailpit:latest
     ports:
       - "8025:8025"
 
   # ── ngrok tüneli — YALNIZCA ödeme sağlayıcısı testi için (1E-K10) ──
-  #
-  # ⚠️ `profiles` sayesinde NORMAL `docker compose up` ile AÇILMAZ.
-  # Açılsaydı geliştirme makinesi her gün internete açık kalırdı; tünel
-  # kimlik doğrulaması olmayan bir kapı ve arkasında panel de var.
-  #
-  # Açmak için:  docker compose --profile tunel up -d ngrok
-  # Kapatmak:    docker compose stop ngrok
-  #
-  # ⚠️ `caddy:80` — HTTP. HTTPS'e gidilseydi Caddy'nin `tls internal`
-  # sertifikasını ngrok tanımaz ve tünel her istekte düşerdi. Trafik zaten
-  # ngrok ile bizim aramızda şifreli; Docker ağının içi yerel.
-  #
-  # ⚠️ `--host-header` tünel alan adını KORUYOR. Yeniden yazılsaydı istek
-  # `caddy` host'uyla gelir, kiracı çözümlenemez ve webhook 404 alırdı —
-  # yani tahsilat hiç işlenmezdi (1E.4).
   ngrok:
     image: ngrok/ngrok:latest
     profiles: ["tunel"]
@@ -163,8 +98,6 @@ services:
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     ports:
-      # Tünelin kendi arayüzü: hangi istek geldi, ne cevap döndü.
-      # Webhook ayıklarken tek görüş kaynağımız bu.
       - "4040:4040"
     depends_on:
       - caddy

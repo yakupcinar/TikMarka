@@ -66,203 +66,47 @@ use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
-/*
-|--------------------------------------------------------------------------
-| MARKA rotaları — yalnızca markanın kendi alan adında geçerli
-|--------------------------------------------------------------------------
-|
-| Merkez rotaları routes/web.php'de (kontrol düzlemi).
-|
-| Middleware zinciri:
-|   api                             oturumsuz + CSRF yok. 'web' kullanılsaydı
-|                                   token istemcisi CSRF üretemediği için her
-|                                   POST kırılırdı.
-|   InitializeTenancyByDomain       KAPI GÖREVLİSİ: host → domains → search_path
-|   PreventAccessFromCentralDomains bu rotalara merkez adresten girilemez
-|
-| Rota EŞLEŞMESİ ile MIDDLEWARE ayrı iki aşama: burada yalnızca bağlantı
-| kuruluyor; kiracı çözümlemesi middleware çalışınca oluyor.
-*/
-
 Route::middleware([
     'api',
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
-    /*
-    | ÖDEME BİLDİRİMİ (1E.4) — sağlayıcının sunucusu çağırıyor.
-    |
-    | ⚠️ `api` ÖNEKİ YOK, `magaza-acik` KAPISI YOK, kimlik doğrulaması YOK.
-    | Üçü de bilinçli:
-    |
-    |   önek yok      sağlayıcı panelinde yazılı adres; kısa ve sabit kalmalı
-    |   kapı yok      marka mağazasını kapatınca çoktan başlamış ödemelerin
-    |                 bildirimi 503 alırdı — para çekilmiş, sipariş pending
-    |   kimlik yok    sağlayıcı bizim token'ımızı bilmiyor; tek koruma İMZA
-    |
-    | ⚠️ Kiracı ALAN ADINDAN çözülüyor. Yanlış şemaya yazılan tahsilat
-    | hata vermez — A markasının parası B'nin defterinde görünür (0.5).
-    */
     Route::post('/webhooks/payment', [PaymentWebhookController::class, 'store']);
 
-    /*
-    | ÖDEME DÖNÜŞÜ (1E.5) — müşterinin bankadan geri geldiği ekran.
-    |
-    | ⚠️ HİÇBİR ŞEY YAZMIYOR (1E-K1). Tarayıcı dönüşü ödeme kanıtı değil;
-    | müşteri o ekrana hiç ulaşmayabilir, ya da adres çubuğuna kendisi
-    | `?status=success` yazabilir. Gerçek webhook'tan geliyor.
-    |
-    | ⚠️ GET ve POST birlikte: sağlayıcılar dönüşü ikisinden biriyle
-    | yapıyor (iyzico POST eder). Tek yöntem tanımlansaydı gerçek
-    | sağlayıcı takıldığı gün müşteri 405 ekranı görürdü.
-    |
-    | ⚠️ `magaza-acik` DIŞINDA: mağaza kapansa bile bankadan dönen
-    | müşteri ne olduğunu görebilmeli.
-    */
     Route::match(['get', 'post'], PaymentController::DONUS_YOLU, [PaymentReturnController::class, 'show']);
 
-    /*
-    | ÖDEME SONUCU (4.5R) — dönüş ucunun 303 ile yönlendirdiği ekran.
-    |
-    | ⚠️ AYRI UÇ olmak zorunda: dönüş POST ve referans GÖVDEDE geliyor.
-    | Çerçeveden çıkış betiği üst pencereyi aynı adrese GET ile
-    | götürdüğünde gövde kayboluyor ve müşteri 404 görüyordu.
-    |
-    | ⚠️ `signed`: sayfa artık GET'lenebilir, yani uuid'i bilen herkes
-    | başkasının sipariş durumunu okuyabilirdi. Adresi biz üretiyoruz.
-    */
-
-    /*
-    | KVKK DOĞRULAMA BAĞLANTISI (2G-K3).
-    |
-    | ⚠️ `magaza-acik` DIŞINDA ve `api` önekinden AYRI: bağlantı postadan
-    | tıklanıyor, mağaza kapalıyken de çalışmalı. Yasal bir hak, mağazanın
-    | açık olmasına bağlanamaz.
-    */
     Route::get(PrivacyController::DONUS_YOLU.'/{token}', [PrivacyController::class, 'confirm']);
 
-    /*
-    | VİTRİN — markanın müşterisi
-    */
     Route::prefix('api')->group(function () {
 
-        /*
-        | KATALOG — herkese açık, kimlik doğrulama YOK.
-        |
-        | ⚠️ `magaza-acik` kapısı İLK KEZ gerçek bir rotada: mağaza
-        | kapalıysa 503 + Retry-After (1A.4'te yazıldı, burada bağlandı).
-        | Panel bu kapının DIŞINDA — marka mağazasını kapatınca kendini de
-        | dışarıda bırakmasın.
-        |
-        | ⚠️ Sorgular ProductQuery'den geçiyor: maliyet ve taslak sızıntısı
-        | ikisi de sessiz olurdu (1B-K10).
-        */
         Route::middleware('magaza-acik')->group(function () {
             Route::get('/products', [CatalogController::class, 'index']);
             Route::get('/products/{slug}', [CatalogController::class, 'show']);
             Route::get('/categories', [CatalogController::class, 'categories']);
 
-            /*
-            | KOLEKSİYONLAR (2D). Kurallı olanın üyeleri sorgu anında
-            | hesaplanıyor — bu uçtan bakıldığında hiçbir fark yok, fark
-            | fiyat değişince ortaya çıkıyor: liste kendiliğinden güncel.
-            */
-            /*
-            | YORUMLAR (2E). Okuma herkese açık, YAZMA `auth:customer`
-            | arkasında — aşağıdaki müşteri bloğunda.
-            |
-            | ⚠️ Misafir yorum yazamıyor: kimlik yok, "bu kişi gerçekten
-            | aldı mı" sorusu cevaplanamaz. Bu bir SINIR, gizlenmiyor.
-            */
             Route::get('/products/{slug}/reviews', [StorefrontReviewController::class, 'index']);
 
             Route::get('/collections', [StorefrontCollectionController::class, 'index']);
             Route::get('/collections/{slug}', [StorefrontCollectionController::class, 'show']);
 
-            /*
-            | SEPET — kimlik doğrulama İSTEĞE BAĞLI.
-            |
-            | ⚠️ `auth:customer` YOK: misafir sepeti var (M-1). Kimin
-            | sepeti olduğu controller'da çözülüyor — giriş yapmışsa
-            | müşteri sepeti, yapmamışsa X-Cart-Token başlığındaki misafir
-            | sepeti (1C-K1).
-            |
-            | ⚠️ Satır adresi VARYANT uuid'si ile: sepet satırının kendi
-            | kimliğini dışarı vermeye gerek yok, müşteri zaten hangi
-            | varyantı değiştirdiğini biliyor.
-            */
             Route::get('/cart', [CartController::class, 'show']);
             Route::post('/cart/items', [CartController::class, 'addItem']);
             Route::put('/cart/items/{variant}', [CartController::class, 'updateItem']);
             Route::delete('/cart/items/{variant}', [CartController::class, 'removeItem']);
 
-            /*
-            | KUPON (2A) — uygulamak KOTA HARCAMIYOR.
-            |
-            | ⚠️ Kota sipariş oluşurken harcanıyor; yoksa kuponu deneyip
-            | vazgeçen her müşteri kampanyadan bir kullanım yerdi.
-            */
-            /*
-            | ★ THROTTLE 4.6T'DE EKLENDİ. Kupon kodu tahmin etmeye
-            | çalışan bir betiğin en ucuz durdurma noktası; misafir
-            | sepeti de kapsadığı için IP anahtarlı.
-            */
             Route::post('/cart/coupon', [CouponController::class, 'store'])->middleware('throttle:kupon');
             Route::delete('/cart/coupon', [CouponController::class, 'destroy']);
 
-            /*
-            | SİPARİŞ OLUŞTURMA — misafir de verebiliyor (M-1).
-            |
-            | ⚠️ ÖDEME BURADA YOK: sipariş `pending` doğuyor, ödeme 1E'de
-            | gelecek. Ödemenin transaction dışında kalması bilinçli —
-            | dış servis yavaşlarsa satırlar dakikalarca kilitli kalır.
-            */
-            /*
-            | YASAL METİNLER — ödeme adımının ÖN KOŞULU.
-            |
-            | ⚠️ `/checkout` müşteriden `legal_version_id` istiyor; sürüm
-            | kimliğini veren tek yer burası. Uç 1D.6'da eklendi: yokken
-            | sipariş vermek dışarıdan imkânsızdı ve tek bir test bile
-            | kırılmıyordu (testler kimliği modelden okuyordu).
-            */
             Route::get('/legal', [VitrinLegal::class, 'index']);
             Route::get('/legal/{tur}', [VitrinLegal::class, 'show']);
 
             Route::post('/checkout', [VitrinCheckout::class, 'store']);
 
-            /*
-            | ÖDEME BAŞLATMA (1E.3).
-            |
-            | ⚠️ Adres SİPARİŞ NUMARASI değil UUID taşıyor. Numara
-            | tahmin edilebilir (TM-2026-000123, 1D-K4) ve bu bilinçli
-            | bir karardı — ama o karar "görüntülemek kimlik doğrulaması
-            | ister" varsayımına dayanıyordu. Misafir siparişinde kimlik
-            | doğrulaması yok; numara kullanılsaydı ardışık numara
-            | deneyen biri başkasının siparişinin ödemesini başlatabilirdi.
-            |
-            | ⚠️ UUID müşteriye ZATEN /api/checkout cevabında veriliyor —
-            | 1D.6'nın kuralı: isteğe giren her kimlik bir önceki uçtan
-            | gelmeli.
-            */
             Route::post('/orders/{siparis}/pay', [PaymentController::class, 'store']);
 
-            /*
-            | KVKK VERİ TALEPLERİ (2G).
-            |
-            | ⚠️ Kimlik doğrulaması İSTEĞE BAĞLI: misafir de talep
-            | edebilmeli (M-1). Kimlik kanıtı e-posta + sipariş numarası;
-            | asıl koruma ise doğrulama postası.
-            */
             Route::post('/privacy/requests', [PrivacyController::class, 'store']);
 
-            /*
-            | İADE TALEBİ (2B) — müşteri yalnızca TALEP açıyor.
-            |
-            | ⚠️ Onay, teslim alma ve para iadesi markanın işi (2B-K1).
-            | `GET` ucu "hangi satır ne zamana kadar iade edilebilir"
-            | sorusunu cevaplıyor: müşteri reddedilince şaşırmasın.
-            */
             Route::get('/orders/{siparis}/returns', [VitrinIade::class, 'show']);
             Route::post('/orders/{siparis}/returns', [VitrinIade::class, 'store'])->middleware('throttle:iade');
         });
@@ -278,21 +122,8 @@ Route::middleware([
             Route::post('/logout', [VitrinAuth::class, 'logout']);
             Route::get('/me', [VitrinAuth::class, 'me']);
 
-            /*
-            | YORUM YAZMA (2E-K1). Satın alma kanıtı [PurchaseProof]'ta —
-            | burada değil: kontrol HTTP dışından da atlanmamalı.
-            */
             Route::post('/products/{slug}/reviews', [StorefrontReviewController::class, 'store'])->middleware('throttle:yorum');
 
-            /*
-            | ADRES DEFTERİ.
-            |
-            | ⚠️ Sahiplik kontrolü burada DEĞİL, controller'da: her sorgu
-            | müşterinin ilişkisi üzerinden açılıyor, başkasının adresi
-            | sonuç kümesine hiç girmiyor. `{adres}` bir MODEL değil düz
-            | uuid — örtük rota bağlaması kullanılsaydı başkasının satırı
-            | belleğe gelirdi.
-            */
             Route::get('/addresses', [AddressController::class, 'index']);
             Route::post('/addresses', [AddressController::class, 'store']);
             Route::put('/addresses/{adres}', [AddressController::class, 'update']);
@@ -300,69 +131,28 @@ Route::middleware([
         });
     });
 
-    /*
-    | PANEL — markanın personeli
-    |
-    | ⚠️ KAYIT UCU YOK ve olmayacak. Personel davetle gelir (1A.3).
-    | Olsaydı markanın alan adını bilen herkes panele hesap açardı.
-    */
     Route::prefix('panel')->group(function () {
 
         Route::post('/login', [PanelAuth::class, 'login'])->middleware('throttle:giris');
 
-        /*
-        | ★ ÇIKIŞ ve KİMLİK — askıda DA açık.
-        |
-        | ⚠️ Bilerek `marka-aktif`'in DIŞINDA: askıdaki markanın yöneticisi
-        | çıkış yapabilmeli (yoksa token'ı elinde kalırdı) ve hesabının
-        | durumunu görebilmeli.
-        */
         Route::middleware('auth:staff')->group(function () {
             Route::post('/logout', [PanelAuth::class, 'logout']);
             Route::get('/me', [PanelAuth::class, 'me']);
         });
 
-        /*
-        | auth:staff  → yalnızca STAFF token'ı geçer.
-        |               Müşteri token'ı buraya giremez (1A.0'da kanıtlandı).
-        |
-        | marka-aktif → askıya alınmış markanın paneli KAPALI (3C).
-        |
-        | ⚠️ Vitrin AÇIK kalıyor: müşteri siparişini takip edebilsin, iade
-        | açabilsin. Askı markayı vurmalı, markanın müşterilerini değil
-        | (4 numaralı karar).
-        */
         Route::middleware(['auth:staff', 'marka-aktif'])->group(function () {
 
-            /*
-            | PERSONEL YÖNETİMİ — `staff.manage` izni şart.
-            | Bu izin varsayılan rollerin hiçbirinde yok; pratikte yalnızca
-            | sahip erişebiliyor. Personel davet etmek yetki yükseltmeye en
-            | yakın işlem olduğu için bilerek böyle (1A.3).
-            */
             Route::middleware('izin:staff.manage')->group(function () {
                 Route::get('/staff', [StaffController::class, 'index']);
                 Route::post('/staff', [StaffController::class, 'store']);
                 Route::delete('/staff/{user}', [StaffController::class, 'destroy']);
             });
 
-            /*
-            | SİPARİŞLER — `order.view`.
-            |
-            | Bu izin de 1A.3'ten beri boştu; ilk kez burada kapı bekliyor.
-            */
             Route::middleware('izin:order.view')->group(function () {
                 Route::get('/orders', [OrderController::class, 'index']);
                 Route::get('/orders/{order}', [OrderController::class, 'show']);
             });
 
-            /*
-            | SEVKİYAT — `order.fulfill`. AYRI izin, bilerek.
-            |
-            | "Sipariş & Destek" rolünde `order.view` ve `order.fulfill` var
-            | ama `order.refund` YOK — depocu örneği (1A.3): siparişi görür,
-            | kargoya verir, para iadesi yapamaz.
-            */
             Route::middleware('izin:order.fulfill')->group(function () {
                 Route::post('/orders/{order}/fulfillments', [OrderController::class, 'storeFulfillment']);
                 Route::post('/orders/{order}/fulfillments/{fulfillment}/ship', [OrderController::class, 'ship']);
@@ -370,32 +160,12 @@ Route::middleware([
                 Route::delete('/orders/{order}/fulfillments/{fulfillment}', [OrderController::class, 'cancelFulfillment']);
             });
 
-            /*
-                | KATALOG — `product.write`.
-                |
-                | Bu izin de 1A.3'ten beri boştu; ilk kez burada kapı bekliyor.
-                | Katalog rolünde var, yani ürün ekleyen personel eksen de
-                | tanımlayabiliyor — eksen katalogun yapısı.
-                |
-                | Eksenler MAĞAZA seviyesinde (1B-K3): "Renk" bir kez tanımlanır.
-                | Değer uçları eksenin ALTINDA çünkü değer tek başına anlamsız;
-                | ayrıca adres, değerin hangi eksene ait olduğunu da doğruluyor.
-                */
             Route::middleware('izin:product.write')->group(function () {
                 Route::get('/options', [OptionController::class, 'index']);
                 Route::post('/options', [OptionController::class, 'store']);
                 Route::put('/options/{option}', [OptionController::class, 'update']);
                 Route::delete('/options/{option}', [OptionController::class, 'destroy']);
 
-                /*
-                | ÜRÜN ve VARYANTLAR.
-                |
-                | ⚠️ Durum değişikliği ve eksen ayarı AYRI uçlarda: ikisinin
-                | de kendi şartı var (satışa almak varyant ister, eksen
-                | değiştirmek varyantsızlık ister). Genel `update` içine
-                | konsaydı basit bir başlık düzeltmesi bu kuralları
-                | tetikleyebilirdi.
-                */
                 Route::get('/products', [ProductController::class, 'index']);
                 Route::post('/products', [ProductController::class, 'store']);
                 Route::get('/products/{product}', [ProductController::class, 'show']);
@@ -414,38 +184,12 @@ Route::middleware([
                 Route::put('/products/{product}/variants/{variant}', [ProductController::class, 'updateVariant']);
                 Route::delete('/products/{product}/variants/{variant}', [ProductController::class, 'destroyVariant']);
 
-                /*
-                | KATEGORİ AĞACI.
-                |
-                | ⚠️ Taşıma AYRI uçta: kendi kuralı var (döngü engeli) ve
-                | alt ağacın tamamını yeniden yazıyor. Ad değiştirmekle aynı
-                | uçta olsaydı, yanlışlıkla gönderilen bir parent_uuid koca
-                | bir dalı taşırdı.
-                */
                 Route::get('/categories', [CategoryController::class, 'index']);
                 Route::post('/categories', [CategoryController::class, 'store']);
                 Route::put('/categories/{category}', [CategoryController::class, 'update']);
                 Route::post('/categories/{category}/move', [CategoryController::class, 'move']);
                 Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
 
-                /*
-                | KOLEKSİYONLAR.
-                |
-                | ⚠️ Üyelik uçları (`products/…`) AYRI ve yalnızca manuel
-                | koleksiyonda çalışıyor; kurallıda `CollectionService`
-                | reddediyor. Aynı uçtan yönetilseydi elle eklenen ürün,
-                | kural onu dışlasa bile listede kalırdı.
-                |
-                | ⚠️ `GET /products` kuralın ŞU AN ne getirdiğini gösteriyor
-                | — marka kuralını kaydetmeden sonucunu görebilmeli.
-                */
-                /*
-                | YORUM MODERASYONU (2E-K2).
-                |
-                | ⚠️ `product.write` arkasında: yorum ürünün vitrin
-                | içeriğidir. Ayrı izin açılsaydı üç sistem rolünün
-                | hiçbirinde bulunmaz, pratikte yalnızca sahip yapabilirdi.
-                */
                 Route::get('/reviews', [ReviewController::class, 'index']);
                 Route::post('/reviews/{review}/approve', [ReviewController::class, 'approve']);
                 Route::post('/reviews/{review}/reject', [ReviewController::class, 'reject']);
@@ -465,27 +209,6 @@ Route::middleware([
                 Route::delete('/options/{option}/values/{deger}', [OptionController::class, 'destroyValue']);
             });
 
-            /*
-            | MAĞAZA AYARLARI, YASAL METİNLER, YAYIN DURUMU — `settings.write`.
-            |
-            | Bu izin 1A.3'te tanımlanmıştı ama hiçbir yeri korumuyordu;
-            | ilk kez burada gerçek bir kapı bekliyor.
-            |
-            | Üçü de tek izin altında: "mağazayı kapatma" ile "kargo ücretini
-            | değiştirme" ayrı izinler olsun mu diye tartışıldı, şimdilik
-            | ayrılmadı (1A.4). Ayrım gerekirse `store.publish` eklenecek.
-            */
-            /*
-            | ROL YÖNETİMİ — `sahip` kapısı, izin DEĞİL.
-            |
-            | `role.manage` diye bir izin olsaydı ona sahip kişi kendine
-            | `settings.write` içeren bir rol kurup atardı — yetki
-            | yükseltme. "Yetki dağıtan işlem, yetkiyle dağıtılmaz."
-            |
-            | Marka kendi rolünü kurabiliyor çünkü katı rol listesi
-            | güvenlik değil AŞIRI YETKİ üretir: "sadece finans" rolü
-            | yoksa marka muhasebecisine Yönetici verir.
-            */
             Route::middleware('sahip')->group(function () {
                 Route::get('/roles', [RoleController::class, 'index']);
                 Route::post('/roles', [RoleController::class, 'store']);
@@ -493,12 +216,6 @@ Route::middleware([
                 Route::delete('/roles/{rol}', [RoleController::class, 'destroy']);
             });
 
-            /*
-            | İADE YÖNETİMİ (2B) — `order.refund` izni ilk kez kapı bekliyor.
-            |
-            | ⚠️ `order.view` YETMİYOR: para geri gönderen işlem, siparişi
-            | görebilen herkese açık olamaz.
-            */
             Route::middleware('izin:order.refund')->group(function () {
                 Route::get('/returns', [PanelIade::class, 'index']);
                 Route::get('/returns/{return}', [PanelIade::class, 'show']);
@@ -510,31 +227,11 @@ Route::middleware([
 
             Route::middleware('izin:settings.write')->group(function () {
 
-                /*
-                | ★ ÖZEL ALAN ADI (3H).
-                |
-                | ⚠️ `settings.write` arkasında: alan adı mağazanın kimliği,
-                | katalog değil. Yanlış bağlanan bir alan adı mağazayı
-                | erişilemez yapabilir.
-                |
-                | ⚠️ `{domain}` düz metin, MODEL DEĞİL: örtük rota bağlaması
-                | kullanılsaydı başka markanın alan adı belleğe gelirdi
-                | (adres defterinde aynı karar var, 1A.5).
-                */
                 Route::get('/domains', [DomainController::class, 'index']);
                 Route::post('/domains', [DomainController::class, 'store']);
                 Route::post('/domains/{domain}/verify', [DomainController::class, 'verify']);
                 Route::delete('/domains/{domain}', [DomainController::class, 'destroy']);
 
-                /*
-                | ÖDEME SAĞLAYICI AYARLARI (1E-K11) — genel ayar ucundan AYRI.
-                |
-                | ⚠️ Genel uç serbest biçimli: marka istediği anahtarı
-                | yazabiliyor. Burada anahtarlar SAĞLAYICININ BİLDİRDİĞİ
-                | listeyle sınırlı, çünkü `iyzico_api` gibi bir yazım hatası
-                | sessizce kabul edilirse ödeme "ayarlandı" görünür ve ilk
-                | gerçek müşteride patlar.
-                */
                 Route::get('/payment', [PaymentSettingsController::class, 'index']);
                 Route::put('/payment', [PaymentSettingsController::class, 'update']);
 

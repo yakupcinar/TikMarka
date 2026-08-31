@@ -23,29 +23,6 @@ use App\Models\StockReservation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * ÖDEME ADIMI — orkestratör. (PLAN.md 1D)
- *
- * ★ Kendi iş yapmıyor, SIRAYI yönetiyor:
- *
- *   1  sepeti doğrula .......... ölü satır? stok yetiyor mu?
- *   2  ┌─ BEGIN
- *   3  │   kilitle + rezerve et  (StockService)
- *   4  │   siparişi oluştur      satırlar DONAR
- *   5  │   sözleşme onayını yaz  GÖSTERİLEN sürüme bağlanır
- *   6  └─ COMMIT
- *   7  → ödeme                   ⚠️ TRANSACTION'IN DIŞINDA (1E)
- *   8  başarılı → rezervasyon kesinleşir, stok düşer, paid
- *      başarısız → rezervasyon serbest, sipariş cancelled
- *
- * ⚠️ PLAN TASLAĞINDAN SAPMA: taslakta rezervasyon COMMIT edilip sipariş
- * SONRA oluşturuluyordu. Tek transaction'a alındı — arada sipariş
- * oluşturma patlarsa rezervasyon ortada kalır ve stok 15 dakika boşuna
- * bağlı dururdu. Süre yine kısa; içeride dış çağrı yok.
- *
- * ⚠️ ÖDEME NEDEN DIŞARIDA: dış servis yavaşlarsa satırlar dakikalarca
- * kilitli kalır ve tüm mağaza donar.
- */
 class CheckoutService
 {
     public function __construct(
@@ -71,11 +48,6 @@ class CheckoutService
     {
         $sepet->load('items.variant.product');
 
-        /*
-        | 1 — SEPET DOĞRULAMASI. Bağlayıcı kontrol burada; sepetteki
-        | kontrol yumuşaktı (1C-K3). Ölü satır varsa ya da stok yetmiyorsa
-        | sipariş HİÇ başlamıyor.
-        */
         $engeller = $this->sepetler->engeller($sepet);
 
         if ($engeller !== [] || $sepet->items->isEmpty()) {
@@ -85,43 +57,18 @@ class CheckoutService
         $sozlesme = $this->sozlesmeyiDogrula((int) $veri['legal_version_id']);
 
         return DB::transaction(function () use ($sepet, $veri, $sozlesme) {
-            /*
-            | 3 — KİLİTLE + REZERVE ET.
-            |
-            | `StockService` satırları id sırasına göre kilitliyor (deadlock
-            | engeli) ve `lock_timeout` uyguluyor (1D-K6). Stok yetmezse
-            | istisna fırlıyor ve transaction geri sarılıyor — sipariş de
-            | oluşmuyor.
-            */
             $rezervasyonlar = $this->stok->sepetiRezerveEt($sepet);
 
             $siparis = $this->siparisiOlustur($sepet, $veri, $sozlesme);
 
-            // Rezervasyonlar artık siparişin: ödemenin sonucuna göre
-            // kesinleşecek ya da serbest bırakılacak.
             foreach ($rezervasyonlar as $rezervasyon) {
                 $rezervasyon->order()->associate($siparis);
                 $rezervasyon->save();
             }
 
-            // Sepet tüketildi. Silmiyoruz — denetim izi.
             $sepet->status = CartStatus::Converted;
             $sepet->save();
 
-            /*
-            | ★ 1F-K5'in ASIL SEBEBİ BURASI.
-            |
-            | ⚠️ Bu satır bir TRANSACTION'IN İÇİNDE. Olay doğrudan kuyruğa
-            | atılsaydı ve aşağıdaki COMMIT'e gelinemeseydi, sipariş HİÇ
-            | VAR OLMAZ ama olay Redis'e girmiş olurdu — worker onu alır
-            | ve olmayan bir siparişin `order_placed` olayını yazardı.
-            |
-            | `EventRecorder` işi `afterCommit()` ile atıyor: geri
-            | sarılırsa iş hiç kuyruğa girmiyor.
-            |
-            | ⚠️ Payload'da KİŞİSEL VERİ YOK (1F-K4): e-posta, ad, adres
-            | girmiyor — yalnızca kimlik, tutar ve satır sayısı.
-            */
             $this->olaylar->kaydet(EventType::OrderPlaced, [
                 'order_id' => $siparis->id,
                 'order_number' => $siparis->order_number,
@@ -133,17 +80,6 @@ class CheckoutService
         });
     }
 
-    /**
-     * ★ Ödeme BAŞLADI: rezervasyonların ömrü 15 dk → 60 dk. (1E.2)
-     *
-     * Sağlayıcıya yönlendirmeden HEMEN ÖNCE çağrılıyor — o andan sonra
-     * müşteri bizde değil, süreyi uzatma şansımız kalmıyor.
-     *
-     * ⚠️ Sipariş durumu DEĞİŞMİYOR. "Ödemeye başladı" bir ödeme durumu
-     * değil; para hâlâ çekilmedi ve hiç çekilmeyebilir. `payment_status`
-     * burada değiştirilseydi, ödeme sayfasını açıp vazgeçen her müşteri
-     * için sipariş yanlış durumda kalırdı.
-     */
     public function odemeBaslatildi(Order $siparis): Order
     {
         foreach ($this->rezervasyonlari($siparis) as $rezervasyon) {
@@ -153,22 +89,10 @@ class CheckoutService
         return $siparis;
     }
 
-    /**
-     * Ödeme başarılı: rezervasyonlar kesinleşir, STOK GERÇEKTEN DÜŞER.
-     *
-     * ⚠️ 1E'de gerçek sağlayıcı bunu çağıracak. Şimdilik dikiş yeri.
-     */
     public function odemeBasarili(Order $siparis): Order
     {
         $rezervasyonlar = $this->rezervasyonlari($siparis);
 
-        /*
-        | ★ 1E-K5: "PARA GELDİ, MAL YOK" TESPİTİ.
-        |
-        | ⚠️ Ölçüm KESİNLEŞTİRMEDEN ÖNCE yapılmak zorunda: `kesinlestir()`
-        | rezervasyonu `committed` yapıyor, o andan sonra "aktif" sayılmıyor
-        | ve elimizde ölçecek bir şey kalmıyor.
-        */
         $acikVar = $this->stokAcigiVarMi($siparis, $rezervasyonlar);
 
         foreach ($rezervasyonlar as $rezervasyon) {
@@ -177,34 +101,15 @@ class CheckoutService
 
         $siparis->payment_status = PaymentStatus::Paid;
 
-        /*
-        | ⚠️ Sipariş yine de KABUL EDİLİYOR (1E-K5). Reddedip iade etmek
-        | müşteriyi 3-5 gün parasız bırakırdı; tedarik edebilen marka da
-        | satışı kaybederdi. Karar ticari, o yüzden markaya bırakılıyor —
-        | ama SESSİZ KALMIYOR, panelde uyarı olarak görünüyor.
-        */
         $siparis->stock_shortfall = $acikVar;
         $siparis->save();
 
-        /*
-        | ⚠️ SİPARİŞ ONAYI BURADA, `baslat()`'ta DEĞİL (2H).
-        |
-        | Sipariş `pending` doğuyor ve ödemesi hiç tamamlanmayabiliyor.
-        | Oluşma anında gönderilseydi, ödeme sayfasını açıp vazgeçen her
-        | müşteri "siparişiniz alındı" maili alır ve gelmeyecek bir
-        | kargoyu beklerdi.
-        */
         $this->bildirimler->siparisOnayi($siparis);
 
         return $siparis;
     }
 
     /**
-     * Rezerve edilen adet, sipariş edilen adedi karşılıyor mu?
-     *
-     * ⚠️ Açık genelde 60 dakikayı aşan bildirimden doğuyor: rezervasyon
-     * süresi dolup düşmüş, stok başkasına gitmiş, sonra ödeme onaylanmış.
-     * 1E.2 bunu NADİRLEŞTİRDİ ama imkânsız kılmadı.
      *
      * @param  \Illuminate\Support\Collection<int, StockReservation>  $rezervasyonlar
      */
@@ -221,11 +126,6 @@ class CheckoutService
         }
 
         foreach ($siparis->items as $satir) {
-            /*
-            | ⚠️ Varyantı silinmiş satır (variant_id null) ölçüme girmiyor:
-            | sipariş satırı bir FOTOĞRAF, varyant silinse de yaşıyor
-            | (1D). Onu "açık" saymak her eski siparişi işaretlerdi.
-            */
             if ($satir->variant_id === null) {
                 continue;
             }

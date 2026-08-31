@@ -10,13 +10,6 @@ use App\Models\ProductVariant;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Varyant — ekleme, düzenleme, toplu üretme.
- *
- * ★ Bu servisin asıl işi DOĞRULAMA: varyantın eksen değerleri ürünün
- * tanımıyla birebir uyuşmalı. Uyuşmazsa kayıt başarılı olur, stok o
- * varyanta yazılır ve müşteri onu hiçbir zaman seçemez — hatasız.
- */
 class VariantService
 {
     public function __construct(private readonly ProductSearch $arama) {}
@@ -38,16 +31,10 @@ class VariantService
         $this->skuDogrula($veri['sku'] ?? null);
         $this->sinirDogrula($urun, 1);
 
-        /*
-        | ⚠️ İlişki üzerinden — `product_id` $fillable dışında (1A.5 deseni).
-        | `options` da $veri'den DEĞİL, doğrulanmış diziden geliyor:
-        | istekten gelen ham değer doğrudan yazılsaydı doğrulamayı atlardı.
-        */
         $varyant = $urun->variants()->make($veri);
         $varyant->options = $secenekler;
         $varyant->save();
 
-        // ⚠️ SKU aramaya giriyor — varyant değişince tazelenmeli (2C).
         $this->urunuTazele($varyant);
 
         return $varyant;
@@ -62,23 +49,11 @@ class VariantService
     public function guncelle(ProductVariant $varyant, array $veri, ?array $secenekler = null): ProductVariant
     {
         if ($secenekler !== null) {
-            /*
-            | ⚠️ `$varyant->product` değil `product()->firstOrFail()`:
-            | ilişki tipi null olabilir görünüyor ve varyantın ürünsüz
-            | kalması gerçekten bir veri bozukluğu olurdu — sessizce
-            | geçmek yerine patlaması doğru.
-            */
             /** @var Product $urun */
             $urun = $varyant->product()->firstOrFail();
 
             $this->secenekleriDogrula($urun, $secenekler);
 
-            /*
-            | ⚠️ GÜNCELLEMEDE DE ŞART — ölçüldü, burada HİÇBİR kontrol
-            | yoktu. Bir varyantın seçeneklerini var olan bir birleşime
-            | çevirmek ham veritabanı hatası veriyordu; ekleme yolundaki
-            | koruma buraya hiç taşınmamıştı.
-            */
             $this->benzersizligiDogrula($urun, $secenekler, $varyant);
             $varyant->options = $secenekler;
         }
@@ -88,30 +63,17 @@ class VariantService
         $varyant->fill($veri);
         $varyant->save();
 
-        // ⚠️ SKU aramaya giriyor — varyant değişince tazelenmeli (2C).
         $this->urunuTazele($varyant);
 
         return $varyant;
     }
 
-    /**
-     * Yumuşak siler.
-     *
-     * ⚠️ Sert silinseydi 1D'de siparişe bağlanan varyant satırı kaybolur,
-     * geçmiş siparişin "ne satıldı" bilgisi kopardı.
-     */
     public function sil(ProductVariant $varyant): void
     {
         $varyant->delete();
     }
 
     /**
-     * Ürünün eksenlerinden TÜM kombinasyonları üretir; var olanları atlar.
-     *
-     * Marka 5 renk × 4 beden tanımlayıp tek tuşla 20 varyant açabilsin diye.
-     * Fiyat ve stok hepsine aynı başlangıç değeriyle yazılıyor, sonra tek
-     * tek düzenleniyor.
-     *
      * @param  array<string, mixed>  $ortakVeri  price · stock · is_active
      * @return list<ProductVariant>
      *
@@ -133,8 +95,6 @@ class VariantService
             fn (array $k) => ! in_array(json_encode($k), $mevcut, strict: true),
         ));
 
-        // ⚠️ Sınır ÜRETİMDEN ÖNCE denetleniyor: yarısı yazılıp yarısı
-        // reddedilen bir üretim, markayı elle temizlemeye zorlardı.
         $this->sinirDogrula($urun, count($yeniler));
 
         return DB::transaction(function () use ($urun, $yeniler, $ortakVeri, $skuOneki) {
