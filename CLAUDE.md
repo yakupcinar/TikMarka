@@ -1284,3 +1284,35 @@ Testler: `tests/Feature/` → `RefreshDatabase` var. `tests/Tenancy/` → **yok*
 - Bir madde bitince: `lint` + `analyse` + `test` üçü de yeşil olmadan commit yok.
 - Plan canlıdır: gerçek planla çelişirse **plan güncellenir**, gerekçesiyle.
 - Commit mesajlarına co-author/imza satırı **eklenmez**.
+- **Her blok KIRMA DENEMESİNDEN geçer.** Testler yeşil olduğu için değil,
+  **ölçtüklerini kanıtladıkları için** güvenilir. Yöntem: bloğun her
+  kararını tek tek boz, testin düştüğünü gör, `cp` ile geri al.
+  ⚠️ Deneme tutmuyorsa **testi suçla, kodu değil** — bu projede her
+  seferinde iddia yanlış şeyi ölçüyordu (yorumu, betiği, kendi kurduğu
+  değeri). Bu dosyadaki tuzakların çoğu böyle bulundu.
+  ⚠️ `git checkout` ile geri alma: izlenmeyen dosyada **hiçbir şey
+  yapmaz**, izlenen dosyada **fazlasını** geri alır. `cp <dosya> /tmp/x.bak`.
+- **Bilgi sohbette değil DEPODA durur.** Bir blok bitmeden `PLAN.md`
+  (karar + gerekçe + kırma denemeleri), `docs/summary.md` (özet) ve
+  gerekiyorsa bu dosya (tuzak) güncellenir. Oturum kapandığında
+  kaybolan hiçbir şey olmamalı — devralan kişi/ajan `PLAN.md` ve
+  `CLAUDE.md` ile tam bağlamı kurabilmeli.
+
+## Devralan ajan için — okuma sırası
+
+Bu proje **tek bir sohbete bağlı değil**; bağlam depoda tutuluyor:
+
+```
+CLAUDE.md          bu dosya — 169 tuzak, hepsi en az bir kez yaşandı
+PLAN.md            36 bitmiş blok, her biri gerekçesi ve kırma
+                   denemeleriyle · en üstte "şu an neredeyiz"
+docs/summary.md    blok blok özet — hızlı bağlam
+docs/mimari.md     kuşbakışı · docs/mimari-ogretici.md sıfırdan anlatım
+docs/pre-setup.md  M-1…M-4 mimari kararları ve NEDEN'leri
+tests/             1062 test — her biri bir kararı ölçüyor, yorumlar
+                   kararın gerekçesini taşıyor
+git log            210 commit, mesajlar kararı ve ölçümü anlatıyor
+```
+
+⚠️ Bir karara katılmıyorsan önce gerekçesini ara: büyük ihtimalle
+`pre-setup.md` ya da `PLAN.md`'de yazılı ve **ölçülerek** verilmiş.
