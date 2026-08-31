@@ -320,28 +320,29 @@ belli bir süresi yok muydu 1 gün kaldı mesela öde deyince de hata verdi en b
 > bu biter — bir siparişin hikâyesi ikiye bölünür ve toplayıcı zorunlu
 > olur.
 
-* ~~Günlükleri toplayan/arayan bir servis yok~~ → **B6'da kapandı**
+* ~~Günlükleri toplayan/arayan bir servis yok~~ → **B6'da kapandı, B6.1'de buluta taşındı**
 
-> **Loki + Grafana** kuruldu. `make gozlem` ile açılıyor, arayüz
-> `https://gozlem.localhost` — sunucuda kendi alt alan adından, tarayıcıdan.
-> Kullanıcı adı ve parola `.env`de (`GRAFANA_KULLANICI` / `GRAFANA_PAROLA`).
+> Günlükler artık **Grafana Cloud**'a gidiyor — yerelde tutulmuyor.
+> `make gozlem` yalnızca toplayıcıyı (Alloy) açıyor; arayüz kendi
+> grafana.com hesabında.
 >
-> ⚠️ **Üretimde `GRAFANA_PAROLA` mutlaka değiştirilmeli.**
+> **Çalışması için `.env`'e üç değer gerekiyor** (grafana.com → Stack →
+> Loki → Details): `LOKI_URL`, `LOKI_KULLANICI`, `LOKI_TOKEN`.
+> Ücretsiz katman 50 GB/ay ve 14 gün saklama — bizim hacmimiz 12 günde
+> 37 satır, sınırın yanından geçmiyor.
 >
 > Artık `istek_id` ile tek sorguda app + worker + caddy satırları yan yana
 > görünüyor; `marka` bir etiket olduğu için marka bazında filtre bedava.
 >
-> ⚠️ **Portlar dışarı açılmıyor ve bu pazarlık dışı.** Loki'nin kimlik
-> doğrulaması *hiç yok* — portu yayınlansaydı sunucunun IP'sine ulaşan
-> herkes bütün markaların günlüğünü okurdu. Erişim yalnızca Caddy üzerinden.
+> ⚠️ **Jeton yapılandırma dosyasına yazılmıyor**, ortamdan okunuyor —
+> `docker/` klasörü depoda olduğu için yazılsaydı git geçmişine girerdi.
 >
-> ⚠️ **Bir mimari istisna kabul edildi:** bugüne kadar marka izolasyonu
-> fiziksel (ayrı şema); günlükler ilk kez tek depoda toplanıyor ve ayrım
-> yalnızca bir etiket. Markaya kendi günlüğü gösterilmek istendiği gün bu
-> kurulum yetmez — gerekçesi ve sınırı `PLAN.md`'de yazılı.
+> ⚠️ **Veri makineyi terk ediyor.** Bunun doğrudan sonucu: "e-posta
+> günlüğe yazılmaz" kararı artık kolaylık değil zorunluluk. Satırlar
+> müşteri kimliği taşıyor, e-posta ve sipariş içeriği taşımıyor.
 >
-> ⚠️ Alarm kuralları henüz kurulmadı; asıl kazanç orada (hata olduğunda
-> günlüğe *gitmek* yerine haberin gelmesi).
+> ⚠️ Alarm kuralları henüz kurulmadı; asıl kazanç orada — bugün hata
+> olduğunda kimse haber almıyor.
 
 > Açık kusurlar ve fikirler. Biten maddeler **silinmiyor** — aşağıdaki
 > "Yapıldı" bölümüne taşınıyor ki tekrar kontrol edilebilsin.

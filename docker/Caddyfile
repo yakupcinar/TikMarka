@@ -136,31 +136,13 @@ http://{$NGROK_DOMAIN:tunel-kapali.invalid} {
 	}
 }
 
-# ── GÖZLEM ARAYÜZÜ (B6) ────────────────────────────────────────────────
+# ── GÖZLEM ARAYÜZÜ — BURADA DEĞİL (B6.1) ───────────────────────────────
 #
-# Grafana kendi başına bir web uygulaması; dışarıya YALNIZCA buradan
-# açılıyor. Konteynerinde `ports:` yok, yani Caddy'yi atlayan bir yol da
-# yok — TLS ve tek giriş kapısı korunuyor.
+# Önce Grafana kendi makinemizde koşuyordu ve buraya ters vekil bir blok
+# yazılmıştı. Karar değişti: günlükler Grafana Cloud'a gönderiliyor, arayüz
+# de orada — yani dışarıya açılacak bir yüzeyimiz kalmadı ve blok kaldırıldı.
 #
-# ⚠️ AÇIK BLOK, JOKERİN İÇİNDEN GELMİYOR. `*.localhost` bu adresi de
-#    eşliyor ama Caddy DAHA ÖZEL olanı seçiyor; blok yazılmasaydı istek
-#    Laravel'e gider ve "böyle bir marka yok" derdi.
-#
-# ⚠️ ALT ALAN ADI AYRILMIŞ LİSTEDE OLMAK ZORUNDA. Olmasaydı bir marka
-#    `gozlem` alt alan adını kendi mağazası olarak alabilirdi; o an bu
-#    blok ile marka mağazası çakışır ve `tenant:create` BAŞARILI görünür.
-#    (`App\Platform\ReservedSubdomains::AYRILMIS`)
-#
-# ⚠️ `tls internal` YAZILMIYOR: Caddy `.localhost` için kendi iç
-#    otoritesini ZATEN kullanıyor, gerçek bir alan adı verildiğinde ise
-#    normal sertifika alması gerekiyor. Sabit yazılsaydı üretimde
-#    tarayıcı her seferinde uyarı verirdi.
-{$GOZLEM_DOMAIN:gozlem.localhost} {
-
-	reverse_proxy grafana:3000
-
-	log {
-		output file /var/log/caddy/access.log
-		format json
-	}
-}
+# ⚠️ `gozlem` · `grafana` · `loki` · `logs` alt alan adları AYRILMIŞ
+#    listede KALIYOR (`App\Platform\ReservedSubdomains`). Bugün karşılığı
+#    olan bir servis yok ama bir markanın bu adları alması hâlâ istenmez:
+#    ileride geri dönülürse ad çakışır, ve o adlar kimliğe bürünmeye açık.

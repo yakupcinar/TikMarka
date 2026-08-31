@@ -3843,3 +3843,54 @@ B6 · gözlemlenebilirlik — Loki + Grafana                            ✅
        yol `tap`'i HİÇ uygulamıyor — işleyici devrede bile değildi.
 
   Test: tests/Tenancy/GozlemKurulumuTest.php — 11 test · süit 1056 yeşil
+
+────────────────────────────────────────────────────────────────────────
+B6.1 · günlükler yerelde tutulmuyor — Grafana Cloud                 ✅
+────────────────────────────────────────────────────────────────────────
+
+  KULLANICI KARARI: "logları localde tutmak istemiyorum, clouda atalım."
+  B6 self-hosted kurmuştu (öneri banaydı); karar değişti.
+
+  ÜCRETSİZ KATMAN ÖLÇÜLDÜ
+    50 GB/ay · 14 gün saklama · 3 kullanıcı · kredi kartı YOK
+    bizim hacmimiz: 12 günde 37 gerçek satır
+    ⚠ 14 gün, B6'da YEREL için seçtiğimiz süreyle AYNI — karar değişmiyor,
+      uygulayan taraf değişiyor.
+
+  ÖNCE → SONRA
+    loki+grafana+alloy ~400 MB   →  yalnız alloy ~100 MB
+    günlükler loki_data biriminde →  Grafana Cloud'da
+    arayüz gozlem.localhost      →  grafana.com
+    Caddy gözlem bloğu           →  YOK, dışarı açık yüzey kalmadı
+    GRAFANA_PAROLA               →  LOKI_URL · LOKI_KULLANICI · LOKI_TOKEN
+
+  ⚠ İZOLASYON İSTİSNASI BÜYÜDÜ
+    B6'da "tek depo, ayrım bir etiket"ti; artık depo MAKİNEYİ DE terk
+    ediyor — veri yurt dışına aktarılıyor.
+    DOĞRUDAN SONUÇ: B5'in "e-posta günlüğe yazılmaz" kararı artık
+    kolaylık değil ZORUNLULUK. Satırlar müşteri kimliği taşıyor;
+    e-posta ve sipariş içeriği taşımıyor (GunlukBaglamiTest ölçüyor).
+
+  KARARLAR
+    jeton yapılandırmaya YAZILMIYOR   docker/ depoda; yazılsaydı git
+                                      geçmişine girerdi → sys.env()
+    üçü de ZORUNLU (`:?`)             varsayılan olsaydı toplayıcı
+                                      HİÇBİR YERE gönderemeyen hâlde
+                                      kalkardı ve HATA VERMEZDİ
+    .env'de YER TUTUCU (boş değil)    `:?` boşu da reddediyor; boş
+                                      bırakılsaydı `make ayaga` bile
+                                      kırılırdı. make gozlem uyarıyor
+    ayrılmış adlar KALIYOR            kimliğe bürünme + karara dönüş
+    ağ kesintisi                      Alloy WAL'a yazıp sonra gönderiyor
+
+  UÇTAN UCA (yer tutucu jetonla, bağlantı KURULUYOR mu diye)
+    tail started  /logs/json/app-*.json  ·  /caddy-logs/access.log
+    error sending batch, will retry  host=logs-prod-XXX  status=530
+      ↑ sahte adrese GERÇEKTEN gidiyor — tek eksik gerçek jeton
+
+  KIRMA DENEMELERİ 4/4 düştü
+
+  KALAN İŞ: alarm kuralları. Asıl kazanç orada — bugün hata olduğunda
+  kimse haber almıyor; iyzico hatası günlerce dosyada bekledi.
+
+  Test: tests/Tenancy/GozlemKurulumuTest.php — 12 test

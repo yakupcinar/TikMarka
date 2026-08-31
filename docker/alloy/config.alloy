@@ -93,8 +93,26 @@ loki.process "caddy" {
 	forward_to = [loki.write.varsayilan.receiver]
 }
 
+// ── Hedef: Grafana Cloud ────────────────────────────────────────────
+//
+// ⚠️ KENDİ MAKİNEMİZDE LOKI KOŞMUYOR (B6.1). Önce self-hosted kurulmuştu;
+//    karar değişti: günlükler yerelde tutulmuyor, Grafana Cloud'a
+//    gönderiliyor. Kabul edilen bedel: satırlar makineyi terk ediyor —
+//    bu yüzden B5'in "e-posta günlüğe yazılmaz" kararı artık DAHA
+//    kritik, gevşetilemez.
+//
+// ⚠️ JETON DOSYAYA YAZILMAZ, ortamdan okunur. Yazılsaydı `docker/`
+//    klasörü depoda olduğu için jeton doğrudan git geçmişine girerdi.
+//
+// ⚠️ Ağ kesilirse satırlar KAYBOLMUYOR: Alloy diskteki WAL'a yazıp
+//    bağlantı dönünce gönderiyor (`alloy_data` birimi bunun için kalıcı).
 loki.write "varsayilan" {
 	endpoint {
-		url = "http://loki:3100/loki/api/v1/push"
+		url = sys.env("LOKI_URL")
+
+		basic_auth {
+			username = sys.env("LOKI_KULLANICI")
+			password = sys.env("LOKI_TOKEN")
+		}
 	}
 }

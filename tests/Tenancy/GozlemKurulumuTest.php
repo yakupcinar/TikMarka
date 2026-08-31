@@ -51,15 +51,11 @@ function composeServisi(string $ad): string
     return substr($metin, (int) $baslangic, $sonraki - (int) $baslangic);
 }
 
-it('★★★ LOKI VE GRAFANA PORTLARI DISARI ACILMIYOR — pazarlik disi', function () {
+it('★★★ TOPLAYICININ DISARI ACIK PORTU YOK', function () {
     /*
-    | ★ Loki'nin `auth_enabled: false` ayarı "giriş kapalı" DEĞİL, "giriş
-    | diye bir şey yok" demek. Portu yayınlansaydı sunucunun IP'sine
-    | ulaşan herkes BÜTÜN markaların günlüklerini okurdu — ve bu hata
-    | vermezdi, sadece açık olurdu.
-    |
-    | Grafana'nın kendi girişi var ama portu yayınlanırsa Caddy atlanır:
-    | TLS yok, tek giriş kapısı yok.
+    | ★ Toplayıcının dışarıdan erişilmesi gereken hiçbir yüzeyi yok —
+    | tek yönü giden trafik. Yönetim arayüzü (12345) yayınlansaydı
+    | yapılandırma ve hedef adres dışarıdan okunabilirdi.
     */
     /*
     | ⚠️ MESAJ ARGÜMANI YOK — ve bu bir kırma denemesinin tutmamasından
@@ -73,7 +69,7 @@ it('★★★ LOKI VE GRAFANA PORTLARI DISARI ACILMIYOR — pazarlik disi', func
     | iddia TEK argümanlı; ölçüm kaybolmasın diye servis adı dizgeye
     | katılıyor.
     */
-    foreach (['loki', 'grafana', 'alloy'] as $servis) {
+    foreach (['alloy'] as $servis) {
         $govde = composeServisi($servis);
 
         expect($servis.': '.(str_contains($govde, 'ports:') ? 'PORT ACIK' : 'kapali'))
@@ -81,16 +77,33 @@ it('★★★ LOKI VE GRAFANA PORTLARI DISARI ACILMIYOR — pazarlik disi', func
     }
 });
 
-it('★★★ GRAFANA PAROLASI ZORUNLU — sessiz admin/admin yok', function () {
+it('★★★ BULUT ERISIM BILGILERI ZORUNLU — sessiz varsayilan yok', function () {
     /*
-    | ⚠️ `${GRAFANA_PAROLA:-...}` yazılsaydı değişken yokken varsayılana
-    | düşerdi; Grafana'nın kendi varsayılanı `admin/admin`. `:?` compose'u
-    | HATA VERİP DURDURUYOR — sessiz varsayılan yerine gürültülü hata.
+    | ⚠️ `${LOKI_TOKEN:-...}` yazılsaydı değişken yokken varsayılana
+    | düşerdi ve toplayıcı **hiçbir yere gönderemeyen** bir hâlde ayağa
+    | kalkardı. Bu HATA VERMEZDİ: konteyner çalışır, Grafana boş görünür
+    | ve sebebi anlaşılmaz. `:?` compose'u durduruyor — sessiz varsayılan
+    | yerine gürültülü hata.
     */
-    $grafana = composeServisi('grafana');
+    $alloy = composeServisi('alloy');
 
-    expect($grafana)->toContain('GRAFANA_PAROLA:?');
-    expect($grafana)->toContain('GF_USERS_ALLOW_SIGN_UP: "false"');
+    foreach (['LOKI_URL:?', 'LOKI_KULLANICI:?', 'LOKI_TOKEN:?'] as $degisken) {
+        expect($alloy)->toContain($degisken);
+    }
+});
+
+it('★★★ JETON YAPILANDIRMA DOSYASINA YAZILMIYOR — docker/ depoda', function () {
+    /*
+    | ★ `docker/` klasörü depoda. Jeton dosyaya yazılsaydı doğrudan git
+    | geçmişine girerdi ve geçmişten silmek force-push gerektirirdi.
+    | Ortamdan okunuyor: `sys.env(...)`.
+    |
+    | ⚠️ Grafana Cloud jetonları `glc_` ile başlıyor; kalıp aranıyor.
+    */
+    $alloy = (string) file_get_contents(base_path('docker/alloy/config.alloy'));
+
+    expect($alloy)->not->toContain('glc_');
+    expect($alloy)->toContain('sys.env("LOKI_TOKEN")');
 });
 
 it('★★★ GOZLEM ALT ALAN ADLARI AYRILMIS — marka bunlari alamaz', function () {
@@ -125,18 +138,6 @@ it('★★★ ISTEK KIMLIGI ETIKET DEGIL — sinirsiz kardinalite Lokiyi bogar',
     foreach ($eslesmeler[1] as $blok) {
         expect($blok)->not->toContain('istek_id');
     }
-});
-
-it('★★★ LOKI SAKLAMA SURESI VAR — 72 MB problemi yeni yerde donmesin', function () {
-    /*
-    | ⚠️ `retention_period` TEK BAŞINA YETMEZ: silme işini compactor
-    | yapıyor ve `retention_enabled` olmadan süre dolsa bile hiçbir şey
-    | silinmiyor. İkisi birden ölçülüyor.
-    */
-    $loki = (string) file_get_contents(base_path('docker/loki/loki.yaml'));
-
-    expect($loki)->toContain('retention_period:');
-    expect($loki)->toContain('retention_enabled: true');
 });
 
 it('★★★ TOPLAYICI DOCKER SOKETI BAGLAMIYOR — host uzerinde root yetkisi', function () {
@@ -221,12 +222,26 @@ it('★★★ CADDY ERISIM GUNLUGU DOSYAYA yaziliyor — toplayici okuyabilsin',
         ->toBeGreaterThanOrEqual(2);
 });
 
-it('★★★ GOZLEM ARAYUZU KENDI CADDY BLOGUNDA — joker Laravele goturuyor', function () {
+it('★★★ DISARI ACIK GOZLEM YUZEYI YOK — arayuz bulutta', function () {
     /*
-    | ⚠️ `*.localhost` bu adresi de eşliyor; açık blok olmasaydı istek
-    | Laravel'e gider ve "böyle bir marka yok" derdi.
+    | ★ Önce Grafana kendi makinemizde koşuyordu ve Caddy'de ters vekil
+    | bir blok vardı. Karar değişti (B6.1): arayüz Grafana Cloud'da, yani
+    | dışarıya açılacak bir yüzeyimiz kalmadı.
+    |
+    | ⚠️ Blok geri gelirse hedefi olmayan bir ters vekil doğar ve istek
+    | 502'ye düşer — üstelik `*.localhost` jokerinden GEÇMEDİĞİ için
+    | "marka yok" bile demez.
     */
     $caddyfile = (string) file_get_contents(base_path('docker/Caddyfile'));
 
-    expect($caddyfile)->toContain('reverse_proxy grafana:3000');
+    expect($caddyfile)->not->toContain('reverse_proxy grafana:');
+});
+
+it('★★★ GOZLEM ADLARI HALA AYRILMIS — servis gitse de ad korunuyor', function () {
+    /*
+    | ⚠️ Yerel Grafana kaldırıldı ama adlar listede KALIYOR: bir markanın
+    | `grafana.tikmarka.com` alması bugün de istenmez (kimliğe bürünme),
+    | ve karara geri dönülürse ad çakışırdı.
+    */
+    expect(ReservedSubdomains::ayrilmisMi('grafana'))->toBeTrue();
 });

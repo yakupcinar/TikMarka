@@ -99,46 +99,13 @@ services:
   # ── ngrok tüneli — YALNIZCA ödeme sağlayıcısı testi için (1E-K10) ──
   # ── Gözlemlenebilirlik (B6) — `--profile gozlem` ───────────────────
   #
-  # ⚠️ PROFİL ARKASINDA: ölçüldü, üçü birlikte ~400 MB istiyor ve
-  #    Docker'a ayrılmış toplam 3,8 GB'ın 820 MB'ını zaten postgres
-  #    kullanıyor. Varsayılan `make ayaga` bu maliyeti ödemesin.
+  # ⚠️ YALNIZCA TOPLAYICI — Loki ve Grafana ARTIK YEREL DEĞİL (B6.1).
+  #    Günlükler Grafana Cloud'a gönderiliyor; arayüz de orada.
+  #    Kazanç ölçüldü: ~400 MB yerine ~100 MB, ve arayüz için Caddy
+  #    bloğu/alt alan adı gerekmiyor.
   #
-  # ⚠️ ÜÇÜNÜN DE `ports:` YOK — pazarlık dışı. Loki'nin kimlik
-  #    doğrulaması HİÇ yok; portu dışarı açılsaydı sunucunun IP'sine
-  #    ulaşan herkes BÜTÜN markaların günlüklerini okurdu. Grafana'ya
-  #    da yalnızca Caddy üzerinden, TLS ile giriliyor.
-
-  loki:
-    image: grafana/loki:3.5.1
-    profiles: ["gozlem"]
-    command: -config.file=/etc/loki/loki.yaml
-    volumes:
-      - ./docker/loki/loki.yaml:/etc/loki/loki.yaml:ro
-      - loki_data:/loki
-
-  grafana:
-    image: grafana/grafana:11.6.1
-    profiles: ["gozlem"]
-    environment:
-      # ⚠️ `:?` İLE ZORUNLU — değişken yoksa compose HATA VERİP DURUYOR.
-      #    Varsayılan bırakılsaydı Grafana kendi varsayılanına (admin/admin)
-      #    düşerdi ve bu, "herkes bütün markaların günlüğünü okur"
-      #    senaryosunun ta kendisi. Sessiz varsayılan yerine gürültülü hata.
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PAROLA:?Grafana yonetici parolasi .env'de tanimli olmali}
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_KULLANICI:-yonetim}
-
-      # Kayıt olma AÇIK geliyor — kapatılıyor.
-      GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_AUTH_ANONYMOUS_ENABLED: "false"
-
-      # Caddy'nin arkasında olduğu için kök adres açıkça veriliyor;
-      # verilmezse üretilen bağlantılar `localhost:3000`'e çıkar.
-      GF_SERVER_ROOT_URL: ${GOZLEM_URL:-https://gozlem.localhost}
-    volumes:
-      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
-      - grafana_data:/var/lib/grafana
-    depends_on:
-      - loki
+  # ⚠️ `ports:` YOK: toplayıcının dışarıdan erişilmesi gereken hiçbir
+  #    yüzeyi yok, tek yönü giden trafik.
 
   alloy:
     image: grafana/alloy:v1.7.5
@@ -156,8 +123,14 @@ services:
       - caddy_logs:/caddy-logs:ro
 
       - alloy_data:/var/lib/alloy
-    depends_on:
-      - loki
+    environment:
+      # ⚠️ `:?` İLE ZORUNLU — jeton yoksa compose HATA VERİP DURUYOR.
+      #    Varsayılan bırakılsaydı toplayıcı sessizce hiçbir yere
+      #    gönderemeyen bir hâlde ayağa kalkar ve günlükler kaybolurdu;
+      #    üstelik bu HATA VERMEZDİ, sadece Grafana boş görünürdü.
+      LOKI_URL: ${LOKI_URL:?Grafana Cloud Loki push adresi .env'de tanimli olmali}
+      LOKI_KULLANICI: ${LOKI_KULLANICI:?Grafana Cloud kullanici numarasi .env'de tanimli olmali}
+      LOKI_TOKEN: ${LOKI_TOKEN:?Grafana Cloud API jetonu .env'de tanimli olmali}
 
   ngrok:
     image: ngrok/ngrok:latest
@@ -173,8 +146,6 @@ services:
 volumes:
   blade_cache:
   caddy_logs:
-  loki_data:
-  grafana_data:
   alloy_data:
   node_modules:
   pg_data:

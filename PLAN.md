@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ───── şu an: B6 BİTTİ — sırada Faz 5 (kargo · e-fatura) ─────┐
+┌─ YOL HARİTASI ─── şu an: B6.1 BİTTİ — sırada Faz 5 (kargo · e-fatura) ────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7288,6 +7288,86 @@ okuyan hâle çevrildi.
 
 **Kapsam dışı:** alarm kuralları (Grafana'da elle ya da ayrı blok) ve
 testlerin ayrı günlük dosyasına yazması.
+
+---
+
+### B6.1 — günlükler yerelde tutulmuyor: Grafana Cloud ✅
+
+**Kullanıcı kararı:** *"ben logları tutmak istemiyorum localde, clouduna
+atalım."*
+
+B6 self-hosted kurmuştu (öneri bana aitti, gerekçesi "veri bizde kalsın").
+Karar değişti; kayıt gerekçesiyle birlikte güncelleniyor.
+
+#### Ücretsiz katman ölçüldü — sınır bizden çok uzakta
+
+```
+50 GB/ay ingest · 14 gün saklama · 3 kullanıcı · kredi kartı YOK
+bizim hacmimiz: 12 günde 37 gerçek satır
+```
+
+Saklama süresi (14 gün) B6'da yerel için seçtiğimiz süreyle **aynı** —
+yani o karar değişmiyor, uygulayan taraf değişiyor.
+
+#### Değişenler
+
+| Önce (B6) | Sonra (B6.1) |
+|---|---|
+| `loki` + `grafana` + `alloy`, ~400 MB | yalnızca `alloy`, ~100 MB |
+| Günlükler `loki_data` biriminde | Grafana Cloud'da |
+| Arayüz `gozlem.localhost`, Caddy bloğu | grafana.com, **dışarı açık yüzeyimiz yok** |
+| `docker/loki/loki.yaml`, `docker/grafana/` | silindi — saklamayı bulut yönetiyor |
+| `GRAFANA_PAROLA` | `LOKI_URL` · `LOKI_KULLANICI` · `LOKI_TOKEN` |
+
+#### ⚠️ İZOLASYON İSTİSNASI BÜYÜDÜ — kayda geçiyor
+
+B6'da kabul edilen istisna "bütün markaların günlüğü tek depoda, ayrım bir
+etiket"ti. Şimdi o depo **makineyi de terk ediyor**: veri yurt dışına
+aktarılıyor.
+
+Bunun **doğrudan sonucu:** B5'in *"e-posta günlüğe yazılmaz"* kararı artık
+kolaylık değil **zorunluluk** — gevşetilemez. Satırlar müşteri kimliği
+taşıyor, e-posta ve sipariş içeriği taşımıyor; ölçen test yerinde
+(`GunlukBaglamiTest`).
+
+#### Kararlar
+
+| Karar | Gerekçe |
+|---|---|
+| **Jeton yapılandırmaya yazılmıyor** | `docker/` klasörü depoda. Dosyaya yazılsaydı jeton doğrudan git geçmişine girerdi ve silmek force-push gerektirirdi. `sys.env("LOKI_TOKEN")` |
+| **Üçü de zorunlu (`:?`)** | Varsayılan bırakılsaydı toplayıcı **hiçbir yere gönderemeyen** hâlde ayağa kalkardı ve bu HATA VERMEZDİ: konteyner çalışır, Grafana boş görünür, sebebi anlaşılmaz |
+| **`.env`'de yer tutucu var, boş değil** | `:?` boş değeri de reddediyor; boş bırakılsaydı jeton gelene kadar **her compose komutu**, yani `make ayaga` da kırılırdı. `make gozlem` yer tutucuyu görüp uyarıyor |
+| **Ayrılmış adlar KALIYOR** | Yerel Grafana gitti ama `gozlem`/`grafana`/`loki` adlarını marka almamalı: kimliğe bürünmeye açık ve karara dönülürse çakışır |
+| **Caddy bloğu kaldırıldı** | Arayüz bulutta; hedefsiz bir ters vekil 502 üretirdi |
+| **Ağ kesintisinde satır kaybolmuyor** | Alloy diske (WAL) yazıp bağlantı dönünce gönderiyor; `alloy_data` bu yüzden kalıcı birim |
+
+#### Uçtan uca ölçüldü
+
+Yer tutucu değerlerle koşturuldu — bağlantının **gerçekten kurulduğu**
+görülsün diye:
+
+```
+tail routine: started   /logs/json/app-2026-08-31.json   ← uygulama akıyor
+tail routine: started   /caddy-logs/access.log           ← caddy akıyor
+error sending batch, will retry   host=logs-prod-XXX.grafana.net  status=530
+                                  ↑ sahte adrese GERÇEKTEN gidiyor
+```
+
+Yani yapılandırma çözüldü, dosyalar okunuyor, tek eksik gerçek jeton.
+
+#### Kırma denemeleri — 4/4 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | jeton doğrudan yapılandırmaya yazıldı | 1 düştü |
+| 2 | `LOKI_TOKEN` sessiz varsayılana düştü | 1 düştü |
+| 3 | toplayıcı yönetim portu dışarı açıldı | 1 düştü |
+| 4 | Caddy'ye gözlem ters vekili geri kondu | 1 düştü |
+
+**Test:** `tests/Tenancy/GozlemKurulumuTest.php` — 12 test.
+
+**Kalan iş:** alarm kuralları. Asıl kazanç orada — bugün hata olduğunda
+kimse haber almıyor; iyzico hatası günlerce dosyada bekledi.
 
 ---
 

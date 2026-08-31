@@ -86,23 +86,29 @@ tunel:
 	@sleep 3
 	@echo "→ tünel arayüzü: http://localhost:4040"
 
-## gozlem: Günlük arayüzünü aç (Loki + Grafana + toplayıcı)
+## gozlem: Günlük toplayıcısını aç (Grafana Cloud'a gönderir)
 ##
-## ⚠ Profil arkasında: üçü birlikte ~400 MB istiyor ve `ayaga` bu
-##   maliyeti ödemesin diye varsayılanda kapalı.
-## ⚠ Adres https://gozlem.localhost — kullanıcı adı/parola `.env`de
-##   (GRAFANA_KULLANICI / GRAFANA_PAROLA).
+## ⚠ Loki/Grafana ARTIK YEREL DEĞİL (B6.1): günlükler Grafana Cloud'a
+##   gidiyor, arayüz de orada. Burada yalnızca toplayıcı (Alloy) koşuyor.
+## ⚠ .env'de LOKI_URL / LOKI_KULLANICI / LOKI_TOKEN dolu olmalı.
 gozlem:
-	docker compose --profile gozlem up -d loki grafana alloy
+	@if grep -q '^LOKI_TOKEN=glc_degistir-beni' .env; then \
+		echo ""; \
+		echo "  ⚠  .env'de LOKI_TOKEN hâlâ yer tutucu."; \
+		echo "     grafana.com → Stack → Loki → Details'ten üç değeri al:"; \
+		echo "     LOKI_URL · LOKI_KULLANICI · LOKI_TOKEN"; \
+		echo ""; \
+		exit 1; \
+	fi
+	docker compose --profile gozlem up -d alloy
 	@echo ""
-	@echo "  Gözlem arayüzü:  https://gozlem.localhost"
-	@echo "  Kullanıcı:       $$(grep '^GRAFANA_KULLANICI=' .env | cut -d= -f2)"
-	@echo "  Parola:          .env → GRAFANA_PAROLA"
+	@echo "  Toplayıcı çalışıyor. Günlükler Grafana Cloud'a gidiyor."
+	@echo "  Arayüz: grafana.com üzerindeki kendi hesabın"
 	@echo ""
 
-## gozlem-kapat: Günlük arayüzünü durdur (RAM'i geri al)
+## gozlem-kapat: Toplayıcıyı durdur
 gozlem-kapat:
-	docker compose --profile gozlem stop loki grafana alloy
+	docker compose --profile gozlem stop alloy
 
 tunel-kapat:
 	$(DC) stop ngrok
