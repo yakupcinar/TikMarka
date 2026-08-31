@@ -75,6 +75,27 @@
         <env name="DB_USERNAME" value="tikmarka" force="true"/>
         <env name="DB_PASSWORD" value="secret" force="true"/>
         <env name="DB_URL" value="" force="true"/>
+        <!--
+        | ★ TEST GÜNLÜĞÜ BULUTA GÖNDERİLMEZ (B6.2).
+        |
+        | Varsayılan `stack` = `daily,json`; `json` kanalını toplayıcı
+        | okuyup Grafana Cloud'a yolluyor. Testler oraya yazdığında iki
+        | şey birden bozuluyordu — ÖLÇÜLDÜ:
+        |
+        |   marka etiketinin farklı değeri : 71
+        |   gerçek kiracı sayısı           :  3
+        |
+        | Her test koşusu yeni UUID'li kiracılar açıyor ve o UUID'ler
+        | `marka` ETİKETİNE düşüyor; Loki'de her benzersiz etiket
+        | birleşimi ayrı bir AKIŞ demek. Yani `istek_id` için özenle
+        | kaçınılan sınırsız kardinalite, `marka` üzerinden geri geliyordu
+        | ve her koşuda büyüyordu (akış sınırına doğru).
+        |
+        | ⚠️ `force` YOK: `.env`i EZMİYOR ama testte `.env` zaten
+        | okunmuyor; buradaki değer geçerli olan.
+        -->
+        <env name="LOG_CHANNEL" value="daily"/>
+
         <env name="MAIL_MAILER" value="array"/>
         <!--
             Kuyruk testleri gerçek Redis'e yazıyor (ayrı veritabanı: 14).

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ─── şu an: B6.1 BİTTİ — sırada Faz 5 (kargo · e-fatura) ────┐
+┌─ YOL HARİTASI ── şu an: B6.3 BİTTİ — sırada alarm kuralları · Faz 5 ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7368,6 +7368,108 @@ Yani yapılandırma çözüldü, dosyalar okunuyor, tek eksik gerçek jeton.
 
 **Kalan iş:** alarm kuralları. Asıl kazanç orada — bugün hata olduğunda
 kimse haber almıyor; iyzico hatası günlerce dosyada bekledi.
+
+---
+
+### B6.2 + B6.3 — test kirliliği ve süreç ayrımı ✅
+
+İkisi de **buluttaki veriyi okuyunca** çıktı; yazma sayaçlarının hiçbiri
+göstermiyordu.
+
+---
+
+#### B6.2 — test süiti buluta yazıyordu
+
+Kullanıcı *"hiçbir job etiketi yok"* dedi; okuma jetonuyla bakıldığında
+etiketler yerindeydi ama yanında bu vardı:
+
+```
+marka etiketinin farklı değeri : 71
+gerçek kiracı sayısı           :  3
+örnek satır                    : channel: testing
+```
+
+**Her test koşusu yeni UUID'li kiracılar açıyor** ve o UUID'ler `marka`
+ETİKETİNE düşüyordu. Loki'de her benzersiz etiket birleşimi ayrı bir
+**akış** demek — yani `istek_id` için özenle kaçınılan sınırsız
+kardinalite, `marka` üzerinden geri gelmişti ve her koşuda büyüyordu.
+
+⚠️ **Hata bendeydi:** `marka`'yı "marka sayısı kadar, güvenli" diye
+sınıflandırırken testlerin kiracı ürettiğini hesaba katmadım.
+
+⚠️ Bu, B5'te *"kapsam dışı"* diye bırakılan üçüncü maddenin ta kendisi.
+O zaman kozmetikti (%99,4 gürültü); buluta çıkınca **büyüyen** bir
+probleme dönüştü.
+
+**Çözüm:** `phpunit.xml` → `LOG_CHANNEL=daily`. Varsayılan `stack`
+(`daily,json`) yerine yalnızca `daily`; `json` toplayıcının okuduğu kanal.
+
+**Ölçüldü:**
+```
+test öncesi json dosyası : 64.853 bayt
+27 test koştu
+test sonrası             : 64.853 bayt   ← fark 0
+```
+
+⚠️ Tek istisna bilerek bırakıldı: `GozlemKurulumuTest`'in JSON biçimini
+ölçen testi `Log::channel('json')`'ı AÇIKÇA çağırıyor (uçtan uca ölçüm
+olması için). Koşu başına bir satır, ve kiracı bağlamı olmadığı için
+`marka` etiketi doğurmuyor.
+
+---
+
+#### B6.3 — hangi süreç yazdı
+
+Alarm kuralları planlanırken çıktı: *"kuyruk işçisi öldü"* kuralı
+**yazılamıyordu.** Sebep ölçülmüştü ama sonucu görülmemişti — `app`,
+`worker` ve `scheduler` üçü de **aynı dosyaya** yazıyor (inode 4803) ve
+satırda süreci ayırt eden hiçbir alan yok.
+
+Bedeli teşhis değil **sessiz arıza**: worker'ın `restart` politikası yok,
+çökerse işler Redis'te birikiyor — sipariş e-postası gitmez, bağlı stok
+serbest kalmaz ve kimse bilmez.
+
+| Karar | Gerekçe |
+|---|---|
+| Değer **ortam değişkeninden** | `runningInConsole()` web ile konsolu ayırıyor ama **worker ile scheduler'ı ayıramıyor** — ikisi de konsol. Ayrım compose'da açıkça yazılı |
+| **`config('logging.surec')`**, `env()` değil | PHPStan yakaladı: `config:cache` sonrası `env()` **null** döner. Etiket sessizce kaybolur ve alarm hiç ateşlenmez |
+| Değer kümesi **kapalı liste** | Etiket olacağı için serbest metin sınırsız kardinalite demek. Tanınmayan değer yazılmıyor |
+| Üç değer: `web` · `worker` · `scheduler` | Kardinalite güvenli |
+
+**Uçtan uca ölçüldü (gerçek bulut):**
+```
+surec etiketinin değerleri : web, worker
+{surec="worker"} sorgusu   : "WORKER surec olcumu" ← geldi
+```
+
+---
+
+#### Kırma denemeleri — 5/5 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | testler yine `stack`e (json dâhil) yazıyor | 1 düştü |
+| 2 | `surec` bağlamı hiç yazılmıyor | 1 düştü |
+| 3 | kapalı liste kaldırıldı | 1 düştü |
+| 4 | toplayıcı `surec`i etiket yapmıyor | 1 düştü |
+| 5 | worker'da `SUREC` unutulmuş | 1 düştü |
+
+---
+
+#### ⚠️ Bu bloğun asıl dersi
+
+**Yazma sayacı "gitti" der, "NE gitti" demez.** `sent_entries_total = 302`
+ve `dropped = 0` görüp "çalışıyor" diye kapatmıştım; iki kusur da ancak
+**okuma jetonuyla veriye bakınca** çıktı.
+
+⚠️ Bundan önce daha kötüsü oldu: *"hata yok + okuma konumu ilerledi"*
+delil sanıldı ve kullanıcıya "çalışıyor" denildi. İkisi de gönderilecek
+satır olmadığında da doğru — gerçek durum `sent_entries_total = 0`'dı.
+Kural: **bir boru hattını, taşıdığı şeyi görmeden doğrulama.**
+
+**Kalan iş:** alarm kuralları. Gerekli olan iki değer bizde yok —
+Grafana'nın kendi adresi (`https://<stack>.grafana.net`) ve bir service
+account jetonu.
 
 ---
 

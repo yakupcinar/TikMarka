@@ -27,6 +27,18 @@ services:
   # ── Uygulama (PHP-FPM) ─────────────────────────────────────────────
   app:
     build: ./docker/php
+    environment:
+      # ★ HANGİ SÜREÇTEN GELDİĞİ — günlük satırına yazılıyor (B6.3).
+      #
+      # ⚠️ Ölçüldü: app · worker · scheduler ÜÇÜ DE aynı dosyaya yazıyor
+      #    (inode 4803) ve satırda süreci ayırt eden hiçbir alan yoktu.
+      #    Bunun bedeli teşhis değil ALARM: "kuyruk işçisi öldü" kuralı
+      #    yazılamıyordu, çünkü worker'ın sustuğu Loki'den görülemiyordu.
+      #
+      # ⚠️ Worker'ın `restart` politikası YOK; çökerse işler Redis'te
+      #    SESSİZCE birikiyor — sipariş e-postası gitmez, bağlı stok
+      #    serbest kalmaz.
+      SUREC: web
     volumes:
       - .:/var/www/html 
 
@@ -46,6 +58,8 @@ services:
   worker:
     build: ./docker/php
     command: php artisan queue:work --tries=3 --timeout=90
+    environment:
+      SUREC: worker          # günlük satırındaki süreç etiketi (B6.3, gerekçe `app`te)
     volumes:
       - .:/var/www/html           # ⚠ app ile aynı bağlama — storage/ ortak (M-2.4)
     depends_on:
@@ -58,6 +72,8 @@ services:
   scheduler:
     build: ./docker/php
     command: php artisan schedule:work
+    environment:
+      SUREC: scheduler          # günlük satırındaki süreç etiketi (B6.3, gerekçe `app`te)
     volumes:
       - .:/var/www/html
     depends_on:

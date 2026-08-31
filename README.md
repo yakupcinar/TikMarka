@@ -344,6 +344,25 @@ belli bir süresi yok muydu 1 gün kaldı mesela öde deyince de hata verdi en b
 > ⚠️ Alarm kuralları henüz kurulmadı; asıl kazanç orada — bugün hata
 > olduğunda kimse haber almıyor.
 
+* ~~Test günlükleri buluta gidiyordu~~ → **B6.2'de kapandı**
+
+> Buluttaki veriye bakınca çıktı: **71 farklı `marka` etiketi** vardı ama
+> gerçek marka sayısı **3**. Sebep, her test koşusunun yeni kiracı
+> açması — o UUID'ler etiket olup Loki'de ayrı akışlar doğuruyordu.
+> Testler artık toplayıcının okumadığı kanala yazıyor.
+
+* ~~Worker'ın sustuğu günlükten görülemiyordu~~ → **B6.3'te kapandı**
+
+> `app`, `worker` ve `scheduler` aynı dosyaya yazıyor ve satırda hangi
+> süreçten geldiğini söyleyen bir alan yoktu; bu yüzden *"kuyruk işçisi
+> öldü"* alarmı **yazılamıyordu**. Worker'ın yeniden başlatma politikası
+> olmadığı için çökerse işler Redis'te sessizce birikir — sipariş
+> e-postası gitmez, bağlı stok serbest kalmaz.
+>
+> Artık her satır `surec` alanı taşıyor (`web` · `worker` · `scheduler`)
+> ve bu Loki'de etiket: `{surec="worker"}` ile worker'ın konuşup
+> konuşmadığı görülebiliyor.
+
 > Açık kusurlar ve fikirler. Biten maddeler **silinmiyor** — aşağıdaki
 > "Yapıldı" bölümüne taşınıyor ki tekrar kontrol edilebilsin.
 

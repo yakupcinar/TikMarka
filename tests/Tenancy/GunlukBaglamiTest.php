@@ -137,6 +137,44 @@ it('★★★ GIRIS YAPMIS MUSTERININ KIMLIGI satira geciyor', function () {
     expect($extra['musteri'] ?? null)->toBe($musteri->id);
 });
 
+it('★★★ SATIR HANGI SURECTEN geldigini soyluyor', function () {
+    /*
+    | ★ ÖLÇÜLDÜ: app · worker · scheduler ÜÇÜ DE aynı dosyaya yazıyor
+    | (inode 4803) ve satırda süreci ayırt eden hiçbir alan yoktu.
+    |
+    | Bunun bedeli teşhis değil ALARM: *"kuyruk işçisi öldü"* kuralı
+    | yazılamıyordu, çünkü worker'ın sustuğu Loki'den görülemiyordu.
+    | Oysa worker'ın `restart` politikası yok — çökerse işler Redis'te
+    | SESSİZCE birikiyor, sipariş e-postası gitmez ve bağlı stok
+    | serbest kalmaz.
+    */
+    markaKur('marka-a.test');
+
+    $extra = yazilanKayit(fn () => Log::error('ölçüm'));
+
+    expect($extra['surec'] ?? null)->toBeString();
+    expect($extra['surec'] ?? null)->not->toBe('');
+});
+
+it('★★★ SUREC DEGERI KAPALI LISTEDEN — serbest metin Lokide kardinalite patlatir', function () {
+    /*
+    | ⚠️ `surec` Loki'de ETİKET oluyor. Ortam değişkeninden gelen değer
+    | doğrudan yazılsaydı, oraya ne konursa etiket olurdu — `istek_id`
+    | için özenle kaçınılan sınırsız kardinalite tuzağının aynısı.
+    |
+    | ⚠️ Bu tuzak VARSAYIMSAL DEĞİL: `marka` "marka sayısı kadar" diye
+    | güvenli sayılmıştı ama test süiti her koşuda yeni UUID'li kiracı
+    | açıyordu ve bulutta 3 kiracıya karşı 71 etiket değeri ölçüldü.
+    */
+    markaKur('marka-a.test');
+
+    config(['logging.surec' => 'uydurma-deger']);
+
+    $extra = yazilanKayit(fn () => Log::error('ölçüm'));
+
+    expect($extra['surec'] ?? null)->not->toBe('uydurma-deger');
+});
+
 it('★★★ E-POSTA GUNLUGE YAZILMIYOR — KVKK yollari dosyayi goremiyor', function () {
     $musteri = gunlukMusterisi('sizinti@ornek.com');
 

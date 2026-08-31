@@ -3894,3 +3894,53 @@ B6.1 · günlükler yerelde tutulmuyor — Grafana Cloud                 ✅
   kimse haber almıyor; iyzico hatası günlerce dosyada bekledi.
 
   Test: tests/Tenancy/GozlemKurulumuTest.php — 12 test
+
+────────────────────────────────────────────────────────────────────────
+B6.2 + B6.3 · test kirliliği ve süreç ayrımı                        ✅
+────────────────────────────────────────────────────────────────────────
+
+  İKİSİ DE BULUTTAKİ VERİYİ OKUYUNCA ÇIKTI — yazma sayaçları göstermedi.
+
+  B6.2 · TEST SÜİTİ BULUTA YAZIYORDU
+    marka etiketinin farklı değeri : 71
+    gerçek kiracı sayısı           :  3
+    örnek satır                    : channel: testing
+
+    Her test koşusu yeni UUID'li kiracı açıyor → `marka` ETİKETİNE
+    düşüyor → Loki'de her birleşim ayrı AKIŞ. Yani `istek_id` için
+    kaçınılan sınırsız kardinalite `marka` üzerinden geri gelmişti.
+    ⚠ Hata bendeydi: `marka`yı "güvenli" sayarken testlerin kiracı
+      ürettiğini hesaba katmadım.
+    ⚠ B5'te "kapsam dışı" bırakılan madde buydu; kozmetikken büyüyen
+      bir probleme dönüştü.
+
+    ÇÖZÜM  phpunit.xml → LOG_CHANNEL=daily
+    ÖLÇÜM  27 test koştu, json dosyası 64.853 → 64.853 bayt (fark 0)
+
+  B6.3 · HANGİ SÜREÇ YAZDI
+    app · worker · scheduler ÜÇÜ DE aynı dosyaya (inode 4803) ve satırda
+    süreci ayırt eden alan YOKTU → "kuyruk işçisi öldü" alarmı
+    YAZILAMIYORDU. Worker'ın restart politikası yok; çökerse işler
+    Redis'te sessizce birikiyor.
+
+    ortam değişkeninden   runningInConsole() worker ile scheduler'ı
+                          AYIRAMIYOR (ikisi de konsol)
+    config() ile okunur   ⚠ config:cache sonrası env() NULL döner,
+                          etiket sessizce kaybolur (PHPStan yakaladı)
+    kapalı liste          etiket olacağı için serbest metin = sınırsız
+                          kardinalite
+    üç değer              web · worker · scheduler
+
+    UÇTAN UCA (gerçek bulut)
+      surec değerleri        : web, worker
+      {surec="worker"} sorgu : "WORKER surec olcumu" geldi
+
+  KIRMA DENEMELERİ 5/5 düştü
+
+  ⚠ BLOĞUN ASIL DERSİ: yazma sayacı "gitti" der, "NE gitti" demez.
+    Önce "hata yok + konum ilerledi" delil sanıldı ve kullanıcıya
+    "çalışıyor" denildi — gerçek durum sent_entries_total = 0'dı.
+    Bir boru hattını, taşıdığı şeyi GÖRMEDEN doğrulama.
+
+  KALAN İŞ: alarm kuralları (Grafana stack adresi + service account
+  jetonu gerekiyor).

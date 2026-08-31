@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Platform\ReservedSubdomains;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
 /*
 |--------------------------------------------------------------------------
@@ -157,6 +159,71 @@ it('★★★ TOPLAYICININ OKUDUGU BAGLAMALAR SALT-OKUNUR', function () {
 
     expect($alloy)->toContain('./storage/logs:/logs:ro');
     expect($alloy)->toContain('caddy_logs:/caddy-logs:ro');
+});
+
+it('★★★ TESTLER BULUTA YAZMIYOR — marka etiketi patlamasin', function () {
+    /*
+    | ★ BU TEST GERÇEK BİR KUSURDAN DOĞDU ve kusuru bulan şey okuma
+    | jetonuydu; yazma sayaçları "gitti" diyordu ama NE gittiğini
+    | söylemiyordu. Grafana Cloud'da ölçüldü:
+    |
+    |     marka etiketinin farklı değeri : 71
+    |     gerçek kiracı sayısı           :  3
+    |
+    | Her test koşusu yeni UUID'li kiracılar açıyor; o UUID'ler `marka`
+    | etiketine düşüyor ve Loki'de her benzersiz etiket birleşimi ayrı
+    | bir AKIŞ demek. Yani `istek_id` için özenle kaçınılan sınırsız
+    | kardinalite, `marka` üzerinden geri gelmişti — ve her koşuda
+    | büyüyordu.
+    |
+    | ⚠️ DAVRANIŞA bakılıyor: varsayılan kanalın yazdığı işleyicilerin
+    | hiçbiri toplayıcının okuduğu klasöre bakmamalı. Yalnızca
+    | `config('logging.default')`'a bakmak, `stack`in içeriği değişince
+    | sessizce yanlış olurdu.
+    */
+    $kanal = Log::channel();
+
+    assert($kanal instanceof Illuminate\Log\Logger);
+
+    $monolog = $kanal->getLogger();
+
+    assert($monolog instanceof Logger);
+
+    foreach ($monolog->getHandlers() as $isleyici) {
+        $yol = $isleyici instanceof StreamHandler
+            ? (string) $isleyici->getUrl()
+            : '';
+
+        expect(str_contains($yol, 'logs/json'))
+            ->toBeFalse("test günlüğü toplayıcının klasörüne yazıyor: {$yol}");
+    }
+});
+
+it('★★★ SUREC ETIKETI TOPLAYICIDA — worker sustugu gorulebilsin', function () {
+    /*
+    | ★ Alan günlüğe yazılıyor ama ETİKET yapılmazsa alarm kuralı
+    | yazılamaz: `absent_over_time({surec="worker"})` gibi bir kural
+    | etiket olmadan kurulamıyor, satırın içindeki alanla kurulamıyor.
+    |
+    | ⚠️ Üç değer (`web`, `worker`, `scheduler`) — kardinalite güvenli.
+    */
+    $alloy = (string) file_get_contents(base_path('docker/alloy/config.alloy'));
+
+    preg_match_all('/stage\.labels\s*\{(.*?)\}\s*\}/s', $alloy, $eslesmeler);
+
+    $uygulamaBlogu = $eslesmeler[1][0] ?? '';
+
+    expect($uygulamaBlogu)->toContain('surec');
+});
+
+it('★★★ HER SUREC KENDINI SOYLUYOR — compose ucune de yaziyor', function () {
+    /*
+    | ⚠️ Biri unutulsaydı o sürecin satırları etiketsiz kalır ve
+    | alarm kuralı onu HİÇ görmezdi — üstelik hata vermeden.
+    */
+    foreach (['web', 'worker', 'scheduler'] as $surec) {
+        expect(composeMetni())->toContain("SUREC: {$surec}");
+    }
 });
 
 it('★★★ MAKINE GUNLUGU AYRI KLASORDE — ayni satir iki kez toplanmasin', function () {

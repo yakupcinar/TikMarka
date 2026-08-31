@@ -35,6 +35,13 @@ use Throwable;
 final class IstekBaglami
 {
     /**
+     * Süreç adları — KAPALI LİSTE (Loki'de etiket oluyor).
+     *
+     * @var list<string>
+     */
+    private const SURECLER = ['web', 'worker', 'scheduler'];
+
+    /**
      * Bağlamın yazıldığı yer — satırın SONU değil BAŞI.
      *
      * ⚠️ Varsayılan biçimde `%extra%` en sonda ve önünde yığın izi var:
@@ -108,7 +115,42 @@ final class IstekBaglami
             // aynısı
         }
 
+        $baglam['surec'] = $this->surec();
+
         return [...$baglam, ...$this->kimlik()];
+    }
+
+    /**
+     * Satırı hangi süreç yazdı: web · worker · scheduler.
+     *
+     * ★ ÖLÇÜLDÜ: app, worker ve scheduler ÜÇÜ DE aynı dosyaya yazıyor
+     * (inode 4803) ve satırda süreci ayırt eden hiçbir alan yoktu.
+     * Bunun bedeli teşhis değil ALARM: *"kuyruk işçisi öldü"* kuralı
+     * yazılamıyordu — worker'ın sustuğu Loki'den görülemiyordu. Oysa
+     * worker'ın `restart` politikası yok; çökerse işler Redis'te
+     * SESSİZCE birikiyor.
+     *
+     * ⚠️ ORTAM DEĞİŞKENİNDEN, tahminle değil. `runningInConsole()` web
+     * ile konsolu ayırıyor ama worker ile scheduler'ı AYIRAMIYOR —
+     * ikisi de konsol. Ayrım compose'da açıkça yazılı (`SUREC`).
+     *
+     * ⚠️ Değer kümesi KAPALI: dışarıdan gelen serbest metin etiket
+     * yapılırsa Loki'de sınırsız kardinalite doğar — `istek_id` için
+     * kaçınılan tuzağın aynısı. Tanımadığı değer `bilinmiyor` olur.
+     */
+    private function surec(): string
+    {
+        $deger = config('logging.surec');
+
+        if (is_string($deger) && in_array($deger, self::SURECLER, true)) {
+            return $deger;
+        }
+
+        /*
+        | Değişken yoksa (yerel artisan, test) en azından web/konsol
+        | ayrımı yapılıyor — boş bırakmak satırı okunmaz kılardı.
+        */
+        return app()->runningInConsole() ? 'konsol' : 'web';
     }
 
     /**

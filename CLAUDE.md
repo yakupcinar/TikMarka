@@ -1173,6 +1173,25 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   YAZILMAZ — erişim yalnızca Caddy üzerinden. ⚠️ Ayarın gerçek anlamı çok
   kiracılık: `true` olsaydı her istek `X-Scope-OrgID` isterdi; markaya
   kendi günlüğü gösterilmek istendiği gün açılacak kapı budur.
+- **YAZMA SAYACI "GİTTİ" DER, "NE GİTTİ" DEMEZ.** B6.1'de iki kez ısırdı.
+  Önce *"hata yok + okuma konumu ilerledi"* delil sanıldı ve kullanıcıya
+  "çalışıyor" denildi — ikisi de **gönderilecek satır olmadığında da
+  doğru**; gerçek durum `sent_entries_total = 0`'dı. Sonra sayaç 302
+  gösterince "tamam" denildi, ama veriye bakınca iki kusur çıktı (test
+  kirliliği · süreç ayrımı yok). Kural: **bir boru hattını, taşıdığı şeyi
+  GÖRMEDEN doğrulama.** Salt-okunur bir jeton bunun için vardır.
+- **ETİKET KARDİNALİTESİNİ ÜRETİMDE DEĞİL TESTTE ÖLÇ.** `marka` "marka
+  sayısı kadar" diye güvenli sayılmıştı; ama test süiti her koşuda yeni
+  UUID'li kiracı açıyor ve o UUID etikete düşüyordu. Bulutta ölçüldü:
+  3 kiracıya karşı **71 etiket değeri**, her koşuda artıyor. Testler
+  toplayıcının okuduğu kanala yazmamalı (`phpunit.xml` → `LOG_CHANNEL`).
+- **`app` · `worker` · `scheduler` AYNI GÜNLÜK DOSYASINA YAZIYOR.** Satırda
+  süreci ayırt eden alan yoksa *"kuyruk işçisi öldü"* alarmı YAZILAMAZ —
+  ve worker'ın `restart` politikası olmadığı için çökerse işler Redis'te
+  sessizce birikir. Ayrım `SUREC` ortam değişkeniyle compose'da yazılı;
+  `runningInConsole()` yetmiyor (worker ile scheduler'ın ikisi de konsol).
+  ⚠️ Değer `config()` üzerinden okunur, `env()` ile DEĞİL: `config:cache`
+  sonrası `env()` null döner ve etiket sessizce kaybolur.
 - **LOKI ETİKETİ = İNDEKS; SINIRSIZ DEĞER ALAN ALAN ETİKET OLMAZ.** Her
   benzersiz etiket birleşimi ayrı bir akış açıyor. `istek_id` her istekte
   farklı — etiket yapılırsa indeks şişer, sorgular yavaşlar. Satırın içinde

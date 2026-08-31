@@ -53,6 +53,21 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Satırı hangi süreç yazdı (B6.3)
+    |--------------------------------------------------------------------------
+    |
+    | `web` · `worker` · `scheduler` — `docker-compose.yml`'de her servise
+    | ayrı yazılıyor ve günlük satırına bağlam olarak giriyor.
+    |
+    | ⚠️ BURADA, doğrudan `env()` ile DEĞİL. Yapılandırma önbelleğe
+    | alındığında (`config:cache`) `env()` **null** döner; etiket sessizce
+    | kaybolur ve "kuyruk işçisi öldü" alarmı hiç ateşlenmez — üstelik
+    | hata vermeden.
+    */
+    'surec' => env('SUREC'),
+
     'channels' => [
 
         'stack' => [
