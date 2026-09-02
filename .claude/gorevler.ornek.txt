@@ -1,0 +1,8 @@
+# GÖREV LİSTESİ ÖRNEĞİ — kopyala: cp .claude/gorevler.ornek.txt .claude/gorevler.txt
+#
+# Satır başına bir görev. Her görev AYRI bir headless `claude -p` oturumunda
+# koşuyor; oturumlar birbirinin bağlamını görmüyor, o yüzden her satır
+# KENDİ BAŞINA anlaşılır olmalı.
+#
+# Bu projede görev listesinin doğal kaynağı PLAN.md — sıradaki blok:
+# PLAN.md'deki sıradaki bloğu /blok ritüeliyle bitir. Kırma denemeleri kırmızı olmadan commit etme.

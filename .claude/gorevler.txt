@@ -1,3 +1,0 @@
-# Görev listesi — satır başına bir görev, # yorum satırı.
-# Koşucu her görevi AYRI bir headless Claude oturumunda koşturuyor.
-PLAN.md'nin en üstündeki "Son güncelleme" tarihini bugüne (2026-09-02) çek. Başka hiçbir şeyi değiştirme, commit etme.

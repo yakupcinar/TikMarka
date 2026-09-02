@@ -83,3 +83,8 @@ yarn-error.log
 
 # Gözetimsiz koşu günlükleri — makineye özel, depoda durmaz
 .claude/kosu/
+
+# Görev listesi makineye özel bir GİRDİ — örneği gorevler.ornek.txt'de.
+# ⚠️ İzlenirse listeyi düzenlemek ağacı kirletiyor ve koşucunun kendi
+# "temiz ağaç" denetimi koşuyu engelliyor. Ölçüldü.
+.claude/gorevler.txt
