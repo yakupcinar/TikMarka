@@ -3944,3 +3944,50 @@ B6.2 + B6.3 · test kirliliği ve süreç ayrımı                        ✅
 
   KALAN İŞ: alarm kuralları (Grafana stack adresi + service account
   jetonu gerekiyor).
+
+────────────────────────────────────────────────────────────────────────
+A1 · tuzaklar yola bağlı kurallara bölündü        (ajan altyapısı)   ✅
+────────────────────────────────────────────────────────────────────────
+
+  BAĞLAM: proje tek bir sohbete bağlı yönetiliyordu; workflow yapısına
+  geçişin ilk adımı.
+
+  ARAŞTIRMA PLANIN ŞEKLİNİ DEĞİŞTİRDİ
+    · çok-ajanlı yapı KODLAMA için önerilmiyor (~15× jeton)   Anthropic
+    · doğrulama DETERMİNİSTİK olmalı, LLM yargısı son çare    Anthropic
+    · MAS başarısızlık %41–86,7; sebep model değil TASARIM    MAST
+    · kod doğrulamada en iyi İKİLİ (%79,3) DÖRTLÜDEN iyi      arXiv
+    → kurulacak şey multi-agent DEĞİL, workflow
+
+  ÖLÇÜM
+    CLAUDE.md 1.318 satır · hedef 200 · %96'sı tuzak listesi
+    bu oturumda YAZILI ÜÇ KURAL buna rağmen unutuldu
+
+  ⚠ OTOMATİK BÖLME DENENDİ, SAĞLAM ÇIKMADI
+    tuzağın kendi metni dosya adı veriyor :  31/171 (%18)
+    git blok commit'inden türetilen       : 116/171 (%67)
+       ama tests/Tenancy → 112/116 (%97) — bir commit her yere dokunuyor
+    → bölme OKUMAYI gerektiriyor; toptan yapılmadı
+
+  BÖLÜNEN (en net sınırlı üç dilim)
+    tasarim.md  18 tuzak   resources/css · *.blade.php · *.vue
+    panel.md     8 tuzak   resources/js · app/Http/Panel
+    gozlem.md    3 tuzak   app/Logging · config/logging.php · docker/alloy
+    CLAUDE.md  142 tuzak   her zaman
+
+  ⚠ OTOMATİK ATAMANIN ÜÇ YANLIŞI elle düzeltildi (3/32 ≈ %9)
+    "yorumları ayıklamadan ölçmez" → test meta-kuralı, tasarım değil
+    "her görsele lazy yanlış"      → vitrin, tema değil
+    "mb_strpos/preg_match ofseti"  → genel PHP, gözlem değil
+    Üçü de "blokta doğdu ama bloğa ait değil" — güvenilseydi kaybolurdu
+
+  KAZANÇ ÖLÇÜLDÜ (fnmatch ile, NEGATİF durumlar önemli)
+    app/Domain/… · tests/… · routes/… → HİÇBİR kural yüklenmiyor
+
+  KIRMA DENEMELERİ 5/5 — beşincisi kritik:
+    desen `**` ile genişletilince "bölme var, kazanç yok" hâli yakalandı
+
+  ⚠ toContain'e mesaj argümanı ÜÇÜNCÜ kez geçirildi — hem de bölmeyi
+    koruyan testin içinde. Yazılı kuralın yetmediğinin kanıtı.
+
+  Test: tests/Feature/TuzakSayimiTest.php — 5 test

@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ── şu an: B6.3 BİTTİ — sırada alarm kuralları · Faz 5 ──────┐
+┌─ YOL HARİTASI ─ şu an: A1 BİTTİ (ajan altyapısı) — sırada A2 hook'lar ───┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7470,6 +7470,116 @@ Kural: **bir boru hattını, taşıdığı şeyi görmeden doğrulama.**
 **Kalan iş:** alarm kuralları. Gerekli olan iki değer bizde yok —
 Grafana'nın kendi adresi (`https://<stack>.grafana.net`) ve bir service
 account jetonu.
+
+---
+
+### A1 — tuzaklar yola bağlı kurallara bölündü ✅  *(ajan altyapısı)*
+
+**Bağlam:** Kullanıcı projeyi tek bir sohbete bağlı yönetmenin yanlış
+olduğunu fark etti ve çok-ajanlı/workflow bir yapıya geçmek istedi. Bu, o
+geçişin ilk adımı.
+
+#### Araştırma önce yapıldı — ve planın şeklini değiştirdi
+
+| Bulgu | Kaynak |
+|---|---|
+| Çok-ajanlı yapı **kodlama için önerilmiyor**; *"çoğu kodlama görevi araştırmaya kıyasla çok daha az paralelleştirilebilir iş içeriyor"*. Maliyet **~15× jeton** | Anthropic, multi-agent research system |
+| Doğrulama **deterministik** olmalı; LLM'in kendi yargısı son çare | Anthropic, Claude Agent SDK |
+| MAS başarısızlık oranı **%41–86,7**; sebep model değil **tasarım**. Üç hata kategorisinden biri doğrudan *"doğrulama ve sonlandırma"* | MAST (arXiv 2503.13657) |
+| Kod doğrulamada bağımsız inceleyiciler: 1 ajan %32,8 → 4 ajan %72,4. **Ama en iyi İKİLİ %79,3 — dörtlüden İYİ** | arXiv 2511.16708 |
+| `SKILL.md` **1.500 kelimenin altında** kalmalı | Claude Code belgeleri |
+
+**Sonuç: kurulacak şey çok-ajanlı sistem değil, `workflow`.** Önceden
+tanımlı kod yolları (kural + hook + skill); alt-ajan yalnızca gerçekten
+izole edilebilir gürültülü iş için, ve **iki taneden fazla değil**.
+
+⚠️ Kullanıcının verdiği rehber *"multi-agent tek yoldur"* diyordu; ölçülmüş
+kanıt bunun tersini söylüyor ve rehber jeton maliyetini hiç anmıyor.
+
+#### Bu blokta yapılan: `CLAUDE.md` bölündü
+
+**Ölçüm:** dosya 1.318 satırdı, belgelenen hedef **200**. Dosyanın %96'sı
+tuzak listesi. Ve bu teorik değil — bu oturumda **yazılı üç kural** buna
+rağmen unutuldu (`toContain` mesaj argümanı · yardımcı konumu ·
+`git checkout`).
+
+**⚠️ Otomatik bölme DENENDİ ve SAĞLAM ÇIKMADI — kayda geçiyor:**
+
+```
+tuzağın kendi metni dosya adı veriyor  :  31/171  (%18)
+git'te blok commit'inden türetilebilen : 116/171  (%67)
+   ama  tests/Tenancy  →  116 tuzağın 112'sinde  (%97)
+```
+
+Bir blok commit'i aynı anda testlere, rotalara, görünümlere ve Domain'e
+dokunuyor; tuzak ise bunlardan yalnızca birine ait. Yani **ne metinden ne
+geçmişten** güvenilir atama çıkıyor — bölme okumayı gerektiriyor.
+
+Bu yüzden **toptan bölme yapılmadı**: en net sınırı olan üç dilim taşındı,
+kalan 142 tuzak `CLAUDE.md`'de duruyor.
+
+| Dosya | Tuzak | Yol |
+|---|---|---|
+| `.claude/rules/tasarim.md` | 18 | `resources/css/**` · `**/*.blade.php` · `**/*.vue` |
+| `.claude/rules/panel.md` | 8 | `resources/js/**` · `app/Http/Panel/**` |
+| `.claude/rules/gozlem.md` | 3 | `app/Logging/**` · `config/logging.php` · `docker/alloy/**` |
+| `CLAUDE.md` | 142 | her zaman |
+
+#### ⚠️ Otomatik atamanın ÜÇ yanlışı — elle düzeltildi
+
+Liste uygulanmadan **okundu** ve üç tuzak yanlış yere düşmüştü:
+
+| Tuzak | Nereye düşmüştü | Neden yanlış |
+|---|---|---|
+| *"Kaynak dosyasını okuyan iddia, yorumları ayıklamadan ölçmez"* | `tasarim` | Test yazma **meta-kuralı**; örneği CSS olduğu için oraya düştü |
+| *"Her görsele `lazy` yanlış"* | `tasarim` | Vitrin performansı, tema değil |
+| *"`mb_strpos` karakter, `preg_match` bayt"* | `gozlem` | **Genel PHP tuzağı**; B6'da ısırdığı için oraya düştü |
+
+Hata oranı **3/32 ≈ %9**. Üçü de "blokta doğdu ama bloğa ait değil" türü —
+otomatik bölmeye güvenilseydi sessizce kaybolacaklardı.
+
+#### Ölçüm: kazanç gerçek mi
+
+Desenler `fnmatch` ile tek tek sınandı. **Negatif durumlar pozitiflerden
+önemli:**
+
+```
+resources/css/panel.css              → tasarim
+resources/js/Panel/…/PanelDuzeni.vue → tasarim, panel
+app/Logging/IstekBaglami.php         → gozlem
+app/Domain/Order/CheckoutService.php → HİÇBİRİ   ← kazanç burada
+tests/Pest.php                       → HİÇBİRİ
+routes/tenant.php                    → HİÇBİRİ
+```
+
+⚠️ `InstructionsLoaded` hook'u kurulmuş, sonra **kaldırılmıştı**: `fnmatch`
+ile yapılan ölçüm deterministik ve kalıcı bir teste dönüştürülebiliyor;
+hook ise her oturumda dosyaya yazan bir yan etki bırakıyordu.
+
+#### Kırma denemeleri — 5/5 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | bir tuzak taşınırken kayboldu | 1 düştü |
+| 2 | tuzak taşınmadı **kopyalandı** (iki yerde) | 2 düştü |
+| 3 | `paths` frontmatter'ı kaldırıldı | 1 düştü |
+| 4 | `CLAUDE.md` kural dosyalarından bahsetmiyor | 1 düştü |
+| 5 | desen `**` ile genişletildi (bölme var, **kazanç yok**) | 1 düştü |
+
+Beşincisi en önemlisi: bölünmüş ama her yerde yüklenen bir kural seti
+"yapıldı" görünür ve hiçbir şey kazandırmaz.
+
+#### ⚠️ Kayıtlı bir tuzak ÜÇÜNCÜ kez tekrarlandı
+
+`toContain()`'e mesaj argümanı geçirildi — hem de **bölmeyi koruyan testin
+içinde**. Kural `CLAUDE.md`'de iki kez yazılı (4.6AC · B6). Yazılı kuralın
+yetmediğinin üçüncü kanıtı; 4.6AI'daki *"yazılı kural üç kez tutmadıysa
+kural değil test yaz"* dersinin aynısı.
+
+**Test:** `tests/Feature/TuzakSayimiTest.php` — 5 test.
+
+**Sırada:** Karpathy'nin dört ilkesi → `CLAUDE.md` · hook'lar ·
+`/kontrol` + `sinayici` · `/blok` + `/kirma` · iddia/kanıt denetçileri.
 
 ---
 

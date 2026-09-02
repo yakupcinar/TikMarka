@@ -48,7 +48,6 @@ Sertifika uyarısı normal (`tls internal`), `curl -k` kullan.
 ## Sessiz hataya yol açan kurallar
 
 Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez yaşandı.
-
 - **Migration klasörü.** `database/migrations/` kökü bilerek **boş**.
   Marka tablosu → `--path=database/migrations/tenant`,
   merkez tablosu → `--path=database/migrations/landlord`.
@@ -310,11 +309,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   giriş yapan yönetici `127.0.0.1`'e savruluyordu ve oturum çerezi orada
   geçerli olmadığı için giriş ekranına geri düşerdi. Merkez yönlendirmelerde
   **göreli yol** kullan (`redirect('/yonetim')`).
-- **Inertia middleware'i GLOBAL `web` grubuna eklenmez — rota grubuna eklenir.**
-  İki Inertia yüzeyi varsa (marka paneli + kontrol düzlemi) ikisi de `web`
-  grubunda çalışır ve **kök görünümü sonuncusu belirler**; yani bir yüzey
-  diğerinin kabuğuyla render edilebilir. Her yüzey kendi middleware'ini
-  kendi grubunda takar (4F'de daraltıldı).
 - **`node_modules` BAĞLI KLASÖRDE DURMAZ — adlandırılmış birime konur.**
   macOS bind mount üzerinden binlerce küçük dosya okumak hem yavaş hem de
   kilitleniyor: Vite derlemesi `Unknown system error -35` ile düştü, üç
@@ -338,17 +332,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   `firstOrFail()` ile onu arıyor ve bulamayınca **404** dönüyor. ⚠️ Belirti
   yanıltıcı: hata mesajı değil Laravel'in 404 sayfası geliyor, yani "rota
   yok" sanılıyor. Para iadesi testinde `iadeyeHazirSiparis()` kullan.
-- **Inertia DevTools her isteğe DOSYA YAZIYOR — kapalı tutulmalı.**
-  `storage/inertia-devtools/` altına kayıt açıyor ve periyodik damga
-  yazıyor; bağlı klasörde `errno=35` ile düşünce panelin **bütün
-  sayfaları 500** verdi. ⚠️ Belirti yanıltıcı: hata `file_put_contents`'ten
-  geliyor, yığın izinde sayfayı yazan kod hiç görünmüyor. `config/inertia.php`
-  → `devtools.enabled = false` (4D).
-- **Inertia'da sunucu cevabı EKRANDAKİ METNİ İÇERMEZ.** Sayfa tarayıcıda
-  render ediliyor; cevapta yalnızca bileşen adı ve prop'lar var. Panelde
-  `assertSee('Henüz ürün yok')` yazmak testi yalancı yapar — `component`
-  ve `props` üzerinden iddia kur. ⚠️ Vitrin bunun TERSİ: orada sayfa
-  sunucuda render ediliyor (4-K1), metin aramak doğru yöntem.
 - **İç içe rota bağlamada Laravel çocuğu EBEVEYNİN İLİŞKİSİNDEN çözüyor.**
   `{urun:uuid}/{varyant:uuid}` için `Product::varyants()` arıyor; ilişkinin
   adı `variants` olduğu için **500** veriyor. Ya parametre adı ilişkiyle
@@ -361,15 +344,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   "geçti". Yani kırma denemesi **yanlış yeri kırmıştı** ve testin ölçtüğü
   şey hakkında yanlış güven verdi. Kalıp birden çok yerdeyse hedefi
   konumla daralt ve değişikliği `grep` ile gör.
-- **`asset_helper_tenancy` AÇIKKEN Vite varlıkları 404 alıyor.** Paket
-  `asset()` çağrılarını `/tenancy/assets/...` yoluna çeviriyor; derlenmiş
-  panel paketi orada yok. ⚠️ **Bedeli sessiz:** sunucu 200 ve doğru HTML
-  döner, testler (`withoutVite()`) yeşil kalır, ama tarayıcı betiği
-  indiremediği için panel **boş sayfa** açılır. Kapatıldı (4C) — marka
-  dosyaları zaten açıkça `tenant_asset()` kullanıyor.
-- **Panel/Vue değişince `make derle` ŞART.** Derlenmemiş bileşen tarayıcıya
-  ulaşmaz; belirti yine boş sayfa. Vitrin etkilenmez (sunucuda render
-  edilen Blade, 4-K1).
 - **Kimliksiz istek `login` ADLI rotaya yönlendiriliyor.** Bizde öyle bir
   rota yok ve `RouteNotFoundException` ile **500** dönüyor. 2E'de API
   tarafında çıkmıştı (`ForceJson` ile çözüldü), 4C'de panel tarafında
@@ -448,7 +422,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   Caddy tarafından tanınmıyorsa bağlantı **TLS el sıkışmasına bile
   gelmiyor** (`curl` → 000) ve "sunucu kapalı" gibi görünüyor — mağazanın
   kapalı olmasıyla (503) karıştırma.
-
 - **`firstOrFail()` OKUMA YOLUNDA veri sorununu 404'e ÇEVİRİR.** Laravel
   `ModelNotFoundException`'ı 404'e eşliyor; yani "kuralın gösterdiği kategori
   yok" gibi bir VERİ sorunu ekranda **"sayfa bulunamadı"** diye görünüyor ve
@@ -466,7 +439,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yolunda varlığı doğrulamak. ⚠️ Varlık kontrolü **biçim doğrulayan** sınıfa
   konmaz (o sınıf okuma yolunda da çalışıyor ve veritabanına bakmıyor);
   yazma yoluna ait.
-
 - **VARSAYILAN GUARD SAYFA KATMANINDA YANLIŞ.** `config/auth.php`'de
   varsayılan `customer` — yani **sanctum, token**. Sayfalarda kimlik
   OTURUMDA (`customer-web`); `$istek->user()` yazılırsa sanctum sorulur,
@@ -487,7 +459,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   testte `actingAs` KULLANILMAZ, gerçek giriş isteği atılır.
   (`postJson`'ın `Accept` eklemesi ve `getJson`'ın çerezi düşürmesiyle
   aynı aile: **test yardımcısı ölçmek istediğin şeyi ortadan kaldırıyor**.)
-
 - **`ConvertEmptyStringsToNull` BOŞ METNİ NULL YAPAR — `string` kuralı
   null'da DÜŞER.** 4.5I.1'de ısırdı: ödeme formunda gizli alanlar boş
   gönderiliyor (**gizlemek göndermemek değildir**), middleware onları
@@ -498,18 +469,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   ama bu **ölçülmeli**. ⚠️ Anahtarı HİÇ göndermeyen test bunu göremez —
   middleware'in dönüştüreceği değer olmuyor; testin gövdesi **tarayıcının
   gönderdiğiyle birebir** olmalı.
-
-- **INERTIA AYNI BİLEŞENE GİDERKEN ÖRNEĞİ YENİDEN KURMAZ — `setup()` bir
-  daha koşmaz.** Oluşturma ve düzenleme aynı bileşense (`Urunler/Form`),
-  setup'ta hesaplanan düz değişken (`const yeniMi = props.urun === null`)
-  yönlendirmeden sonra **eski değerinde donar**. 4.5L'de ısırdı: ürün
-  oluşturuluyor, yönlendirme doğru, prop'lar doğru geliyor ama varyant ve
-  görsel bölümü **hiç görünmüyordu**; sayfa değiştirip geri gelince
-  düzeliyordu. ⚠️ Sunucu tarafında ölçüm bunu GÖREMEZ — 4.5G'de
-  "yönlendirme çalışıyor" diye kapatılmıştı, ölçülen şey ekran değildi.
-  Prop'tan türeyen her şey `computed`; `useForm` başlangıç değerleri de
-  `watch` ile yeniden tohumlanmalı, yoksa kutularda **eski kaydın verisi**
-  kalır ve kaydedilir.
 - **VERİTABANI KISITI TEK BAŞINA ARAYÜZ DEĞİLDİR.** `(product_id, options)`
   benzersizliği doğruydu ama yakalanmayınca panelde ham **500**
   (*"duplicate key value violates unique constraint"*) görünüyordu. 4.5L'de
@@ -519,7 +478,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   karşı son savunma), Domain'e **aynı adı taşıyan bir kontrol** koy ve
   panelde `CatalogRuleException`'ı **oturum hatasına** çevir — genel
   işleyici JSON döndürüyor ve o yalnızca `api/*` için doğru.
-
 - **KİMLİĞİ OKUMAK İLE VERİYİ ÇÖZMEK AYRI ŞEYLER — ikisi de tek kapıdan
   geçmeli.** 4B'de "sepet kimliğini yalnızca `CartToken` okur" kuralı
   kondu ve ölçüldü; ama sepeti **çözen** yol serbest kaldı.
@@ -531,7 +489,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   birleştirmeyi (misafir token'ını bilerek okur) ve **kendi yorum
   metnini** ihlal sayıyordu — eşleşme çağrının kendisinde olmalı
   (`->metot(`), ham metinde değil.
-
 - **SUNUCUDA RENDER EDİLEN YÜZEY SAATİ KENDİ ÇEVİRMELİ.** `app.timezone`
   UTC (ve öyle KALMALI); Blade `format()` onu olduğu gibi basıyor, yani
   vitrin müşteriye **üç saat geride** saat gösteriyordu. Panel Inertia
@@ -542,7 +499,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   rezervasyon süreleri kayıyor — kırma denemesiyle ölçüldü, `ZamanDilimiTest`
   düştü. Doğrusu **gösterim** saat dilimi ayarı + `setTimezone()`; değer
   beyaz listeden geçmeli, yoksa geçersiz ayar sayfayı 500'e düşürür.
-
 - **İSTİSNA İŞLEYİCİSİ İÇİNDE `route()` ÇAĞIRMAK İŞLEYİCİYİ PATLATABİLİR.**
   Genel işleyiciler merkez bağlamında da koşuyor ve orada vitrin rotaları
   **tanımlı değil**; `route('vitrin.sepet')` doğrudan çağrılsaydı hatayı
@@ -554,7 +510,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   Her seferinde "bu uç gözden kaçmıştı" denildi. Bir istisna için
   `expectsJson()` dalı yazarken **aynı ekrandan tetiklenebilecek diğer
   istisnaları da** aynı anda tara.
-
 - **ÇERÇEVEDEN ÇIKIŞ BETİĞİ, İÇİNDE BULUNDUĞU ADRESE GERİ GİDEMEZ.**
   Sağlayıcı dönüşü `POST` ve referans **gövdede**; `window.top.location =
   window.location.href` üst pencereyi **referanssız bir GET**'e götürüyor
@@ -565,7 +520,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   (1E.7.3 · 4.5R): referansı adres çubuğuna koyduğu için testler `?ref=`
   ile koşuyor ve betik çalışıyordu. Dönüş akışını sınayan test
   **sağlayıcının gerçek şekliyle** (POST + gövde) da koşmalı.
-
 - **AYNI ADRESLİ İKİ ROTADA SON KAYIT KAZANIR — kırma denemesi bunu
   bilmezse yanlış yeri kırar.** 4.6S'de görüntüleme grubuna ikinci bir
   `/urunler/yeni` eklendi ve test **geçmeye devam etti**: yazma grubundaki
@@ -574,7 +528,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   `/urunler/yeni` ile `/urunler/{urun:uuid}` aynı gruptayken sıra sayesinde
   **tesadüfen** çalışıyordu; gruplar bölününce form 403 yerine **404**
   vermeye başladı. `whereUuid` ile sıraya bağımlılık kaldırıldı.
-
 - **`postJson`/`getJson` ÇEREZLERİ VARSAYILAN GÖNDERMEZ.** Laravel'in test
   istemcisinde `prepareCookiesForJsonRequest()` yalnızca `withCredentials()`
   çağrıldıysa çerez taşıyor — `getJson`'ın çerezi düşürmesiyle (4A) aynı
@@ -587,7 +540,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yok) ama 11. istek yine 429. Saldırganın her denemede farklı/geçersiz
   bir hedef kullanması throttle'ı atlatmıyor — bu YAN etki değil, doğru
   davranış: sayaç isteğin başarılı olup olmamasına bakmıyor.
-
 - **GENİŞ BİR CSP, DİNAMİK İFRAME ADRESİNİ SESSİZCE KIRAR.** Ödeme sayfası
   kendi iframe'inde iyzico'yu gösteriyor (4.5-K1) ve o adres iyzico'nun API
   cevabından **dinamik** geliyor — sabit bir alan adı olarak `frame-src`
@@ -599,7 +551,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   başkasını çerçevelememizi etkilemiyor — ikisi ayrı yön. Clickjacking
   koruması eklenecekse dinamik iframe barındıran bir projede yalnızca
   `frame-ancestors`/`X-Frame-Options` kullan, `default-src` ekleme.
-
 - **LARAVEL 11+ ÇERÇEVE CONFIG'İNİ BİRLEŞTİRİYOR — bir varsayılanı
   `config/`'ten SİLMEK onu YOK ETMİYOR.** 4.6V'de ölçüldü ve
   sömürülebilirliği kanıtlandı: `auth.passwords.users` broker'ı
@@ -624,7 +575,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   formu (`method="get"`) sayfada ÖNCE geliyor ve ilk eşleşme odur; yoksa
   test düzeltilmiş kodda da 405 verir. "Form alanları doğrulamayla hizalı
   olmalı" tuzağının ADRES tarafı: orada eksik olan ALAN'dı, burada ADRES.
-
 - **İMZALI ADRES ÜRETEN KOD İSTEK BAĞLAMINDA ÇALIŞMAK ZORUNDA.**
   `URL::temporarySignedRoute()` MUTLAK adres üretiyor ve kökünü o anki
   istekten alıyor; istek yokken `APP_URL`'e düşüyor — bu projede
@@ -660,8 +610,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   sanıldı, çünkü aynı komutta dosya zaten yeniden yazılmıştı. Üç biçim
   (config'li, config'siz, phar'ı /tmp'ye kopyalayarak) ayrı ayrı denendi,
   **üçü de** bozuk dosyayla düştü.
-
-
 - **YUMUŞAK SİLME + `unique` = DOMAIN İLE VERİTABANI AYNI KURALI FARKLI
   ANLAYABİLİR.** `unique` kısıtı `deleted_at`'e bakmaz, Eloquent sorgusu
   bakar. İkisi hizalanmazsa hata Domain'i **atlayıp** veritabanından
@@ -691,8 +639,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yarış durumunda iki eşzamanlı istek de kontrolü geçebilir, tohumlayıcı
   ve komut satırı Domain'i hiç kullanmayabilir. Ölçen test servisi değil
   **doğrudan tabloyu** kullanmalı (`DB::table(...)->insert(...)`).
-
-
 - **FLASH MESAJI `api` GRUBUNDA KAYBOLUR — ve TEST BUNU GÖREMEZ.**
   `api` grubunda `StartSession` yok; `->with('mesaj', …)` yazıldığı anda
   kayboluyor. 4.6Y'de ısırdı: ürün sepete geliyordu ama "şunlar
@@ -709,8 +655,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   almadan sonra kırmızı kaldığı için fark edildi. Kırmadan önce
   `cp <dosya> /tmp/x.bak`, sonra `cp /tmp/x.bak <dosya>`. ⚠️ Geri almanın
   uygulandığını, kırmanın uygulandığı kadar dikkatle doğrula.
-
-
 - **PHP'NİN YÜKLEME SINIRI DOĞRULAMA KURALINDAN KÜÇÜKSE KURAL HİÇ
   KONUŞMAZ.** `upload_max_filesize` varsayılanı **2M**; `max:5120` yazan
   bir kural 2–5 MB arası dosyayı hiç görmüyor, çünkü PHP isteği Laravel'e
@@ -736,8 +680,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   Ayrıca yeniden boyutlandırma YAPILMAYAN yolda hedef tuval hiç
   oluşmuyor — ayar açılışta (kaynakta) yapılmazsa o yolda saydamlık her
   sürümde kaybolur. "Yerel yeşil ≠ CI yeşil" kuralının GD biçimi.
-
-
 - **"YAPABİLİR MİYİM" SORUSUNU EKRAN CEVAPLAMAZ, DOMAIN CEVAPLAR.** Vitrin
   bir işlemin mümkün olup olmadığını göstermek zorunda (form çıkacak mı,
   düğme açık mı) ve bunu kendi kontrolüyle hesaplarsa **iki formül** olur:
@@ -747,8 +689,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   aynı** özel kontrolü çağırması. ⚠️ Engel varsa ekran SEBEBİ yazmalı:
   farklı engeller farklı çözümler gerektiriyor, tek bir "yapamazsınız"
   mesajı hepsini çıkmaza çevirir.
-
-
 - **MÜŞTERİ BAŞINA VERİ EKLERKEN KVKK YOLLARI DA GENİŞLETİLİR.** Yeni bir
   tablo müşteriye bağlanıyorsa `Anonymizer` ve `DataExporter` aynı blokta
   güncellenmeli; unutulursa müşteri başına veri tutan ama KVKK'ya girmeyen
@@ -758,8 +698,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   ürününkini bile **yazıyor** (orada soru "ne gösterelim" değil "elimizde
   ne var"). ⚠️ Yabancı anahtardaki `cascadeOnDelete` anonimleştirmede
   DEVREYE GİRMEZ: o yol müşteriyi silmiyor, maskeliyor.
-
-
 - **ÜRÜN SAYFASINA EKLENEN HER ŞEY İKİ DÜZENİ DE KAPSAMALI.** Vitrinin iki
   düzeni var (`sade`, `vitrinli`) ve hangisinin kullanıldığını **marka
   belirliyor** (tema bir ayar, 4-K5). Yalnızca birine eklenen özellik,
@@ -774,27 +712,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   ayrıntılıydı, dört kırma denemesi yazılıydı ve altı testi yeşildi — blok
   yine de yarım uygulanmıştı. Bir bloğun kapsamını doğrularken kayda
   değil **ölçüme** bak: özelliğin geçtiği her yüzeyi tek tek aç.
-
-
-- **KOYU TEMA EKLERKEN SİSTEM KURALI KULLANICI SEÇİMİNİ EZMEMELİ.**
-  `@media (prefers-color-scheme: dark)` bloğu `:root:not([data-tema="acik"])`
-  ile korunmazsa, gece modundaki telefonda "açık tema" seçimi hiç
-  çalışmaz. ⚠️ Bunu ölçen test **belirteçleri tanımlayan bloğa** bakmalı,
-  sayfada bir yerde geçmesine değil: aynı ifade başka kurallarda da
-  geçebiliyor ve kırma denemesi tutmuyor (4.6AB'de yaşandı).
-  ⚠️ Tema betiği CSS'ten ÖNCE ve senkron olmalı; sonra gelirse sayfa
-  açık temayla boyanıp koyuya atlıyor (FOUC).
-  ⚠️ Marka rengi (`--marka`) koyu temada YENİDEN TANIMLANMAZ — marka
-  kimliği kaybolur. Okunması gereken metin ondan değil `--metin`'den
-  gelmeli.
-- **SABİT RENK KURAL GÖVDESİNDE KALIRSA KOYU TEMADA O KURAL AÇIK KALIR —
-  ve bu SESSİZDİR.** Sayfanın çoğu koyu, bir kutu beyaz; ya da daha
-  kötüsü koyu metin koyu zeminde **görünmez** olur (4.6AB'de iki kuralda
-  tam bu vardı). Renkleri belirtece çevirdikten sonra kural gövdelerinde
-  hex kalmadığını ÖLÇ. ⚠️ Ölçerken CSS yorumlarını ayıkla: yorumdaki renk
-  kodu hiçbir şey boyamıyor, testi boşuna kırar.
-
-
 - **`->not->toContain(a, b)` ÇOK ARGÜMANLI YAZILDIĞINDA YANILTIYOR.**
   Argümanlardan biri eksik olduğu anda iddia geçiyor; ötekinin varlığını
   hiç ölçmüyor. 4.6AC'de ısırdı: `->not->toContain('password',
@@ -815,25 +732,11 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   `pending`'i satış saymak hiçbir şeyi bozmadı (test müşterisinin bekleyen
   siparişi yoktu). Her ikisinde de eksik ölçümü yazdıran şey denemenin
   kendisi oldu.
-
-
-- **PANEL TESTİ VITE MANİFESTİNE BAĞLIYDI — belirti YALNIZCA CI'DA.**
-  Panelin kök görünümü `@vite(...)` çağırıyor; `public/build/manifest.json`
-  yoksa sayfa **500** dönüyor. Yerelde derleme çıktısı duruyor, CI'da ise
-  `public/build` gitignore'da ve derleme adımı **testlerden SONRA**
-  koşuyor. Yani panel testi yazan kişi yerelde yeşil, CI'da kırmızı
-  alıyordu — 4.6AC'de sekiz testin sekizi böyle düştü.
-  ⚠️ Önce her panel testi `withoutVite()`'i **elle** yazıyordu; artık
-  `tests/Pest.php`'de `beforeEach` ile bütün `Tenancy` süiti için açık,
-  yani unutulamıyor. Bozuk Vue bileşenini gizlemiyor: CI'daki ayrı "Panel
-  derlemesi" adımı onu yakalıyor.
 - **PINT ÇIKTISINI BORULARKEN HATAYI GİZLEME.** `pint | tail -2` yazmak
   `pint.json` bozulduğunda (bilinen errno=35) **boş çıktı** veriyor ve
   "geçti" gibi görünüyor. 4.6AC'de biçimlenmemiş dosyalar böyle commit
   edildi ve CI kırmızı döndü. Çıkışı da kontrol et ya da `--test` ile
   koş; boş çıktı **başarı değil, hata belirtisidir**.
-
-
 - **TASARIMI GÖRMEK İÇİN NGROK TÜNELİ AÇ — tarayıcı aracı `.localhost`'a
   ULAŞAMIYOR.** Yerel sertifikalı adres reddediliyor; 4.6A ve 4.6AB'de
   "tarayıcıda doğrulanamadı" diye kaydedilen şey buydu. `make kaldir`
@@ -844,21 +747,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   açık kalır. ⚠️ ngrok ücretsiz planda ilk açılışta bir uyarı sayfası
   gösteriyor; `ngrok-skip-browser-warning` başlığı ya da bir tıklama
   gerekiyor.
-- **RENK BELİRTECE ÇEVİRİRKEN TARAYICI VARSAYILANLARI TARAMAYA GİRMEZ.**
-  4.6AB'de "kural gövdesinde sabit renk kalmadı" testi yeşildi ama genel
-  bir `a { color }` kuralı **hiç yoktu**: stillenmemiş bağlantılar
-  tarayıcının varsayılan mavisine düşüyordu (`#0000ee`) — koyu temada
-  kontrast **1.72**. ⚠️ Belirti sinsi: hiçbir kural YANLIŞ değil, EKSİK.
-  Yazılmış renkleri taramak yetmiyor; **temel öğelerin (bağlantı, form
-  kontrolü) kendi kuralı var mı** diye ayrıca bak.
-- **KONTROL SINIRI ile AYRAÇ AYNI BELİRTEÇ OLMAZ.** WCAG 1.4.11 form
-  kontrolünün sınırı için **3:1 zorunlu** tutuyor; dekoratif ayraç sakin
-  kalabilir. Tek belirteç kullanılırsa ya kontroller görünmez ya ayraçlar
-  gürültülü olur. 4.6AD'de ölçüldü: tasarımdaki **her** çizgi 3:1'in
-  altındaydı, arama kutusunun sınırı 1.43'tü — az gören müşteri kutuyu
-  bulamıyordu.
-
-
 - **KAYNAK DOSYASINI OKUYAN İDDİA, YORUMLARI AYIKLAMADAN ÖLÇMEZ.** Bir kuralı
   ANLATAN yorum, kuralın kendisiyle aynı metni içerir; ham metinde arayan test
   yönerge bozulsa bile **yeşil kalır**. 4.6AE'de iki kırma denemesi bu yüzden
@@ -871,55 +759,15 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yardımcısında olmalı.
   ⚠️ Ailenin üçüncü yüzü 4D: "kalıp birden çok yerdeyse hedefi konumla daralt".
   Orada KIRMA yanlış yeri kırmıştı, burada İDDİA yanlış yeri okuyordu.
-- **Tailwind v4'te `@theme inline` ŞART — düz `@theme` çalışma anında temayı
-  KIRAR.** Düz biçim değişkenin **değerini kopyalıyor**: üretilen sınıf açık
-  temanın rengini taşır ve `data-tema` değişince **hiçbir şey olmaz**. `inline`
-  değişkene **referans** bırakır. ⚠️ Belirti tamamen sessiz — derleme başarılı,
-  sayfa açılır, yalnızca renk değişmez (4.6AE).
-- **SABİT RENK SINIFINA `dark:` İKİZİ YAZMAK ÇÖZÜM DEĞİL.** Panelde 532 sabit
-  Tailwind renk sınıfı vardı; her birine ikiz yazmak 532 karar demekti ve biri
-  unutulduğunda **hata vermeden** okunmaz kalırdı. Renk **belirteçten** okunur,
-  belirteç temaya göre değişir (4.6AE).
-  ⚠️ `text-white` **bağlama duyarlıdır**: koyu vurgu zemini üstünde beyaz
-  DOĞRUDUR: toptan çevirmek onu bozar. Yalnızca açık temada koyu zeminle
-  eşleşenler belirtece taşınır.
 - **PANEL VE VİTRİN TEMA ANAHTARI AYRIDIR.** Panel bizim arayüzümüz, vitrin
   markanın; ortak `localStorage` anahtarı birinin tercihini diğerine bulaştırır
   (`tikmarka-panel-tema` / `tikmarka-tema`).
-- **KOYU TEMA MEVCUT KUSURU GÖRÜNÜR KILAR — bulunan her kusur o bloğun değildir.**
-  4.6AE'de düğme yazısının kontrastı 3,56 ölçüldü; değer **bloktan önce de**
-  öyleydi. Koyu tema onu ortaya çıkardı, yaratmadı. Vurgu `#ea580c` → `#c2410c`.
-
 - **YATAY MENÜ MADDE SAYISIYLA ÖLÇEKLENMİYOR — ve taşma MASAÜSTÜNDE başlıyor.**
   4.6AF'de ölçüldü: 14 madde tek satırda 988px, başlığın ihtiyacı 1441px,
   kapsayıcı 1152px → **289px taşma**, üstelik en geniş ekranda. En çok sahip
   rolünü vuruyor (bütün maddeleri gören tek rol o). Menü yana taşındı.
   ⚠️ Belirti kolay kaçıyor: geliştirici genelde kısıtlı bir rolle bakıyor ve
   eksik maddeler yüzünden menü **sığıyor** görünüyor.
-- **TABLOYU KABA ALMAK TEK BAŞINA YETMEZ — `min-w-0` da gerekir.** Flex
-  çocuğunun varsayılan en küçük genişliği İÇERİĞİ kadardır; ana sütuna
-  `min-w-0` konmazsa geniş tablo sütunu şişirir, `overflow-x-auto` kabı hiç
-  daralmaz ve **sayfanın tamamı** yatay kayar (4.6AF).
-- **TABLOYU SARARKEN KOŞUL YÖNERGESİ KABA TAŞINIR.** `<table v-else>` bir
-  `<div>` içine alınınca `v-else` artık `v-if`'in **komşusu değildir** ve Vue
-  derlemesi patlar (4.6AF). Derleme bu kez yakaladı; ama koşulsuz bir tabloya
-  sonradan `v-if` eklenirse aynı kırılma sessizce geri gelir — ölçen test
-  `<table>` etiketinde `v-if|v-else|v-for` arıyor.
-- **ETKİN/SEÇİLİ DURUMDA ZEMİN İLE ÜSTÜNDEKİ METİN TERS YÖNDE ÇEKİYOR.**
-  Zemin görünür oldukça vurgulu metnin kontrastı düşüyor. 4.6AF'de açık
-  temada en açık tonda bile **4,47** çıktı — eşiğin altında. Çözüm vurgulu
-  metinden vazgeçip **güçlü metin + vurgu çubuğu** kullanmak: metin 13,32,
-  çubuk 3,94 (WCAG 1.4.11 non-text eşiği).
-  ⚠️ Çubuk için `--p-vurgu` DEĞİL `--p-vurgu-metin`: birincisi düğme ZEMİNİ
-  olduğu için iki temada da aynı koyu turuncu ve koyu temada **1,99**'a
-  düşüyor. Vurgunun "zemin" ve "ön plan" biçimleri AYRI belirteçtir.
-- **PEKİŞTİRME AMAÇLI TİNT'İ DE ÖLÇ — WCAG sayı vermiyor diye ölçümsüz
-  kalmasın.** 4.6AF'de etkin maddenin zemini koyu temada yüzeyle **1,04**
-  kontrasttaydı, yani hiç görünmüyordu; durum çubukla anlatıldığı için
-  WCAG ihlali değildi ama **pekiştirme görünmüyorsa hiç yok demektir**.
-  Testler zemini yüzeye karşı hiç ölçmediği için eski değeri geri koymak
-  hiçbir testi düşürmüyordu.
-
 - **ÇEVİRİSİ OLMAYAN ANAHTAR EKRANA HAM HÂLİYLE YAZILIR — ve bu SESSİZDİR.**
   `lang/tr/pagination.php` hiç yoktu: marka panelinde sayfalama düğmesinde
   **`pagination.next`** yazıyordu, dört sayfada birden. 4.6AF.1'de bulundu ve
@@ -928,58 +776,12 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   "unutulursa hemen fark edilir" denmişti — fark edilmedi. Çerçevenin
   hazır bir çeviri anahtarını (doğrulama, sayfalama, parola sıfırlama)
   ilk kez kullandığında karşılığının `lang/tr/`'de olduğunu **gör**.
-- **KOŞULSUZ ÇOK SÜTUNLU IZGARA MOBİLDE İÇERİĞİ EZER — bedeli taşma değil
-  SIKIŞMA.** `grid-cols-2` kırılma noktası olmadan yazılınca 375px'te de iki
-  sütun kalıyor. 4.6AF.1'de ölçüldü: Personel'de iki tablo **118px'lik iki
-  sütuna** giriyordu. ⚠️ Yatay taşmayı ölçen tarama bunu **göremez** —
-  sıkışan içerik taşmıyor, sadece okunmuyor.
-  ⚠️ Ararken `grep -v "sm:\|md:\|lg:"` YETMEZ: aynı satırda meşru bir
-  `sm:grid-cols-4` varsa çıplak `grid-cols-2` elenir. Öneki **hemen soldan**
-  oku.
-- **`flex-1` DARALMAYA İZİN VERMEZ — `min-w-0` gerekir.** `min-w-0` ile aynı
-  aile (ana sütun, 4.6AF): flex çocuğunun varsayılan en küçük genişliği
-  içeriği kadardır, `flex-1` bunu değiştirmiyor. Girdi kendi içeriği kadar
-  yer kaplayıp satırı taşırıyor (4.6AF.1).
 - **YAPISAL TEST "KAP VAR MI"YI ÖLÇER, "EKRANDA NE OLUYOR"U DEĞİL.**
   4.6AF'nin on bir testi yeşilken 375px'te 14 sayfanın 5'i hâlâ yatay
   kayıyordu. Sözleşme testleri gerileme koruması; **yerleşimin kendisi
   gerçek tarayıcıda, gerçek genişlikte gezilerek** doğrulanır. Panel giriş
   gerektirdiği için bu adım atlanabiliyor — atlanırsa blok yarım kalır
   ("bitti kaydı bittiğinin kanıtı değildir" kuralının yerleşim biçimi).
-
-- **`el.focus()` `:focus-visible`'I TETİKLEMİYOR — odak stilini ÖLÇTÜĞÜNÜ
-  sanan test yanlış şey ölçer.** 4.6AG'de iki yüzeyde birden "odak halkası
-  yok" okundu; gerçek **Tab** ile ölçünce panelde tarayıcının varsayılan
-  halkası çıktı. Gerçek durum farklıydı: halka VAR ama **yazılmamış** —
-  rengi ve kalınlığı bizde değil, tarayıcıdan tarayıcıya değişiyor ve koyu
-  yüzeye karşı kontrastı garanti değil. ⚠️ Bir erişilebilirlik bulgusunu
-  kaydetmeden önce **gerçek klavye girdisiyle** doğrula; `.focus()` ile
-  ölçüp "WCAG ihlali" yazmak yanlış kayıt üretir.
-  ⚠️ Kuralı yazarken `:focus` DEĞİL `:focus-visible`: `:focus` fareyle
-  tıklanan her düğmeye halka takar ve marka bunu arıza sanar.
-- **KOYU TEMADA GÖLGE YOK HÜKMÜNDEDİR — derinlik YÜZEY AÇIKLIĞIYLA
-  anlatılır.** Gölge kontrastla görünür; koyu zeminde koyu gölge
-  görünmez. İki temaya da gölge konsaydı açık temada derinlik olur, koyu
-  temada **hiçbir şey** olmazdı — ve bu hata vermezdi (4.6AG). Bizde
-  `yuzey / yuzey-2 / yuzey-3` zaten var; gölge belirteci koyu temada
-  `none`.
-- **TAILWIND'İN ÖLÇEĞİNİ EZ, SINIFLARA DOKUNMA.** 4.6AG'de `--radius-lg`
-  ve `--radius-xl` yeniden tanımlanınca **163 kullanım tek yerden**
-  güncellendi. Sınıf sınıf dokunulsaydı biri unutulduğunda hata vermeden
-  eski değerde kalırdı. ⚠️ **Çıplak `rounded` bunun DIŞINDA:** o sınıf
-  değişkene değil sabit `.25rem`'e bağlı, yani belirteci değiştirmek onu
-  düzeltmiyor — ölçek kurarken çıplak biçimi ayrıca ara.
-- **`transition: all` YASAK.** Yerleşim özellikleri de animasyona girer ve
-  tablo satırları kayarken sürüklenir. Yalnızca etkileşimde değişen
-  özellikleri say (renk, kenar, gölge, dönüşüm, opaklık). ⚠️ Yanına
-  `prefers-reduced-motion` koruması: hareket duyarlılığı olan personel
-  için animasyon rahatsızlık değil **engel** (4.6AG).
-- **"FERAHLATALIM" BİR TASARIM TERCİHİ DEĞİL, İŞ KARARIDIR.** Sipariş
-  listesinde 50+ kayıt olabiliyor; nefes payı ile "bir ekranda kaç satır
-  görüyorum" doğrudan çelişiyor. 4.6AG'de marka yoğunluğu seçti:
-  tipografi büyüdü, **dolgu büyümedi**. Kararı ölçen test var — yoksa
-  ileride biri sessizce geri alır.
-
 - **ÖLÇEĞİN YOKLUĞU İLE FAZLALIĞI AYNI SONUCU VERİR: hiyerarşi okunmaz.**
   Panelde 225 kullanım tek boyuttaydı (4.6AG), vitrinde **on iki** farklı
   boyut ve **altı** yarıçap vardı (4.6AH). Biri her şeyi eşitliyor, öteki
@@ -987,11 +789,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **rolü** seçiyor, boyutu değil.
   ⚠️ `999px` (hap) ölçeğe SOKULMAZ — o bir basamak değil, "tam yuvarlak"
   demenin yolu; sokulursa rozet boyutuna göre değişir.
-- **DERİNLİK EKLERKEN "HER KABA GÖLGE" ÖNCEKİ BİR KARARI SESSİZCE GERİ
-  ALIR.** Ürün kartı 4.6AD'de bilerek çerçevesiz bırakılmıştı (sakin D2C
-  dili); 4.6AH'de gölge dağıtılsaydı o karar kaybolurdu ve kimse fark
-  etmezdi. Gölge yalnızca **gerçekten yükseltilmiş** yüzeye (sticky bar,
-  özet paneli, açılır liste). Korunacak kararın kendi testi olmalı.
 - **`tests/Pest.php`'YE TAŞIMA KURALI YAZILI OLMASINA RAĞMEN İKİ KEZ
   TEKRARLANDI** (`panelSayfalari()` 4.6AG · `vitrinliMarka()` 4.6AH).
   Yeni bir test dosyası açarken kullanacağın her yardımcının **nerede
@@ -999,7 +796,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   ⚠️ Taşırken tam nitelikli ad kullanılıyorsa sınıfın gerçek ad alanını
   doğrula: `SettingGroup` `App\Domain\Settings` değil **`App\Enums`**
   altında ve yanlış yazıldığında 14 test birden düşüyor.
-
 - **OLAYIN YOKLUĞU, O ŞEYİN OLMADIĞI ANLAMINA GELMEZ — parayı olaydan
   sayma.** `EventRecorder` bilerek "işi bozmayan" bir yol: kuyruğa
   atamazsa istisnayı yutuyor (1F-K3). Yani olay kaydı **eksik olabilir**
@@ -1023,7 +819,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   başlamadan **137 olay kayıtlıydı, 51'i müşteriye bağlı** ve iki KVKK
   yolu da onları görmüyordu — talep o an eksik cevaplanıyordu. Müşteriye
   bağlı veri **zaten toplanıyorsa** boşluk gelecekte değil **bugün** var.
-
 - **`api` GRUBUNDA RENDER EDİLEN İNSAN SAYFASI OTURUMU GÖREMEZ — belirti
   masum, bedel ağır.** Ödeme sonuç sayfası `api`'deydi; görünen kusur "üst
   barda Hesabım yerine Giriş yazıyor"du, gerçek bedel ise
@@ -1041,7 +836,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **zaten depoda duran** bir kusur buldu (`platformTokeni`,
   `AbonelikTest` tek başına koşunca düşüyordu). ⚠️ Belirti dosya yükleme
   sırasına bağlı: tam süitte GÖRÜNMÜYOR.
-
 - **SİLİNEN KAYDIN SEPETTEKİ İZİ YÖNETİLEBİLİR KALMALI — yoksa sepet
   KİLİTLENİR.** 4.6AJ'de ölçüldü: varyant yumuşak silinince ilişki `null`
   dönüyor, ekran `value="{{ $satir->variant?->uuid }}"` ile **boş** alan
@@ -1064,7 +858,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   `ProductVariant::product()` ilişkisine toptan `withTrashed()` eklemek
   silinmiş ürünün vitrinde görünmesi gibi çok daha geniş bir kapıyı
   **sessizce** açardı. Model üzerinde dar bir erişimci yazıldı (4.6AJ).
-
 - **İMZALI ADRESE SORGU PARAMETRESİ EKLENEMEZ.** İmza sorgu dizesini de
   kapsıyor; `?deneme=3` eklemek imzayı geçersiz kılar ve kullanıcı
   **403** görür. 4.6AK'de otomatik yenileme sayacı bu yüzden adrese değil
@@ -1077,7 +870,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yine sonsuza kadar yenilenir. Depo yoksa otomatik yenileme **hiç
   başlamamalı**. ⚠️ Terminal durumda sayaç temizlenmeli, yoksa aynı
   tarayıcı oturumundaki İKİNCİ ödemede yenileme hiç çalışmaz (4.6AK).
-
 - **`queue:restart` BU KURULUMDA WORKER'I ÖLDÜRÜP ORTADA BIRAKIYOR.**
   Laravel'in "doğru" yolu o (nazikçe çık), ama hiçbir serviste `restart:`
   politikası yok — ölçüldü: `RestartPolicy → no`. Sinyal gidiyor, worker
@@ -1095,7 +887,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   daha okumaması**; `queue:work` tek bir uzun ömürlü süreç. ⚠️ Bu yüzden
   "worker'ı derlemeden sonra başlatalım" ÇÖZÜM DEĞİL: sorun ilk açılış
   değil, worker'ın saatlerce ayakta kalması.
-
 - **ÖNERİ/POPÜLERLİK BÖLÜMÜ EŞİKSİZ KURULMAZ.** Az veriyle üretilen liste
   popülerlik değil **gürültü** ölçüyor: B1'de ölçüldü, markada 20
   görüntüleme vardı ve eşiksiz bir "en çok tıklanan" bölümü **tek
@@ -1113,7 +904,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   satanlar"dan gerçek en çok satanı, başka bölümde geçtiği için çıkarmak
   o başlığın vaadini bozar (B1). Tekrar bir kusur değil; küçük katalogda
   rahatsız ediyorsa çözüm eşikleri yükseltmek, listeyi çarpıtmak değil.
-
 - **BİR ÖZELLİĞİ İKİNCİ DÜZENE TAŞIMAK, DESTEKLEYİCİ İŞARETLERİNİ DE
   TAŞIMAKTIR.** 4.6A'da varyant seçicisi yalnızca `sade`'deydi; 4.6A.1 onu
   `vitrinli`'ye taşıdı ama betiğin aradığı `data-fiyat` ve
@@ -1135,7 +925,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   çıkarılmıştı; 4.6AL'de **7 tanesi yeniden takipliydi** ve klasörü ayakta
   tutan `storage/framework/views/.gitignore` **diskte yoktu**. Kontrol:
   `git ls-files storage/framework/views/`.
-
 - **"HER GÖRSELE `lazy`" YANLIŞ — ekranın üstündekini GECİKTİRİR.** Tarayıcı
   `lazy` görselde önce yerleşimi hesaplayıp sonra indirmeye başlıyor; yani
   en çok görülen görselleri yavaşlatmış olursun. Sayfanın **ilk
@@ -1167,12 +956,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   sınadığını sanıyordu ama işleyici **hiç yüklü değildi**. Bir tap'i ölçen
   test kanalı `Log::channel('<ad>')` ile, yani uygulamanın kendi çözdüğü
   yoldan almalı.
-- **LOKI'NİN `auth_enabled: false` AYARI "GİRİŞ KAPALI" DEĞİL, "GİRİŞ DİYE
-  BİR ŞEY YOK" DEMEK.** Ona ağdan ulaşabilen herkes **bütün markaların**
-  günlüğünü okur. Bu yüzden `loki`/`grafana` servislerine `ports:`
-  YAZILMAZ — erişim yalnızca Caddy üzerinden. ⚠️ Ayarın gerçek anlamı çok
-  kiracılık: `true` olsaydı her istek `X-Scope-OrgID` isterdi; markaya
-  kendi günlüğü gösterilmek istendiği gün açılacak kapı budur.
 - **YAZMA SAYACI "GİTTİ" DER, "NE GİTTİ" DEMEZ.** B6.1'de iki kez ısırdı.
   Önce *"hata yok + okuma konumu ilerledi"* delil sanıldı ve kullanıcıya
   "çalışıyor" denildi — ikisi de **gönderilecek satır olmadığında da
@@ -1180,11 +963,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   gösterince "tamam" denildi, ama veriye bakınca iki kusur çıktı (test
   kirliliği · süreç ayrımı yok). Kural: **bir boru hattını, taşıdığı şeyi
   GÖRMEDEN doğrulama.** Salt-okunur bir jeton bunun için vardır.
-- **ETİKET KARDİNALİTESİNİ ÜRETİMDE DEĞİL TESTTE ÖLÇ.** `marka` "marka
-  sayısı kadar" diye güvenli sayılmıştı; ama test süiti her koşuda yeni
-  UUID'li kiracı açıyor ve o UUID etikete düşüyordu. Bulutta ölçüldü:
-  3 kiracıya karşı **71 etiket değeri**, her koşuda artıyor. Testler
-  toplayıcının okuduğu kanala yazmamalı (`phpunit.xml` → `LOG_CHANNEL`).
 - **`app` · `worker` · `scheduler` AYNI GÜNLÜK DOSYASINA YAZIYOR.** Satırda
   süreci ayırt eden alan yoksa *"kuyruk işçisi öldü"* alarmı YAZILAMAZ —
   ve worker'ın `restart` politikası olmadığı için çökerse işler Redis'te
@@ -1192,13 +970,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   `runningInConsole()` yetmiyor (worker ile scheduler'ın ikisi de konsol).
   ⚠️ Değer `config()` üzerinden okunur, `env()` ile DEĞİL: `config:cache`
   sonrası `env()` null döner ve etiket sessizce kaybolur.
-- **LOKI ETİKETİ = İNDEKS; SINIRSIZ DEĞER ALAN ALAN ETİKET OLMAZ.** Her
-  benzersiz etiket birleşimi ayrı bir akış açıyor. `istek_id` her istekte
-  farklı — etiket yapılırsa indeks şişer, sorgular yavaşlar. Satırın içinde
-  durur ve LogQL ile aranır. Etiket olabilecekler: `marka`, `seviye`,
-  `alanadi`, `durum` (hepsi sınırlı).
-  ⚠️ `retention_period` TEK BAŞINA ETKİSİZ: silmeyi compactor yapıyor,
-  `retention_enabled: true` olmadan süre dolsa da hiçbir şey silinmiyor.
 - **`git checkout` İZLENMEYEN DOSYAYI GERİ ALMAZ — SESSİZCE HİÇBİR ŞEY
   YAPMAZ.** B5'te ısırdı: o oturumda yeni yazılan (henüz commit'lenmemiş)
   bir middleware'e kırma denemesi uygulandı, `git checkout` ile geri
@@ -1303,7 +1074,14 @@ Testler: `tests/Feature/` → `RefreshDatabase` var. `tests/Tenancy/` → **yok*
 Bu proje **tek bir sohbete bağlı değil**; bağlam depoda tutuluyor:
 
 ```
-CLAUDE.md          bu dosya — 169 tuzak, hepsi en az bir kez yaşandı
+CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
+.claude/rules/     YOLA BAĞLI tuzaklar — yalnızca eşleşen dosyaya
+                   dokunulduğunda yükleniyor:
+                     tasarim.md  resources/css · *.blade.php · *.vue
+                     panel.md    resources/js · app/Http/Panel
+                     gozlem.md   app/Logging · config/logging.php
+                   ⚠️ Toplam 171 tuzak; sayımı ölçen test:
+                      tests/Feature/TuzakSayimiTest.php
 PLAN.md            36 bitmiş blok, her biri gerekçesi ve kırma
                    denemeleriyle · en üstte "şu an neredeyiz"
 docs/summary.md    blok blok özet — hızlı bağlam
