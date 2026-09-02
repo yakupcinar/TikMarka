@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ─ şu an: A1 BİTTİ (ajan altyapısı) — sırada A2 hook'lar ───┐
+┌─ YOL HARİTASI ── şu an: A2 BİTTİ — sırada A3 (/kontrol + sinayici) ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7580,6 +7580,83 @@ kural değil test yaz"* dersinin aynısı.
 
 **Sırada:** Karpathy'nin dört ilkesi → `CLAUDE.md` · hook'lar ·
 `/kontrol` + `sinayici` · `/blok` + `/kirma` · iddia/kanıt denetçileri.
+
+---
+
+### A2 — hook'lar: kural değil kilit ✅  *(ajan altyapısı)*
+
+Üç tuzak, üçü de `CLAUDE.md`'de **yazılı olmasına rağmen** tekrarlandı.
+Kaynakların karar kuralı burada birebir uyguluyor: *"Hook = ajan ne
+yaparsa yapsın olmasını istediğin şey."*
+
+| Kilit | Kaç kez ısırdı | Bedeli |
+|---|---|---|
+| `git checkout <dosya>` · `git restore` | 2 | İzlenmeyende **hiçbir şey yapmadı** (kırık kod beş deneme boyunca kaldı); izlenende **fazlasını** geri aldı (commit'lenmemiş 22 satır gitti) |
+| İkinci eşzamanlı `artisan test` | 2 | İkincisinde **142 test birden kırmızı**; belirti veri hatası gibi görünüyor (`relation … does not exist`) |
+| Biçim düşükken `git commit` | 1 | CI kırmızı döndü: pint koşuldu, sonra düzeltme yapıldı, tekrar koşulmadı |
+
+#### Kararlar
+
+| Karar | Gerekçe |
+|---|---|
+| Süit kilidi **kilit dosyası kullanmıyor** | Yarıda kesilen koşu bayat kilit bırakır ve sonrasında **hiçbir test koşamaz**. Bunun yerine gerçekten koşan süreç aranıyor — kendini iyileştiren ölçüm |
+| Süit kilidi **Docker'a sormuyor** | `docker compose exec` süreci host'ta görünüyor; host araması hem hızlı hem de **Docker takıldığında da çalışıyor** (bu oturumda Docker iki kez takıldı) |
+| Pint kapısı **altyapı arızasında geçiriyor** | Docker kapalıysa commit engellenmiyor. Kapı biçim hatası için, altyapı sorunu için değil |
+| Pint kapısı **çıkış koduna bakıyor** | `pint \| tail -2` yazmak `pint.json` bozulduğunda **boş çıktı** verir ve "geçti" gibi görünür |
+| Dal değiştirme **engellenmiyor** | `git checkout main` / `-b` meşru; engellenen yalnızca DOSYA geri alma |
+
+#### ⚠️ Testin ikiye bölünmesi zorunluydu
+
+Ölçüldü: konteynerde `jq`, `python3`, `pgrep` **yok** — yani Pest hook'ları
+çalıştıramıyor. İkili yapı:
+
+```
+.claude/hooks/hook-testi.sh        host'ta · 15 davranış vakası
+tests/Feature/HookKurulumuTest.php CI'da   · o betiğin EKSİKSİZ kaldığını ölçer
+```
+
+İkincisi kritik: kayıtlı her hook'un davranış testinde **hem engelleme hem
+izin** vakası olmalı. Yalnızca engelleme sınanan bir hook, meşru komutları
+da engellediğinde fark edilmez.
+
+#### Kırma denemeleri — 5/5 düştü, ikisi ancak test düzeltilince
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | bir hook kayıttan düşürüldü | 1 düştü |
+| 2 | betiğin çalıştırma izni kaldırıldı | **önce DÜŞMEDİ** ↓ |
+| 3 | yeni hook eklendi, davranış testi yazılmadı | 1 düştü |
+| 4 | bir hook'un yalnızca engelleme vakası var | 1 düştü |
+| 5 | `CLAUDE.md` hook'lardan bahsetmiyor | 1 düştü |
+
+**2. deneme tutmadı — `is_executable()` YALAN SÖYLÜYOR.** Testler
+konteynerde **root** olarak koşuyor ve orada `is_executable()` çalıştırma
+biti hiç yokken de `true` dönüyor. Ölçüldü: dosya `-rw-r--r--` görünüyor,
+iddia yeşil. `fileperms($yol) & 0111` ile düzeltildi.
+
+#### ⚠️ Testin kendisinde İKİ ölçmeyen iddia bulundu
+
+Bu blokta yazılan testin iki iddiası hiçbir şey ölçmüyordu:
+
+1. **PHP öncelik hatası:** `$betik.' … '.count($engel) > 0 ? 'var' : 'YOK'`
+   — birleştirme karşılaştırmadan önce bağlanıyor, sonuç sayı ne olursa
+   olsun `'var'`. Ölçüldü: 3 için de 0 için de aynı.
+2. `is_executable()` (yukarıda).
+
+Birincisi düzeltilince **gerçek bir boşluk** ortaya çıktı: `pint-kapisi.sh`
+için hiç **engelleme** vakası yazılmamıştı — yani kapının gerçekten
+engelleyip engellemediği hiç ölçülmemişti. Eklendi (geçici biçimsiz dosya
++ `trap` ile temizlik).
+
+⚠️ Bu, projedeki en sık tuzağın üçüncü biçimi: *iddia, iddia ettiği şeyi
+ölçmüyor.* İlk ikisi yorum okuma ve betik okumaydı; bu sefer **dil
+önceliği** ve **ortam farkı**.
+
+**Test:** `tests/Feature/HookKurulumuTest.php` (4) + `hook-testi.sh` (15 vaka).
+
+⚠️ Hook'lar **çalışma alanı güveni** istiyor; ilk oturumda onay çıkar.
+
+**Sırada A3:** `/kontrol` skill'i + `sinayici` alt-ajanı.
 
 ---
 

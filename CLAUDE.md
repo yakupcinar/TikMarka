@@ -1069,6 +1069,39 @@ Testler: `tests/Feature/` → `RefreshDatabase` var. `tests/Tenancy/` → **yok*
   kaybolan hiçbir şey olmamalı — devralan kişi/ajan `PLAN.md` ve
   `CLAUDE.md` ile tam bağlamı kurabilmeli.
 
+- **`is_executable()` KONTEYNERDE ROOT OLARAK YALAN SÖYLÜYOR.** Testler
+  konteynerde root koşuyor; çalıştırma biti **hiç yokken** bile `true`
+  dönüyor. Ölçüldü: dosya `-rw-r--r--` görünüyor, iddia yeşil kalıyor —
+  yani izin kontrolü ölçtüğünü sandığı şeyi ölçmüyor (A2). Bit kontrolü
+  `fileperms($yol) & 0111` ile yapılır.
+- **PHP'DE BİRLEŞTİRME KARŞILAŞTIRMADAN ÖNCE BAĞLANIR.**
+  `$ad.' sayı: '.count($x) > 0 ? 'var' : 'YOK'` ifadesi
+  `("ad sayı: 3") > 0` oluyor ve sonuç sayı ne olursa olsun `'var'`.
+  A2'de ısırdı: iddia, ölçtüğü şey HİÇ YOKKEN de geçiyordu. Ternary
+  parantez içine alınır. ⚠️ Bu, "olumsuz iddiaya mesaj argümanı geçirme"
+  tuzağının kardeşi: ikisi de **iddianın kendisini** sessizce boşa
+  çıkarıyor.
+
+## Kilitler — `.claude/hooks/`
+
+Aşağıdaki üç şey **kural değil kilit**: üçü de bu dosyada yazılı olmasına
+rağmen tekrarlandığı için deterministik olarak engelleniyor.
+
+| Engellenen | Sebep |
+|---|---|
+| `git checkout <dosya>` · `git restore <dosya>` | İzlenmeyen dosyada **hiçbir şey yapmıyor**, izlenen dosyada o oturumun commit'lenmemiş kodunu da geri alıyor. İkisi de yaşandı. Doğrusu `cp <dosya> /tmp/x.bak` |
+| İkinci eşzamanlı `artisan test` | Aynı test veritabanında iki süit çöküyor; belirti veri hatası gibi görünüyor (`relation … does not exist`). İki kez yaşandı, ikincisinde 142 test kırmızı |
+| `git commit` (biçim düşükse) | CI bir kez pint yüzünden kırmızı döndü: pint koşuldu, sonra düzeltme yapıldı, tekrar koşulmadı |
+
+⚠️ Dal değiştirme (`git checkout main`, `-b`) engellenmiyor — yalnızca
+DOSYA geri alma.
+
+⚠️ Hook'lar `.claude/settings.json`'da kayıtlı ve **çalışma alanı güveni**
+ister; ilk oturumda onay istenir. Davranışları
+`.claude/hooks/hook-testi.sh` ile ölçülüyor (host'ta, 13 vaka) —
+konteynerde `jq`/`python3`/`pgrep` olmadığı için Pest onları koşturamıyor.
+`tests/Feature/HookKurulumuTest.php` o betiğin eksiksiz kaldığını ölçüyor.
+
 ## Devralan ajan için — okuma sırası
 
 Bu proje **tek bir sohbete bağlı değil**; bağlam depoda tutuluyor:

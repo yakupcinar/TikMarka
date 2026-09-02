@@ -3991,3 +3991,43 @@ A1 · tuzaklar yola bağlı kurallara bölündü        (ajan altyapısı)   ✅
     koruyan testin içinde. Yazılı kuralın yetmediğinin kanıtı.
 
   Test: tests/Feature/TuzakSayimiTest.php — 5 test
+
+────────────────────────────────────────────────────────────────────────
+A2 · hook'lar — kural değil kilit                  (ajan altyapısı)  ✅
+────────────────────────────────────────────────────────────────────────
+
+  Üç tuzak, üçü de CLAUDE.md'de YAZILI OLMASINA RAĞMEN tekrarlandı:
+
+    git checkout <dosya>   2 kez · izlenmeyende hiçbir şey yapmadı,
+                                   izlenende fazlasını geri aldı
+    eşzamanlı süit         2 kez · ikincisinde 142 test kırmızı
+    biçim düşükken commit  1 kez · CI kırmızı
+
+  KARARLAR
+    süit kilidi KİLİT DOSYASI kullanmıyor  yarıda kesilen koşu bayat kilit
+                                           bırakır → hiçbir test koşamaz
+    süit kilidi DOCKER'A SORMUYOR          host araması Docker takılıyken
+                                           de çalışıyor (2 kez takıldı)
+    pint kapısı ALTYAPI ARIZASINDA GEÇİRİR Docker kapalıysa engellemez
+    pint kapısı ÇIKIŞ KODUNA bakar         boş çıktı başarı değil
+    dal değiştirme SERBEST                 yalnız DOSYA geri alma engelli
+
+  ⚠ TEST İKİYE BÖLÜNDÜ — zorunluydu
+    konteynerde jq/python3/pgrep YOK → Pest hook'ları koşturamıyor
+      .claude/hooks/hook-testi.sh          host · 15 davranış vakası
+      tests/Feature/HookKurulumuTest.php   CI  · betiğin eksiksizliği
+    İkincisi her hook için HEM engelleme HEM izin vakası arıyor.
+
+  KIRMA DENEMELERİ 5/5 — biri ancak test düzeltilince
+    2. deneme (izin kaldırma) DÜŞMEDİ: is_executable() konteynerde ROOT
+    olarak çalıştırma biti HİÇ YOKKEN de true dönüyor. fileperms & 0111.
+
+  ⚠ TESTİN KENDİSİNDE İKİ ÖLÇMEYEN İDDİA BULUNDU
+    · PHP öncelik hatası: `. ` karşılaştırmadan önce bağlanıyor →
+      sayı 3 de olsa 0 da olsa 'var'
+    · is_executable() (yukarıda)
+    Birincisi düzeltilince GERÇEK BİR BOŞLUK çıktı: pint kapısının
+    ENGELLEME vakası hiç yazılmamıştı — kapının engelleyip engellemediği
+    hiç ölçülmemiş. Eklendi.
+
+  Test: HookKurulumuTest.php (4) + hook-testi.sh (15 vaka)
