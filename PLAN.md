@@ -2,7 +2,7 @@
 
 > **Bu dosya projenin tek yol haritasıdır.** Tüm geliştirme buna göre ilerler.
 > Kararların gerekçeleri `docs/pre-setup.md`'de, veri modeli `docs/domain-model.md`'de.
-> Son güncelleme: **2026-08-31**
+> Son güncelleme: **2026-09-02**
 
 ```
 ┌─ YOL HARİTASI ─ şu an: A5 BİTTİ — sırada FAZ 5 (kargo · e-fatura) ──────┐
