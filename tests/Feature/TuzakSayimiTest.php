@@ -17,6 +17,10 @@ declare(strict_types=1);
 |
 | ⚠️ Sayı arttığında bu testin beklentisi de artırılır — ama BİLEREK.
 | Beklentiyi düşürmek, bir tuzağın sessizce kaybolduğu anlamına gelir.
+|
+| ⚠️ SÜİT KOŞARKEN `CLAUDE.md` DÜZENLENMEZ: test dosyayı koştuğu anda
+| okuyor. A2'de düzenlendi ve yerel koşu YANLIŞ SAYIYI yeşil gördü;
+| gerçek durumu CI gösterdi.
 */
 
 /**
@@ -43,7 +47,15 @@ it('★★★ TUZAKLARIN TOPLAMI DEGISMEDI — bolme kayipsiz', function () {
         $hepsi = [...$hepsi, ...tuzakBloklari($kural)];
     }
 
-    expect($hepsi)->toHaveCount(171);
+    /*
+    | ⚠️ SAYI ELLE ARTIRILIR — ve bu bilinçli. CI bunu bir kez yakaladı:
+    | A2'de iki yeni tuzak eklendi (171 → 173) ve beklenti güncellenmedi.
+    | Testin işi tam olarak buydu.
+    |
+    | Beklentiyi DÜŞÜRMEK bir tuzağın sessizce kaybolduğu anlamına gelir;
+    | artırmak yeni tuzak eklendiği. İkisi de commit mesajında görünmeli.
+    */
+    expect($hepsi)->toHaveCount(174);
 });
 
 it('★★★ HICBIR TUZAK IKI YERDE DEGIL — kopya degil TASIMA', function () {

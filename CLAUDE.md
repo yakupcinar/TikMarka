@@ -1069,6 +1069,13 @@ Testler: `tests/Feature/` → `RefreshDatabase` var. `tests/Tenancy/` → **yok*
   kaybolan hiçbir şey olmamalı — devralan kişi/ajan `PLAN.md` ve
   `CLAUDE.md` ile tam bağlamı kurabilmeli.
 
+- **SÜİT KOŞARKEN KAYNAK DOSYA DÜZENLENMEZ — koşunun sonucu yalan olur.**
+  Testler dosyayı **koştukları anda** okuyor. A2'de `CLAUDE.md` süit arka
+  planda koşarken düzenlendi; yerel koşu **eski sayıyı** yeşil gördü,
+  gerçek durumu CI gösterdi (171 beklenirken 173). ⚠️ Arka planda süit
+  başlattıysan, o bitene kadar **testlerin okuduğu hiçbir dosyaya
+  dokunma** — belge dosyaları dâhil, çünkü bu projede belgeleri okuyan
+  testler var.
 - **`is_executable()` KONTEYNERDE ROOT OLARAK YALAN SÖYLÜYOR.** Testler
   konteynerde root koşuyor; çalıştırma biti **hiç yokken** bile `true`
   dönüyor. Ölçüldü: dosya `-rw-r--r--` görünüyor, iddia yeşil kalıyor —
