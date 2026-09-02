@@ -8,7 +8,6 @@ use App\Http\Storefront\HomeController;
 use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 /*
@@ -219,7 +218,7 @@ it('★★★ IKI DUZEN de ayni ORTAK PARCAYI kullaniyor', function () {
 
     // kart işaretlemesi ana sayfa dosyalarında ARTIK YOK
     foreach (['sade', 'vitrinli'] as $duzen) {
-        $sablon = (string) File::get(
+        $sablon = yorumsuz(
             base_path("resources/views/storefront/{$duzen}/anasayfa.blade.php")
         );
 

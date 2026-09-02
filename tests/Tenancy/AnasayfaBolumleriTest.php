@@ -9,7 +9,6 @@ use App\Enums\SettingGroup;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 
 /*
 | ANA SAYFA BÖLÜMLERİ (B1)
@@ -217,7 +216,7 @@ it('★★★ ARAMA sirasinda bolum CIZILMIYOR', function () {
 });
 
 it('★★ ONBELLEK KISISEL bolume UYGULANMIYOR', function () {
-    $kod = (string) File::get(
+    $kod = yorumsuz(
         base_path('app/Domain/Catalog/HomeSections.php')
     );
 

@@ -2,7 +2,6 @@
 
 use App\Domain\Settings\SettingsService;
 use App\Enums\SettingGroup;
-use Illuminate\Support\Facades\File;
 
 /*
 | VARYANT SEÇİCİSİNİN KANCALARI — İKİ DÜZENDE DE (4.6AL)
@@ -37,7 +36,7 @@ use Illuminate\Support\Facades\File;
  */
 function seciciKancalari(): array
 {
-    $betik = (string) File::get(
+    $betik = yorumsuz(
         base_path('resources/views/storefront/partials/varyant-betigi.blade.php')
     );
 
@@ -111,7 +110,7 @@ it('★★★ BETIGIN ARADIGI her kanca IKI DUZENDE de CIZILIYOR', function () {
 });
 
 it('★★ BETIK eksik kancada COKMUYOR — geri kalani calisiyor', function () {
-    $betik = (string) File::get(
+    $betik = yorumsuz(
         base_path('resources/views/storefront/partials/varyant-betigi.blade.php')
     );
 

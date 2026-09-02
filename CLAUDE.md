@@ -530,6 +530,13 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   gerekiyorsa bu dosya (tuzak) güncellenir. Oturum kapandığında
   kaybolan hiçbir şey olmamalı — devralan kişi/ajan `PLAN.md` ve
   `CLAUDE.md` ile tam bağlamı kurabilmeli.
+- **`mb_strtolower('İ')` İKİ KOD NOKTASI ÜRETİYOR — karşılaştırma sessizce
+  başarısız.** Türkçe büyük İ küçültülünce `i` değil `i` + U+0307
+  (birleşen nokta) oluyor; yani `mb_strtolower('İki')` metni `'iki'`
+  İÇERMİYOR. A5'te ölçüldü: bir iddia doğru yazılmış olmasına rağmen
+  düştü. ⚠️ Asıl tehlike ters yönde: OLUMSUZ bir iddiada Türkçe büyük
+  harf geçseydi (`->not->toContain('İki…')`) iddia **sonsuza dek yeşil**
+  kalırdı. Küçültme `kucuk()` yardımcısıyla yapılır (`tests/Pest.php`).
 - **UZUN OTURUMDA DİSK DOLABİLİR — belirti "araç bozuldu" gibi görünür.**
   A4'te yaşandı: `ENOSPC` alındıktan sonra **hiçbir komut çalışmadı**,
   çünkü araç kendi çıktı dosyasını bile açamıyor. Sebep biriken süit
@@ -592,7 +599,7 @@ CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
                      tasarim.md    resources/css · *.blade.php · *.vue
                      panel.md      resources/js · app/Http/Panel
                      gozlem.md     app/Logging · config/logging.php
-                   ⚠️ Toplam 174 tuzak, 72'si burada; sayımı ölçen test:
+                   ⚠️ Toplam 176 tuzak, 74'ü burada; sayımı ölçen test:
                       tests/Feature/TuzakSayimiTest.php
 .claude/skills/    ritüeller:
                      /blok     bir bloğun dokuz adımı · durdurma koşulu
@@ -602,16 +609,21 @@ CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
                      /kontrol  tam doğrulama — `make kontrol` BUNU EKSİK
                                YAPIYOR (pint.json onarımı, test DB
                                temizliği, CI eşitliği, zaman aşımı)
+                     /belge    bilgiyi depoya yazma — PLAN kaydı, özet,
+                               yeni tuzak, commit mesajı
 .claude/agents/    `sinayici` — doğrulamayı koşturur, YALNIZCA özet döner
                    (süit ~450 sn ve binlerce satır çıktı)
-PLAN.md            36 bitmiş blok, her biri gerekçesi ve kırma
+                   `olcumcu`  — değişen uçlara GERÇEK curl atar; süitin
+                   göremediği aileyi ölçer (Accept · CSRF · eksik form
+                   alanı · çevrilmemiş anahtar). İkisi de kod düzeltmez.
+PLAN.md            37 bitmiş blok, her biri gerekçesi ve kırma
                    denemeleriyle · en üstte "şu an neredeyiz"
 docs/summary.md    blok blok özet — hızlı bağlam
 docs/mimari.md     kuşbakışı · docs/mimari-ogretici.md sıfırdan anlatım
 docs/pre-setup.md  M-1…M-4 mimari kararları ve NEDEN'leri
-tests/             1062 test — her biri bir kararı ölçüyor, yorumlar
+tests/             1085 test — her biri bir kararı ölçüyor, yorumlar
                    kararın gerekçesini taşıyor
-git log            210 commit, mesajlar kararı ve ölçümü anlatıyor
+git log            211 commit, mesajlar kararı ve ölçümü anlatıyor
 ```
 
 ⚠️ Bir karara katılmıyorsan önce gerekçesini ara: büyük ihtimalle

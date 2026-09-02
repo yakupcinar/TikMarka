@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ─── şu an: A4 BİTTİ — sırada A5 (denetçi ajanlar) ─────────┐
+┌─ YOL HARİTASI ─ şu an: A5 BİTTİ — sırada FAZ 5 (kargo · e-fatura) ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -41,7 +41,7 @@
 │  6 · DAĞITIM       yayın · yedekleme · izleme                  │
 │                                                                │
 │  Kural: bir blok bitmeden sonrakine geçilmez.                  │
-│  716 test · lint · analyse · CI hepsi yeşil                    │
+│  1085 test · lint · analyse · CI hepsi yeşil                   │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -7793,6 +7793,109 @@ Bu, bu oturumda iki kez düşülen hatanın aynısı (*"boru hattını taşıdı
 kullanıcının ajanı çağırmasını gerektiriyor.
 
 **Test:** `tests/Feature/AjanKurulumuTest.php` — 5 test.
+
+---
+
+### A5 — İddia denetimi · `olcumcu` · `/belge` ✅  *(ajan altyapısı)*
+
+A4'te `/kirma`'nın kataloğu YAZILDI. Bu blokta kataloğun makineyle
+saptanabilir maddeleri **teste** çevrildi — çünkü bu projenin kendi kuralı
+şöyle: *yazılı kural üç kez tutmadıysa kural değil test yaz.* İki madde
+zaten tekrarlanmıştı (`->not->toContain(a,b)` 4.6AC → B6; yorum ayıklama
+4.6AB → 4.6AE).
+
+#### İlk koşusunda CANLI BİR KUSUR buldu
+
+`PanelMusteriTest`, müşterinin kart **ret gerekçesinin** markanın
+personeline sızmadığını şöyle "ölçüyordu":
+
+```php
+->not->toContain('gerekce', 'hata', 'failure_reason');
+```
+
+Kod `'gerekce' => 'limit yetersiz'` sızdıracak biçimde kırıldı ve dosyanın
+**dokuz testi de yeşil kaldı**. İddia tek tek yazılınca düştü. Yani banka
+ret sebebinin gizlenmesi kararı (4.5R) **hiç ölçülmüyordu** ve bu
+fark edilmemişti.
+
+#### `IddiaDenetimiTest` — dört kontrol
+
+| Kontrol | Nereden geliyor |
+|---|---|
+| Olumsuz `toContain` tek argümanlı | 4.6AC + B6 · iki kez ısırdı |
+| Testte `is_executable` yok | A2 · konteynerde root olarak yalan söylüyor |
+| `JsonCevapTest` `postJson` kullanmıyor | 2E · yardımcı ölçüleni yok ediyor |
+| Ham kaynakta iddia yorum ayıklıyor | 4.6AB + 4.6AE · iki kez ısırdı |
+
+⚠️ **Denetçinin kendisi de tuzağa düşebilirdi:** aranan kalıplar, kuralı
+ANLATAN yorumlarda geçiyor (testin kendi yorum bloğu dâhil). Tarama
+`testGovdeleri()` üzerinden, yorumlar ayıklanmış hâlde yapılıyor. Kırma
+denemesi bunu ayrıca ölçtü: kalıp yoruma konduğunda denetçi **yeşil kaldı**.
+
+⚠️ **Kaba virgül sayımı yanlış alarm veriyordu:** `not->toMatch(
+'/[a-z]:focus\s*[,{]/')` çağrısında virgül **dizge içinde**.
+`ustDuzeyArguman()` tırnak ve parantez derinliği izliyor.
+
+#### Yorum ayıklama tek yere toplandı
+
+4.6AE'de "ayıklama tek yerde, test yardımcısında olmalı" diye yazılmıştı;
+A5'te ölçüldü — **yardımcı hiç yazılmamıştı** ve kaynak okuyan **on** test
+dosyasının hiçbiri ayıklamıyordu (üçü kendi elle ayıklamasını yapıyordu).
+`yorumsuz()` uzantıya bakıp doğru ayıklayıcıyı seçiyor; on dosya ona
+taşındı.
+
+#### `olcumcu` ajanı — süitin göremedikleri
+
+`sinayici` "kod bozuldu mu" sorusunu cevaplıyor; `olcumcu` **"kodun
+ölçülmeyen yüzü çalışıyor mu"** sorusunu. Değişen uçlara gerçek `curl`
+atıyor ve beş denemeyi ayrı ayrı koşuyor (Accept başlığı yok · Accept:
+text/html · kimliksiz · jetonsuz POST · iki kiracıda aynı istek). İkisi de
+**kod düzeltemez** — araç listelerinde `Edit`/`Write` yok.
+
+#### `/belge` skill'i
+
+"Bilgi sohbette değil DEPODA durur" kuralı yazılıydı ama **nasıl**
+yazılacağı yazılı değildi. Dört adım: PLAN kaydı (karar + gerekçe + kırma
+denemeleri + ölçüm) · özet · yeni tuzak · commit mesajı.
+
+#### Yeni tuzak: Türkçe büyük İ
+
+`mb_strtolower('İki')` metni `'iki'` **içermiyor** — çıkan şey `i` + U+0307.
+Ölçüldü ve kod noktalarıyla doğrulandı. Olumsuz bir iddiada geçseydi
+sonsuza dek yeşil kalırdı. `kucuk()` yardımcısı yazıldı.
+
+#### Kırma denemeleri — 9/9 düştü, İKİSİ ANCAK İDDİA DÜZELTİLİNCE
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | çok argümanlı olumsuz `toContain` eklendi | 1 düştü |
+| 2 | aynı kalıp **yoruma** kondu | ✓ yeşil kaldı (yanlış alarm yok) |
+| 3 | `JsonCevapTest`'e `postJson` eklendi | 1 düştü |
+| 4 | teste `is_executable` eklendi | 1 düştü |
+| 5 | bir dosyadan yorum ayıklama kaldırıldı | 1 düştü |
+| 6 | `olcumcu`'ya `Edit` aracı verildi | 1 düştü |
+| 7 | `olcumcu`'dan CSRF denemesi silindi | **tutmadı** → iddia daraltıldı |
+| 8 | `/belge`'den "tutmayan deneme" kuralı silindi | **tutmadı** → needle daraltıldı |
+| 9 | `/belge`'den süit-koşarken uyarısı silindi | 1 düştü |
+
+⚠️ 7 ve 8 kataloğun kendi vakası: iddia *kelimenin dosyada geçmesine*
+bakıyordu, ölçmek istediği ise *deneme satırının listede olması*ydı.
+Kelime rapor örneğinde ve başka cümlede geçtiği için silme fark edilmedi.
+Hedef konumla daraltıldı (tablo satırları · tam öbek) ve ikisi de düştü.
+**Kataloğu yazan blok, kataloğun vakasına iki kez düştü** — kuralın neden
+test olması gerektiğinin kanıtı.
+
+#### ⚠️ Kendi yazdığım hata: `preg` sınırlayıcısı
+
+`'!(?<!:)//[^\n]*!'` — `!` sınırlayıcısı `(?<!` içindeki `!` ile çakışıyor
+ve PHP *"Unknown modifier ':'"* diyor. On dosyada **otuz test birden**
+düştü ve belirti dönüşümün kendisini suçluyor gibi görünüyordu. Sessiz
+değil gürültülü bir hata olduğu için CLAUDE.md'ye girmedi.
+
+**Testler:** `tests/Tenancy/IddiaDenetimiTest.php` (4) ·
+`AjanKurulumuTest` (+2, toplam 10).
+
+**Sırada:** Faz 5 — kargo · e-fatura.
 
 ---
 

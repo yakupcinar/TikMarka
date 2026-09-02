@@ -4130,3 +4130,39 @@ A4 · /blok ve /kirma skill'leri                    (ajan altyapısı)  ✅
     "araç bozuldu" gibi görünüyor. Tuzak olarak yazıldı.
 
   Test: tests/Feature/AjanKurulumuTest.php — 8 test · süit 1079 yeşil
+
+────────────────────────────────────────────────────────────────────────
+A5 · İddia denetimi · olcumcu · /belge                (ajan altyapısı) ✅
+────────────────────────────────────────────────────────────────────────
+
+  A4'te KATALOG yazıldı; A5'te makineyle saptanabilir maddeleri TESTE
+  çevrildi. Gerekçe projenin kendi kuralı: yazılı kural üç kez tutmadıysa
+  kural değil test yaz. İki madde zaten tekrarlanmıştı.
+
+  İLK KOŞUSUNDA CANLI KUSUR BULDU
+    PanelMusteriTest, kart RET GEREKÇESİNİN personele sızmadığını
+    ->not->toContain('gerekce','hata','failure_reason') ile "ölçüyordu".
+    Kod gerekçeyi sızdıracak biçimde kırıldı: DOKUZ TEST DE YEŞİL KALDI.
+    Tek tek yazılınca düştü. Mahremiyet kararı ölçüsüzmüş.
+
+  IddiaDenetimiTest — dört kontrol
+    olumsuz toContain tek argümanlı   · testte is_executable yok
+    JsonCevapTest postJson kullanmaz  · ham kaynakta iddia yorum ayıklar
+    ⚠ denetçi kendi tuzağına düşebilirdi: kalıplar kuralı ANLATAN
+      yorumlarda da geçiyor → tarama yorumsuz gövde üzerinden
+
+  YORUM AYIKLAMA TEK YERE TOPLANDI
+    4.6AE'de "yardımcıya taşınmalı" yazılmıştı; ölçüldü — HİÇ
+    YAZILMAMIŞTI. On dosya yorumsuz() dağıtıcısına taşındı.
+
+  olcumcu ajanı: sinayici "kod bozuldu mu", olcumcu "kodun ÖLÇÜLMEYEN
+  yüzü çalışıyor mu" sorusunu cevaplıyor — gerçek curl, beş deneme.
+  /belge skill'i: bilgiyi depoya yazmanın dört adımı.
+
+  YENİ TUZAK: mb_strtolower('İki') metni 'iki' İÇERMİYOR (i + U+0307).
+  Olumsuz iddiada geçseydi sonsuza dek yeşil kalırdı → kucuk().
+
+  KIRMA DENEMELERİ 9/9 · ikisi ancak İDDİA DÜZELTİLİNCE tuttu:
+  kataloğu yazan blok, kataloğun kendi vakasına iki kez düştü.
+
+  Testler: IddiaDenetimiTest (4) · AjanKurulumuTest (10) · süit 1085

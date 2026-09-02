@@ -136,7 +136,11 @@ it('★★★ HER SKILL description ve KELIME SINIRI kurallarina uyuyor', functi
     */
     $skiller = glob(base_path('.claude/skills/*/SKILL.md')) ?: [];
 
-    expect($skiller)->toHaveCount(3);
+    /*
+    | ⚠️ Sayı BİLEREK sabit: yeni skill eklemek kararlı bir iş, silmek ise
+    | kayıp. `blok` · `kirma` · `kontrol` · `belge`.
+    */
+    expect($skiller)->toHaveCount(4);
 
     foreach ($skiller as $yol) {
         $ad = basename(dirname($yol));
@@ -199,4 +203,74 @@ it('★★★ BLOK SKILLI DOKUZ ADIMI ve DURDURMA KOSULUNU tasiyor', function ()
 
     expect('durdurma koşulu: '.(str_contains($govde, 'kırma denemeleri kırmızı olunca') ? 'var' : 'YOK'))
         ->toBe('durdurma koşulu: var');
+});
+
+it('★★★ OLCUMCU AJANI VAR ve SUITIN GOREMEDIKLERINI tasiyor', function () {
+    /*
+    | ⚠️ `sinayici` süiti koşturuyor; `olcumcu` süitin GÖREMEDİKLERİNİ
+    | koşturuyor. İkisi ayrı ajan çünkü ikisi ayrı soruyu cevaplıyor:
+    | "kod bozuldu mu" ile "kodun ölçülmeyen yüzü çalışıyor mu".
+    |
+    | Bu dört aile dört ayrı blokta ısırdı ve HER SEFERİNDE süit yeşildi.
+    */
+    $yol = base_path('.claude/agents/olcumcu.md');
+
+    expect(file_exists($yol))->toBeTrue('olcumcu ajani yok');
+
+    [$fm, $govde] = markdownAyristir($yol);
+
+    expect($fm['name'] ?? null)->toBe('olcumcu')
+        ->and(strlen((string) ($fm['description'] ?? '')))->toBeGreaterThan(80);
+
+    /*
+    | ⚠️ İDDİA TABLOYA BAKIYOR, DOSYAYA DEĞİL. İlk hâli `$govde` içinde
+    | kelimeyi arıyordu ve KIRMA DENEMESİ TUTMADI: deneme satırı silindiği
+    | hâlde "CSRF" rapor örneğinde ve gövdede geçmeye devam ediyordu.
+    | Yani iddia "kelime dosyada var mı" diyordu, ölçmek istediği ise
+    | "deneme listede var mı" idi. Katalogdaki *kalıp birden çok yerde*
+    | vakası (4D) — hedefi konumla daralt.
+    */
+    $tabloSatirlari = implode("\n", array_filter(
+        explode("\n", $govde),
+        fn (string $satir): bool => str_starts_with(trim($satir), '|'),
+    ));
+
+    foreach (['Accept', 'CSRF', 'Kimliksiz', 'İki kiracıda'] as $deneme) {
+        expect(kucuk($tabloSatirlari))->toContain(kucuk($deneme));
+    }
+
+    /*
+    | ⚠️ Ajan KOD DÜZELTEMEZ. Bulguyu düzeltmeye kalkarsa "kodun ölçülmeyen
+    | yüzü" hakkındaki bilgi kaybolur ve blok yanlış güvenle biter.
+    */
+    $araclar = array_map('trim', explode(',', (string) ($fm['tools'] ?? '')));
+
+    expect($araclar)->not->toContain('Edit');
+    expect($araclar)->not->toContain('Write');
+});
+
+it('★★★ BELGE SKILLI DORT ADIMI ve DURDURMA KOSULUNU tasiyor', function () {
+    /*
+    | "Bilgi sohbette değil DEPODA durur" kuralı CLAUDE.md'de yazılı ama
+    | NASIL yazılacağı yazılı değildi. Skill dördünü de taşımalı; biri
+    | düşerse devralan ajan eksik bağlam devralır.
+    */
+    [, $govde] = markdownAyristir(base_path('.claude/skills/belge/SKILL.md'));
+
+    foreach ([
+        'PLAN.md',
+        'summary.md',
+        'kırma denemeleri',
+        'TuzakSayimiTest',
+        'Durdurma koşulu',
+        'süit koşarken',
+    ] as $parca) {
+        expect(kucuk($govde))->toContain(kucuk($parca));
+    }
+
+    /*
+    | ⚠️ Tutmayan denemenin de yazılması ÖZELLİKLE ölçülüyor: bu projedeki
+    | tuzakların çoğu tutmayan kırma denemesinden çıktı (4.6AC, 4.6AE).
+    */
+    expect(kucuk($govde))->toContain(kucuk('Tutmayan deneme'));
 });

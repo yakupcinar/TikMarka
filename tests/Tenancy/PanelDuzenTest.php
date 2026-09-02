@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\File;
 
 function panelDuzeni(): string
 {
-    return (string) File::get(base_path('resources/js/Panel/Layouts/PanelDuzeni.vue'));
+    return yorumsuz(base_path('resources/js/Panel/Layouts/PanelDuzeni.vue'));
 }
 
 /**
@@ -47,7 +47,7 @@ it('★★★ HER TABLO yatay kaydirma KABINDA — yoksa SAYFANIN TAMAMI kayar',
     $kapsiz = [];
 
     foreach (panelSayfalari() as $yol) {
-        $icerik = (string) File::get($yol);
+        $icerik = yorumsuz($yol);
 
         /*
         | Tablonun HEMEN ÜSTÜNDEKİ satırda kap aranıyor. "Dosyada bir
@@ -83,7 +83,7 @@ it('★★★ KOSUL YONERGESI KABA tasindi — tabloda kalirsa v-if zinciri KIRI
     $hatali = [];
 
     foreach (panelSayfalari() as $yol) {
-        preg_match_all('/<table\b[^>]*>/', (string) File::get($yol), $m);
+        preg_match_all('/<table\b[^>]*>/', yorumsuz($yol), $m);
 
         foreach ($m[0] as $tag) {
             if (preg_match('/\sv-(if|else-if|else|for)\b/', $tag)) {
@@ -153,7 +153,7 @@ it('★★★ ETKIN SAYFA isaretli — ve Pano SUREKLI etkin gorunmuyor', functi
 
 it('★★★ ETKIN MADDE esikleri geciyor — IKI temada', function () {
     $palet = app(BrandPalette::class);
-    $css = (string) preg_replace('!/\*.*?\*/!s', '', (string) File::get(base_path('resources/css/panel.css')));
+    $css = (string) preg_replace('!/\*.*?\*/!s', '', yorumsuz(base_path('resources/css/panel.css')));
 
     $deger = function (string $ad, string $blok) use ($css): string {
         // blok: açık = ilk :root, koyu = [data-tema="koyu"]
@@ -240,7 +240,7 @@ it('★★★ PANELDE KOSULSUZ COK SUTUNLU IZGARA YOK — mobilde iceriği ezer'
     $kotu = [];
 
     foreach (panelSayfalari() as $yol) {
-        foreach (explode("\n", (string) File::get($yol)) as $i => $satir) {
+        foreach (explode("\n", yorumsuz($yol)) as $i => $satir) {
             if (preg_match_all('/(?<![a-z:-])grid-cols-([2-9])/', $satir, $m, PREG_OFFSET_CAPTURE)) {
                 foreach ($m[0] as $es) {
                     $onek = substr($satir, max(0, $es[1] - 4), 4);
@@ -280,7 +280,7 @@ it('★★★ SAYFALAMA SATIRI SARIYOR — dar ekranda tasmasin', function () {
     $kotu = [];
 
     foreach (panelSayfalari() as $yol) {
-        $icerik = (string) File::get($yol);
+        $icerik = yorumsuz($yol);
 
         // sayfalama satırı: içinde `.links` döngüsü olan kap
         if (! str_contains($icerik, '.links"')) {

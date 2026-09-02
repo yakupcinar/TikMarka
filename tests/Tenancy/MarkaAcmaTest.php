@@ -320,7 +320,7 @@ it('★ KOMUT ve KAYIT UCU aynı yolu kullanıyor — ayrışamazlar', function 
     |
     | ⚠️ Bu test YAPI ölçüyor: komutun kurulumu kendi yazıp yazmadığını.
     */
-    $kaynak = file_get_contents(base_path('app/Tenancy/Commands/CreateTenant.php'));
+    $kaynak = yorumsuz(base_path('app/Tenancy/Commands/CreateTenant.php'));
 
     expect($kaynak)->toContain('TenantProvisioning')
         ->and($kaynak)->not->toContain('DefaultRoles')

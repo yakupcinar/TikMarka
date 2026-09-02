@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\File;
 
 function panelCss(): string
 {
-    return (string) File::get(base_path('resources/css/panel.css'));
+    return yorumsuz(base_path('resources/css/panel.css'));
 }
 
 /**
@@ -50,7 +50,7 @@ it('★★★ PANELDE SABIT RENK SINIFI KALMADI', function () {
 
         preg_match_all(
             '/\b(bg|text|border|ring|divide|placeholder)-[a-z]+-[0-9]{2,3}\b/',
-            (string) File::get($dosya->getPathname()),
+            yorumsuz($dosya->getPathname()),
             $bulunan
         );
 
@@ -159,7 +159,7 @@ it('★★★ TEMA BETIGI CSS TEN ONCE ve ANAHTAR VITRINDEN AYRI', function () {
     $html = (string) preg_replace(
         '/\{\{--.*?--\}\}/s',
         '',
-        (string) File::get(base_path('resources/views/panel/app.blade.php'))
+        yorumsuz(base_path('resources/views/panel/app.blade.php'))
     );
 
     $betik = mb_strpos($html, 'tikmarka-panel-tema');

@@ -2,7 +2,6 @@
 
 use App\Domain\Settings\SettingsService;
 use App\Enums\SettingGroup;
-use Illuminate\Support\Facades\File;
 
 /*
 | VİTRİN ÖLÇEĞİ (4.6AH)
@@ -21,7 +20,7 @@ use Illuminate\Support\Facades\File;
 
 function vitrinDuzeni(): string
 {
-    return (string) File::get(base_path('resources/views/storefront/layout.blade.php'));
+    return yorumsuz(base_path('resources/views/storefront/layout.blade.php'));
 }
 
 /**

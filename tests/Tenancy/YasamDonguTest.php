@@ -276,7 +276,7 @@ it('★ tenant:delete ve zamanlanmış temizlik AYNI yolu kullanıyor', function
     |
     | Bu test YAPI ölçüyor: komut kendi silme mantığını yazmıyor.
     */
-    $kaynak = (string) file_get_contents(base_path('app/Tenancy/Commands/DeleteTenant.php'));
+    $kaynak = yorumsuz(base_path('app/Tenancy/Commands/DeleteTenant.php'));
 
     expect($kaynak)->toContain('TenantPurge')
         ->and($kaynak)->not->toContain('deleteDirectory');

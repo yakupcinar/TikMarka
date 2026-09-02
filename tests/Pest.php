@@ -1057,3 +1057,108 @@ function bolumUrunleri(int $adet, ?string $onek = null): Collection
         return $urun->refresh();
     });
 }
+
+/**
+ * Bir kaynak dosyayı YORUMLARI ÇIKARILMIŞ hâlde döndürür.
+ *
+ * ⚠️ Bir kuralı ANLATAN yorum, kuralın kendisiyle aynı metni içerir; ham
+ * metinde arayan iddia yönerge bozulsa bile YEŞİL KALIR (4.6AE'de iki kırma
+ * denemesi bu yüzden tutmadı, 4.6AB'de sabit renk taraması yorumları
+ * okuyordu). Kural o zaman "ayıklama tek yerde, test yardımcısında olmalı"
+ * diye yazıldı — A5'te ölçüldü: yardımcı hiç yazılmamıştı ve kaynak okuyan
+ * altı test dosyasının HİÇBİRİ ayıklamıyordu.
+ *
+ * Satır numaraları korunuyor (yorumun yerine aynı sayıda satır sonu
+ * konuyor), böylece bulgu "dosya:satır" olarak gösterilebiliyor.
+ */
+function yorumsuz(string $yol): string
+{
+    $blade = str_ends_with($yol, '.blade.php');
+
+    if ($blade || ! str_ends_with($yol, '.php')) {
+        return yorumsuzMetin($yol);
+    }
+
+    $cikti = '';
+
+    foreach (token_get_all((string) file_get_contents($yol)) as $parca) {
+        if (! is_array($parca)) {
+            $cikti .= $parca;
+
+            continue;
+        }
+
+        if (in_array($parca[0], [T_COMMENT, T_DOC_COMMENT], true)) {
+            $cikti .= str_repeat("\n", substr_count($parca[1], "\n"));
+
+            continue;
+        }
+
+        $cikti .= $parca[1];
+    }
+
+    return $cikti;
+}
+
+/**
+ * `tests/` altındaki bütün PHP dosyaları — yorumsuz gövdeleriyle.
+ *
+ * @return array<string, string> dosya yolu => yorumsuz kaynak
+ */
+function testGovdeleri(): array
+{
+    $gezgin = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator(base_path('tests'), FilesystemIterator::SKIP_DOTS)
+    );
+
+    $govdeler = [];
+
+    foreach ($gezgin as $dosya) {
+        if (! $dosya instanceof SplFileInfo || $dosya->getExtension() !== 'php') {
+            continue;
+        }
+
+        $govdeler[str_replace(base_path().'/', '', $dosya->getPathname())] = yorumsuz($dosya->getPathname());
+    }
+
+    ksort($govdeler);
+
+    return $govdeler;
+}
+
+/**
+ * PHP OLMAYAN bir kaynağı (Blade, Vue, CSS, JS) yorumsuz döndürür.
+ *
+ * Doğrudan çağrılmaz — `yorumsuz()` uzantıya bakıp buraya düşüyor.
+ *
+ * `yorumsuz()` PHP çözümleyicisini kullanıyor; Blade dosyasında HTML gövdesi
+ * tek parça (`T_INLINE_HTML`) geldiği için `{{-- --}}` orada DURUYOR. Bu
+ * yüzden metin tabanlı ikinci bir ayıklama gerekiyor.
+ *
+ * ⚠️ `//` ayıklaması iki nokta üst üsteden SONRA gelirse çalışmıyor —
+ * `https://` bir yorum değil.
+ */
+function yorumsuzMetin(string $yol): string
+{
+    $metin = (string) file_get_contents($yol);
+
+    $metin = (string) preg_replace('/\{\{--.*?--\}\}/s', '', $metin);
+    $metin = (string) preg_replace('/<!--.*?-->/s', '', $metin);
+    $metin = (string) preg_replace('!/\*.*?\*/!s', '', $metin);
+
+    return (string) preg_replace('~(?<!:)//[^\n]*~', '', $metin);
+}
+
+/**
+ * Türkçe güvenli küçük harf.
+ *
+ * ⚠️ `mb_strtolower('İ')` DÖRT DEĞİL İKİ kod noktası üretiyor:
+ * U+0069 + U+0307 (i + birleşen nokta). Yani "İki" küçültülünce "iki"
+ * DEĞİL "i̇ki" oluyor ve `str_contains($k, 'iki')` **HAYIR** diyor.
+ * A5'te ölçüldü. Olumsuz bir iddiada geçseydi (`->not->toContain('İ…')`)
+ * iddia sonsuza dek yeşil kalırdı — yani hata vermeden yanlış sonuç.
+ */
+function kucuk(string $metin): string
+{
+    return mb_strtolower(str_replace(['İ', 'I'], ['i', 'ı'], $metin));
+}

@@ -195,8 +195,16 @@ it('★★★ BASARISIZ ODEME gorunuyor ama RET GEREKCESI GORUNMUYOR', function 
     | müşterinin KARTINA dair bir bilgi ve markanın personeline açılması
     | gerekmiyor. Vitrinde de aynı sebeple gizleniyor (4.5R).
     */
-    expect(array_keys($veri['props']['basarisizOdemeler'][0]))
-        ->not->toContain('gerekce', 'hata', 'failure_reason');
+    $anahtarlar = array_keys($veri['props']['basarisizOdemeler'][0]);
+
+    /*
+    | ⚠️ TEK TEK: `->not->toContain(a, b, c)` biri eksik olunca geçiyor ve
+    | ötekini HİÇ ölçmüyor. Ölçüldü (A5): kod `gerekce` sızdırırken çok
+    | argümanlı hâli 9 testi de yeşil gösterdi.
+    */
+    expect($anahtarlar)->not->toContain('gerekce');
+    expect($anahtarlar)->not->toContain('hata');
+    expect($anahtarlar)->not->toContain('failure_reason');
 });
 
 it('★★★ IZIN OLMADAN sekme KAPALI — olu izin artik CANLI', function () {

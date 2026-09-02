@@ -4,7 +4,6 @@ use App\Domain\Order\CheckoutService;
 use App\Domain\Settings\StorePublication;
 use App\Models\Customer;
 use App\Models\Order;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -119,7 +118,7 @@ it('★★★ MAGAZA KAPALIYKEN de sonuc sayfasi aciliyor — 503 DEGIL', functi
 // ─────────────────────────────────────────────────────────────────────
 
 it('★★★ KARGO POSTASI yemek uygulamasi dili KULLANMIYOR', function () {
-    $sablon = (string) File::get(base_path('resources/views/mail/shipment.blade.php'));
+    $sablon = yorumsuz(base_path('resources/views/mail/shipment.blade.php'));
 
     // ⚠️ Yorumlar ayıklanıyor: kuralı ANLATAN yorum kuralın kendisiyle
     // aynı metni içeriyor (4.6AE'de iki kırma denemesi bu yüzden tutmadı).
@@ -138,7 +137,7 @@ it('★★★ KARGO POSTASI yemek uygulamasi dili KULLANMIYOR', function () {
 // ─────────────────────────────────────────────────────────────────────
 
 it('★★★ SAYFALAMA yalnizca SAYI gosteriyor ve ORTAK PARCA', function () {
-    $bilesen = (string) File::get(base_path('resources/js/Panel/Components/Sayfalama.vue'));
+    $bilesen = yorumsuz(base_path('resources/js/Panel/Components/Sayfalama.vue'));
 
     $kod = (string) preg_replace('/<!--.*?-->/s', '', $bilesen);
     $kod = (string) preg_replace('!/\*.*?\*/!s', '', $kod);
@@ -162,7 +161,7 @@ it('★★★ SAYFALAMA yalnizca SAYI gosteriyor ve ORTAK PARCA', function () {
     $kopya = [];
 
     foreach (panelSayfalari() as $yol) {
-        $icerik = (string) File::get($yol);
+        $icerik = yorumsuz($yol);
 
         if (str_contains($icerik, '.links"') && ! str_contains($icerik, '<Sayfalama')) {
             $kopya[] = basename(dirname($yol)).'/'.basename($yol);

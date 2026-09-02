@@ -1,7 +1,6 @@
 <?php
 
 use App\Domain\Settings\BrandPalette;
-use Illuminate\Support\Facades\File;
 
 /*
 | PANEL GÖRSEL DİLİ — ÖLÇEK, DERİNLİK, ETKİLEŞİM (4.6AG)
@@ -28,7 +27,7 @@ function gorselDilCss(): string
     return (string) preg_replace(
         '!/\*.*?\*/!s',
         '',
-        (string) File::get(base_path('resources/css/panel.css'))
+        yorumsuz(base_path('resources/css/panel.css'))
     );
 }
 
@@ -47,7 +46,7 @@ it('★★★ YARICAP UC BASAMAGA indi — rol belirliyor, boyut degil', functio
     $kalan = [];
 
     foreach (panelSayfalari() as $yol) {
-        if (preg_match_all('/class="[^"]*\brounded\b(?!-)[^"]*"/', (string) File::get($yol), $m)) {
+        if (preg_match_all('/class="[^"]*\brounded\b(?!-)[^"]*"/', yorumsuz($yol), $m)) {
             $kalan[] = basename($yol).' → '.$m[0][0];
         }
     }
@@ -130,7 +129,7 @@ it('★★★ SUTUN BASLIGI VERIYLE AYNI AGIRLIKTA DEGIL', function () {
     $kotu = [];
 
     foreach (panelSayfalari() as $yol) {
-        if (preg_match_all('/<thead[^>]*class="([^"]*)"/', (string) File::get($yol), $m)) {
+        if (preg_match_all('/<thead[^>]*class="([^"]*)"/', yorumsuz($yol), $m)) {
             foreach ($m[1] as $sinif) {
                 if (! str_contains($sinif, 'text-xs') || ! str_contains($sinif, 'uppercase')) {
                     $kotu[] = basename($yol).' → '.$sinif;
@@ -155,7 +154,7 @@ it('★★★ YOGUNLUK KORUNDU — satir dolgusu BUYUMEDI', function () {
     $buyuk = [];
 
     foreach (panelSayfalari() as $yol) {
-        if (preg_match_all('/<td[^>]*class="([^"]*)"/', (string) File::get($yol), $m)) {
+        if (preg_match_all('/<td[^>]*class="([^"]*)"/', yorumsuz($yol), $m)) {
             foreach ($m[1] as $sinif) {
                 if (preg_match('/\bp-([5-9]|1[0-9])\b|\bpy-([4-9]|1[0-9])\b/', $sinif)) {
                     $buyuk[] = basename($yol).' → '.$sinif;
