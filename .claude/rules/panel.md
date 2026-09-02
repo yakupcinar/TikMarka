@@ -64,3 +64,14 @@ sayısını ölçen test: `tests/Feature/TuzakSayimiTest.php`.
   derlemesi patlar (4.6AF). Derleme bu kez yakaladı; ama koşulsuz bir tabloya
   sonradan `v-if` eklenirse aynı kırılma sessizce geri gelir — ölçen test
   `<table>` etiketinde `v-if|v-else|v-for` arıyor.
+- **Inertia sayfa verisi ÖZNİTELİKTE DEĞİL `<script>` içinde.** v2
+  `<script data-page="app" type="application/json">` kullanıyor. Testte ham
+  metinde `&quot;component&quot;` aramak kırılgan; JSON'u çözüp `component`
+  alanına bak.
+- **Inertia SSR AÇILMAZ (4-K2).** Ayrı Node süreci uzun ömürlü ve tüm markalar
+  için ortaktır; modül seviyesindeki durum istekler arasında paylaşılır
+  (*cross-request state pollution*) — yani **marka sızması**. M-2.4'te
+  pgBouncer'ı reddetme gerekçesinin aynısı. ⚠️ Yerelde görünmez: geliştirme
+  sunucusu aynı anda tek istek işliyor. Ayrıca SSR bozulunca **sessizce**
+  istemci render'ına düşüyor: sayfa çalışır, testler yeşil kalır, **SEO
+  sessizce gider**.

@@ -4031,3 +4031,40 @@ A2 · hook'lar — kural değil kilit                  (ajan altyapısı)  ✅
     hiç ölçülmemiş. Eklendi.
 
   Test: HookKurulumuTest.php (4) + hook-testi.sh (15 vaka)
+
+────────────────────────────────────────────────────────────────────────
+A1.1 · bölme tamamlandı                            (ajan altyapısı)  ✅
+────────────────────────────────────────────────────────────────────────
+
+  SEBEP: öz review, A1'in kazancının %14'te kaldığını gösterdi
+         (1.318 → 1.136 satır, hedef 200)
+
+  SONUÇ
+    CLAUDE.md  1.136 → 602 satır ·  145 → 72 tuzak  (ilk hâlden %54 ↓)
+
+    vitrin 18 · test 16 · veri 13 · kiracilik 9 · odeme 7
+    tasarim 22 · panel 10 · gozlem 7          → 174 toplam
+    içerik hash'i BİREBİR aynı
+
+  ⚠ OTOMATİK SINIFLANDIRMA YİNE KARIŞTIRDI, AYNI İKİ DESENDE
+    · META kurallar konu kelimesiyle test'e düştü
+      (kırma denemesi disiplini, "üç kez tutmadıysa test yaz")
+    · ROTA/MIDDLEWARE kuralları konuya göre dağıldı
+      ($errors web grubunda, EncryptCookies, hız sınırlayıcı)
+    · KOMUT ANINDA ısıranlar test'e düştü
+      (test DB temizliği, "süit koşarken dosya düzenlenmez")
+
+    Son grup bölmenin ANA İLKESİ: yola bağlı kural dosya OKUNDUĞUNDA
+    yükleniyor. Komut çalıştırırken ısıran tuzak CLAUDE.md'de kalmalı,
+    yoksa HİÇ yüklenmez.
+
+  CLAUDE.md'DE BİLEREK KALAN 72
+    1. meta kurallar    2. komut anında ısıranlar    3. karar anında
+       ısıranlar (SVG, Blade RCE, Inertia SSR, $fillable)
+
+  KIRMA DENEMELERİ 4/4 · negatif durumlar genişletildi
+    app/Domain/Order · app/Console · bootstrap/app.php → hâlâ HİÇBİRİ
+
+  ⚠ HÂLÂ DOĞRULANMADI: hook'ların Claude Code tarafından çağrıldığı.
+    Betikler 15 vakada doğru davranıyor ama uçtan uca deneme başka bir
+    katman tarafından kesildi.

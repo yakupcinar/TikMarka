@@ -141,15 +141,21 @@ it('★★★ KURALLAR DOGRU DOSYADA YUKLENIYOR — ve YANLIS dosyada YUKLENMIYO
 
     $beklenen = [
         'resources/css/panel.css' => ['tasarim'],
-        'resources/views/storefront/sade/urun.blade.php' => ['tasarim'],
+        'resources/views/storefront/sade/urun.blade.php' => ['tasarim', 'vitrin'],
         'app/Http/Panel/ReportPageController.php' => ['panel'],
         'app/Logging/IstekBaglami.php' => ['gozlem'],
         'config/logging.php' => ['gozlem'],
 
-        // ⚠️ ASIL ÖLÇÜM — bunlar hiçbir kural yüklememeli
+        'app/Http/Storefront/CartController.php' => ['vitrin'],
+        'tests/Pest.php' => ['test'],
+        'routes/tenant.php' => ['kiracilik'],
+        'app/Models/Product.php' => ['veri'],
+        'app/Domain/Payment/IyzicoProvider.php' => ['odeme'],
+
+        // ⚠️ ASIL ÖLÇÜM — bunlar hâlâ hiçbir kural yüklememeli
         'app/Domain/Order/CheckoutService.php' => [],
-        'tests/Pest.php' => [],
-        'routes/tenant.php' => [],
+        'app/Console/Commands/AuditStockCounters.php' => [],
+        'bootstrap/app.php' => [],
     ];
 
     foreach ($beklenen as $dosya => $kurallar) {

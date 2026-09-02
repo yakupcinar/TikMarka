@@ -48,12 +48,6 @@ Sertifika uyarısı normal (`tls internal`), `curl -k` kullan.
 ## Sessiz hataya yol açan kurallar
 
 Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez yaşandı.
-- **Migration klasörü.** `database/migrations/` kökü bilerek **boş**.
-  Marka tablosu → `--path=database/migrations/tenant`,
-  merkez tablosu → `--path=database/migrations/landlord`.
-  Köke düşen dosya kazara merkez şemaya gider.
-- **`timestampsTz()`** kullan, `timestamps()` değil. Laravel'in varsayılanı
-  saat dilimi taşımayan damga üretiyor (`docs/domain-model.md` §0).
 - **Zaman karşılaştırması oturum saat dilimine bağlı.** Laravel `now()`'ı sorguya
   **ofissiz** metin bağlıyor (`'2026-08-11 14:01:38'`); PostgreSQL ofissiz metni
   oturumun `TimeZone`'una göre yorumluyor. Ölçüldü: 15 dk sonra dolacak bir
@@ -62,23 +56,10 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   Brisbane'de siparişler süre dolmadan iptal ediliyordu. Kapatıldı:
   `config/database.php`'de `'timezone' => 'UTC'` + `tests/Feature/ZamanDilimiTest`.
   Sunucu varsayılanı zaten UTC'ydi — yani **tesadüfen** doğruyduk, artık ayarla.
-- **`citext` marka şemasında çalışmıyor** — eklenti `public`'te, marka
-  `search_path`'i görmüyor, sessizce düz metin karşılaştırmasına düşüyor.
-  E-posta için: modelde küçültme + `CHECK (email = lower(email))`.
 - **`$fillable`** = "neyi **asla** dışarıdan almam" listesi. Yetki/sahiplik
   alanları (`is_owner`, `is_system`, `customer_id`) buraya **girmez**.
 - **Kod değiştikten sonra** `docker compose restart worker scheduler` —
   kuyruk işçisi kodu belleğe alıyor, bayat kodla çalışmaya devam eder.
-- **Marka verisine dokunan zamanlanmış görev** `tenants:run <komut>` ile
-  sarılır; doğrudan yazılan görev merkez bağlamda koşar ve hiçbir şey yapmaz.
-  ⚠️ Seçenek geçirirken **tırnak içine alma** — `tenants:run "komut --bayrak"`
-  "komut tanımlı değil" hatası verir. Doğrusu ayrı seçenek olarak:
-  `tenants:run komut --option="bayrak=1"` (argümanlar `--argument=`).
-- **Kolon varsayılanı modele ULAŞMAZ.** `->default(true)` yalnızca diske
-  yazarken uygulanır; `create()`'ten dönen nesnede alan hiç yoktur ve `null`
-  okunur. Üç kez ısırdı: `accepts_marketing` (1A.2) · `is_system` (1A.6) ·
-  `is_active` (1B.3). Çözüm modelde `protected $attributes = [...]`;
-  `refresh()` de işe yarar ama ek sorgu ve her çağrı yerinde hatırlanmalı.
 - **Sürümlenmesi gereken şey `settings`'e konmaz.** Ayar "şu an geçerli
   değer"dir, geçmişi yoktur. Yasal metinler bu yüzden
   `legal_document_versions`'ta ve o tablo **salt-ekleme** — `UPDATE`/`DELETE`/
@@ -101,32 +82,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **yüklenmemişti**. Doğrusu `docker compose restart caddy`.
   ⚠️ Ölçüm bayat yapılandırmaya karşı yapılırsa çıkan sonuç da bayattır;
   "denedim olmadı" demeden önce değişikliğin **yüklendiğini** doğrula.
-- **Dış servisin "başarılı" demesi, İSTEDİĞİNİ yaptığı anlamına gelmez.**
-  iyzico iadesinde `status: success` döndü ama `price` istenenden düşüktü
-  (249,90 istendi, 200 döndü; sebep kesinleşmedi). Kayıtta tam iade
-  yazarken müşteriye eksik para gitmiş olurdu. Kural: cevabın **durumuna
-  değil sonucuna** bak — tutar, adet, kimlik neyse onu karşılaştır.
-- **"Çağrı başarısız" ile "işlem başarısız" AYRI ŞEYLERDİR.** Dış servisler
-  ikisini de aynı alanla bildirebiliyor. iyzico yetersiz bakiyede servis
-  düzeyinde de `status: failure` döndürüyor; ama `paymentStatus` alanı
-  cevapta VAR — yani çağrı başarılı, ödeme başarısız. Ayrım yapılmayınca
-  başarısız ödemenin bildirimi 502 aldı: sipariş `pending` kaldı, bağlı
-  stok 60 dakika kimseye satılamadı ve müşteri neden reddedildiğini
-  öğrenemedi. Kural: cevapta **işlemin kendi durumu** varsa o bir
-  *sonuçtur*, hata değil.
-- **`SoftDeletes` + `firstOrFail()` = gecikmeli patlama.** Varsayılan sorgu
-  silinmişleri görmüyor; kayıt "yok" sayılıp istisna fırlıyor. 1E.6'da
-  ısırdı: marka, ödemesi yolda olan siparişin varyantını katalogdan
-  kaldırınca `StockService::kilitle()` patladı — webhook 404 döndü,
-  sağlayıcı üç kez denedi, üçü de düştü ve **tahsilat hiç kaydedilmedi.**
-  Kural: bir kaydı **kapatan** yol (kesinleştirme, iptal, iade) silinmişi
-  de görmeli (`withTrashed()`); **açan** yol görmemeli.
-- **Uçtan uca testte kimlik MODELDEN okunmaz.** İsteğin gövdesine giren her
-  kimlik (uuid, sürüm no, satır id) bir önceki **uçtan** gelmeli. `$varyant->uuid`
-  yazmak testi yeşil tutar ama "istemci bu değeri nereden bulacak" sorusunu
-  sormaz. 1D.6'da iki ölü uç bu yüzden 232 testin altından geçti: vitrin varyant
-  `uuid`'sini döndürmüyordu ve vitrinde yasal metin ucu hiç yoktu — yani gerçek
-  müşteri sipariş **veremiyordu**. İki kiracıda gerçek HTTP koşusu yakaladı.
 - **Türetilmiş metne DEĞİŞKEN SAYIDA parça konmaz.** Benzerlik puanı metnin
   uzunluğuna duyarlı; parça sayısı veriye göre değişince eşik kayar ve kayıt
   **sessizce aranamaz** olur. 2C'de ısırdı: `search_text`'e varyant SKU'ları da
@@ -134,10 +89,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   0,286'ya düştü ve ürün *varyant sayısı arttığı için* bulunamaz oldu. Test
   yeşildi, iki kiracıda gerçek HTTP koşusu yakaladı. SKU tam-token eşleşmesine
   (FTS vektörü) taşındı.
-- **Kolon sonradan eklendiyse GERİYE DÖNÜK DOLDURMA gerekir.** Türetilmiş kolon
-  yalnızca kayıt *değiştiğinde* yazılır; migration'dan önceki satırlar boş kalır
-  ve bu **hata vermez**. 2C'de arama, mevcut hiçbir ürünü bulmuyordu — vitrin
-  çalıştığı için fark edilmesi zordu. `php artisan tenants:run "search:reindex"`.
 - **Her cevap JSON — `Accept` başlığı OLMAYAN istemci 500 alıyordu.** Laravel
   kimliksiz HTML isteğini `login` rotasına yönlendirmeye çalışıyor; arayüz
   olmadığı için (M-3) öyle bir rota yok. **425 testin hiçbiri yakalamadı**:
@@ -161,30 +112,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   ```
   Çözüm: dosyayı **sil ve yeniden yaz** (inode değişsin). `touch` ve konteyner
   yeniden başlatma yetmiyor — ikisi de denendi.
-- **`<>` ile `IS DISTINCT FROM` aynı şey DEĞİL.** SQL'de `null <> null` sonucu
-  `null`'dur — yani "farklı" sayılmaz ve satır `WHERE`/`HAVING`'den sessizce
-  düşer. 2E'de denetim sorgusunda ısırdı: yorumu olmayan ürünlerdeki sayaç
-  bozukluğu (`rating_avg` dolu ama olması gereken `null`) denetimden tamamen
-  kaçıyordu. Karşılaştırılan iki taraftan biri `null` olabiliyorsa
-  `IS DISTINCT FROM` kullan.
-- **Yeni PostgreSQL uzantısı İKİ yere yazılır.** `docker/postgres/init.sql`
-  (yerel) **ve** `.github/workflows/ci.yml` (CI servis konteynerinde init.sql
-  yok). 2C'de ikincisi unutuldu: yerelde 396 test yeşil, CI kırmızı — uzantı
-  yerelde vardı. "Otorite CI" kuralının ikinci örneği.
-- **Uzantılar `public`'te, marka `search_path`'i onları GÖRMEZ.** Üç kez ısırdı:
-  `citext` (1A) · `ltree` (1B) · `pg_trgm` (2C). Hepsi nitelikli yazılmalı —
-  `public.similarity`, `public.gin_trgm_ops`, `OPERATOR(public.<%)`. (Türkçe FTS
-  sözlüğü `pg_catalog`'ta olduğu için görünüyor, o istisna.)
-- **`tenants` tablosuna kolon eklemek YETMEZ — `getCustomColumns()`'a da yazılır.**
-  Paketin varsayılanı `['id']`; geri kalan HER alan `data` json'ına gidiyor.
-  3B'de ölçüldü: kolon `NULL`, veri json'da, ama `$tenant->name` **doğru**
-  değeri veriyor — yani kod çalışıyor gibi görünüyor. Kırılan tek şey SORGU:
-  `where('trial_ends_at', '<=', now())` hiçbir şey bulmaz, hata da vermez.
-  ⚠️ Alan iki yerde birden durursa **`data` kazanıyor** (ölçüldü) — bu yüzden
-  kolona taşırken `data`'dan `- 'anahtar'` ile SİLİNMELİ.
-- **PostgreSQL'in jsonb `?` operatörü PDO'da YAZILAMAZ.** `data ? 'name'`
-  sorgusu `syntax error at or near "$1"` veriyor: PDO `?` işaretini parametre
-  yer tutucusu sanıyor. Fonksiyon biçimi kullan: `jsonb_exists(data, 'name')`.
 - **Merkez (`routes/web.php`) rotaları `web` grubunda — CSRF var.** Panel/vitrin
   `api` grubunda olduğu için bu tuzak Faz 1'de görünmedi; 3C'de kontrol düzlemi
   `web.php`'ye yazıldı, **bütün testler yeşildi** ama gerçek `curl` isteği
@@ -215,14 +142,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   — PHP sessizce sistem geçici klasörüne düşüyor, sonra `rename()` dosya
   sistemleri arasında patlıyor. Düzeltme `Dockerfile`'a yazılır; elle
   `chmod` taze kurulumda kaybolur.
-- **DOĞRULAMAMIZ DIŞ SERVİSTEN GEVŞEK OLAMAZ.** Laravel'in `email` kuralı
-  `a@a` ve `a@aa` kabul ediyor; iyzico reddediyor (*"email hatalı format
-  ile gönderilmiştir"*). ⚠️ Bedeli ZAMANLAMA: doğrulama geçtiği için
-  **sipariş oluşuyor**, stok bağlanıyor ve ödeme ondan SONRA patlıyor —
-  bağlı stok 60 dakika kimseye satılamıyor. `App\Rules\DeliverableEmail`
-  alan adında nokta + en az iki harflik TLD arıyor. ⚠️ DNS sorgusu
-  YAPILMIYOR: ödeme akışında ağa çıkmak isteği yavaşlatır ve ağ
-  kesintisinde satışı durdururdu (4.5C'de tek sorgu 24 sn sürmüştü).
 - **FORM ALANLARI DOĞRULAMAYLA HİZALI OLMALI — testler bunu GÖREMEZ.**
   4.5D'de adres formuna `title` alanı konmamıştı ama `AddressRequest` onu
   zorunlu tutuyordu: **adres defteri hiç kullanılamıyordu.** Müşteri
@@ -231,17 +150,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   gönderdiği için hiçbiri yakalamadı — eksik olan sunucu değil EKRANDI.
   Yeni bir form yazarken doğrulamanın `required` alanlarını tek tek
   ekranla karşılaştır; ölçen test formun HTML'ine bakmalı.
-- **Test istemcisi ÇEREZ TAKİP EDİYOR — "oturum kapandı" iddiası bununla
-  ölçülemez.** 4.5D'de ölçüldü: çapraz marka denemesinden sonra test, A'nın
-  da kapandığını "gösteriyordu"; `curl` ile **eski** çerez elle
-  gönderilince A açık kaldı. Test, sunucunun davranışını değil kendi çerez
-  takibini ölçüyormuş. Oturum geçersizliğini ölçmek istiyorsan **eski
-  çerezi elle** gönder.
-- **Testte GERÇEK DNS SORGUSU yapılmaz.** `SystemDnsChecker` ağa çıkıp
-  zaman aşımını bekliyor: tek test **24 saniye** sürdü (4.5C). Bundan
-  kötüsü test **ağa bağımlı** olur — ağ yoksa kırılır ve ölçtüğü şey bizim
-  kodumuz değil internet olur. `FakeDnsChecker` bağla (3H'de bunun için
-  yazıldı).
 - **`Role::permissions` ÖZELLİK DEĞİL METOT.** `role_permissions` için ayrı
   Eloquent modeli yok (1A.6); `$rol->permissions` yazılırsa Laravel onu
   ilişki sanıyor ve *"must return a relationship instance"* ile **500**
@@ -250,29 +158,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   4.5C'de `User` için `id` gönderiliyordu: rota eşleşmiyor ve **404**
   geliyordu — yani "korunuyor" sanılan şey kazaydı. ⚠️ Test de bunu
   ölçüyor sanıyordu; 404 ile 422 arasındaki fark yakalandı.
-- **Ödeme formu IFRAME içinde — sağlayıcının HAZIR BETİĞİ kullanılmaz.**
-  iyzico hem `checkoutFormContent` (yapıştırılacak `<script>`) hem
-  `paymentPageUrl` veriyor. Betik seçilseydi sağlayıcının JavaScript'i
-  **bizim kökenimizde** çalışır ve kart alanları bizim DOM'umuzda olurdu —
-  PCI kapsamını daraltma amacının tersi. Doğrusu `paymentPageUrl` +
-  `&iframe=true` ile ADRESİ gömmek (4.5-K1). ⚠️ Dönüş sayfası
-  **çerçeveden çıkmalı** (`window.top`, `window.parent` değil); çıkmazsa
-  müşteri "sipariş alındı" ekranını küçük bir çerçevede görür.
-- **`assertRedirect()` HEDEFSİZ çağrılırsa yönlendirmenin NEREYE gittiğini
-  ölçmez.** 4.5'te iki kez ısırdı: ödeme akışı sağlayıcıya yönlendirmekten
-  kendi sayfamıza döndü ve **hiçbir test kırılmadı**; ödeme sayfasındaki
-  sözleşme bağlantısı ham JSON'a gidiyordu ve test yalnızca bağlantı
-  METNİNİ arıyordu. Hedefi yaz.
-- **OTURUM TABANLI KİMLİK ÇOK KİRACILIKTA KENDİLİĞİNDEN GÜVENLİ DEĞİL.**
-  Oturum yalnızca kullanıcı `id`'sini tutuyor; guard onu **isteğin
-  kiracısının** şemasından çözüyor. İki markada da `id = 1` olan birer
-  kullanıcı varsa **A'nın oturum çerezi B'nin panelini açar** — 4H'de
-  ölçüldü, 200 dönüyordu. Bugün tarayıcı bunu yapmaz (`SESSION_DOMAIN=null`
-  → çerez alan adına bağlı) ama koruma ona bırakılamaz: 3D'deki kayıt
-  markalara **alt alan adı** veriyor ve biri `SESSION_DOMAIN`'i
-  `.tikmarka.com` yaparsa her marka her paneli açar. Çözüm: girişte
-  oturuma marka kimliği damgalanıyor, her istekte doğrulanıyor
-  (`EnsureSessionTenant`).
 - **LARAVEL MIDDLEWARE'LERİ ÖNCELİK LİSTESİNE GÖRE YENİDEN SIRALIYOR —
   rota grubunda yazdığın sıra SESSİZCE geçersiz olabilir.** 4H'de ısırdı:
   kontrol middleware'i `auth:staff-web`'den önce yazılıydı ama sonra koştu
@@ -282,11 +167,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   sayfa yine 200 dönüyor**. ⚠️ `prependToPriorityList` denendi, tutmadı.
   Doğrusu: kontrol middleware'i uyuşmazlıkta `$next`'i **çağırmayıp kendi
   cevabını döndürsün** — o zaman zincirin neresinde olduğu fark etmez.
-- **`UploadedFile::fake()` MIME TÜRÜNÜ DE UYDURUYOR.** Uzantıdan
-  türetiyor; yani "içeriği PHP ama adı .png" senaryosunu **ölçemezsin** —
-  doğrulama `image/png` görür ve test yeşil kalır. İçerik tabanlı tür
-  kontrolünü sınayan testte **gerçek dosya** yaz ve `new UploadedFile(...)`
-  ile gönder (4G'de ölçüldü).
 - **SVG LOGO/GÖRSEL KABUL EDİLMEZ.** XML belgesidir ve `<script>`
   taşıyabilir; tarayıcı `<img>` içinde çalıştırmasa da doğrudan açıldığında
   çalıştırır. Marka kendi vitrininde betik çalıştırabilseydi 4-K5'in
@@ -295,20 +175,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   doğrulanmış YOLU döndürür, adresi HTTP katmanı kurar. 4A'da logo yolu
   doğrudan `src`'ye basılıyordu; 4G'de yükleme gelince o hâliyle **kırık
   görsel** çıkardı.
-- **VERİ DÖKÜMÜNDE TABLO LİSTESİNİ DARALTMAK YETMEZ — KOLON da temizlenir.**
-  4F'de ölçüldü: marka dökümüne `customers.password` üzerinden **bcrypt
-  hash'leri** girmişti. Sorun tablonun kendisi değil içindeki kolondu.
-  Kimlik bilgisi iş verisi değildir — marka "kim müşterim"i alır,
-  "müşterim hangi parolayı kullanıyor"u almaz.
-  ⚠️ Şifreli ayar değerleri de çıkarılır: şifreli olması dosyaya
-  konabileceği anlamına gelmiyor (dosya `APP_KEY` ile birlikte sızarsa
-  çözülür). `TenantDataExport::HASSAS_KOLONLAR`.
-- **Merkez rotalarda `route()` HER ZAMAN İLK alan adını üretir.**
-  `central_domains` birden çok alan adı içeriyor (`localhost`,
-  `127.0.0.1`, ileride gerçek alan adı). 4F'de ısırdı: `localhost`'tan
-  giriş yapan yönetici `127.0.0.1`'e savruluyordu ve oturum çerezi orada
-  geçerli olmadığı için giriş ekranına geri düşerdi. Merkez yönlendirmelerde
-  **göreli yol** kullan (`redirect('/yonetim')`).
 - **`node_modules` BAĞLI KLASÖRDE DURMAZ — adlandırılmış birime konur.**
   macOS bind mount üzerinden binlerce küçük dosya okumak hem yavaş hem de
   kilitleniyor: Vite derlemesi `Unknown system error -35` ile düştü, üç
@@ -316,22 +182,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   YETMİYOR (kilitlenen dosya `node_modules` içinde ve binlerce tane var).
   `docker-compose.yml` → `- node_modules:/var/www/html/node_modules` (4E).
   Sonuç: `npm ci` konteyner içinde yaşıyor.
-- **Test yardımcısı İKİNCİ dosyada kullanılacaksa `tests/Pest.php`'ye taşınır.**
-  Tek test dosyasında tanımlı kalırsa diğer dosya **tek başına** koşturulunca
-  "tanımsız fonksiyon" verir — tüm süitte görünmeyen, dosya yükleme sırasına
-  bağlı sessiz bağımlılık. 4E'de `iadeyeHazirSiparis` ve `inertiaVerisi`
-  bu yüzden taşındı.
-  ⚠️ **Aynı madalyonun öteki yüzü: ADI ÇAKIŞMASIN.** Test dosyasındaki
-  fonksiyonlar **global** — başka bir test dosyasında aynı ad varsa iki dosya
-  birlikte yüklenince PHP *"cannot redeclare"* ile ölür. 4.5H'de yaşandı
-  (`koleksiyonluMagaza` iki dosyada); **tek dosya koşarken testler yeşildi**,
-  gösteren Larastan oldu (`invoked with 0 parameters, 1 required` — imza
-  ÖTEKİ dosyadan okunuyordu). Yardımcı yazmadan önce `grep -rn "function ad" tests/`.
-- **`sevkiyatlikSiparis()` PARA İADESİNE HAZIR DEĞİL.** Ödemeyi servisten
-  yapıyor, **tahsil edilmiş `Payment` kaydı açmıyor**; `RefundService`
-  `firstOrFail()` ile onu arıyor ve bulamayınca **404** dönüyor. ⚠️ Belirti
-  yanıltıcı: hata mesajı değil Laravel'in 404 sayfası geliyor, yani "rota
-  yok" sanılıyor. Para iadesi testinde `iadeyeHazirSiparis()` kullan.
 - **İç içe rota bağlamada Laravel çocuğu EBEVEYNİN İLİŞKİSİNDEN çözüyor.**
   `{urun:uuid}/{varyant:uuid}` için `Product::varyants()` arıyor; ilişkinin
   adı `variants` olduğu için **500** veriyor. Ya parametre adı ilişkiyle
@@ -350,16 +200,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yeniden çıktı — orada doğru cevap JSON değil **giriş sayfasına
   yönlendirme**. `bootstrap/app.php`'de `redirectGuestsTo` ile yola göre
   ayrılıyor.
-- **Inertia sayfa verisi ÖZNİTELİKTE DEĞİL `<script>` içinde.** v2
-  `<script data-page="app" type="application/json">` kullanıyor. Testte ham
-  metinde `&quot;component&quot;` aramak kırılgan; JSON'u çözüp `component`
-  alanına bak.
-- **`@section('ad', ifade)` KISA BİÇİMİ virgülde kırılıyor.** İfadenin
-  içinde virgül varsa (`Str::limit($x, 150)`) Blade argümanları yanlış
-  bölüyor ve **görünüm derlenemez** hâle geliyor. ⚠️ Belirti sinsi: sayfa
-  çalışıyor görünüyor ama Larastan görünümü bulamıyor (`view-string`
-  hatası) — 4B'de yarım saat aldı. Blok biçimini kullan
-  (`@section('ad') … @endsection`).
 - **`$errors` ve oturuma bağlı görünüm değişkenleri YALNIZCA `web` grubunda
   var.** `ShareErrorsFromSession` `api` grubunda çalışmıyor. Aynı düzeni
   (layout) iki gruptan render eden bir sayfa varsa `isset($errors)` ile
@@ -388,13 +228,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   kaldığı için anotasyona hiç girmiyordu. Üstüne GitHub bir adımda ~10
   anotasyon gösteriyor — ekranda yalnızca yığın izinin ortası görünüyor
   ve hata **teşhis edilemiyordu**. Artık satırlar kalıba göre seçiliyor.
-- **`getJson` ŞİFRELENMEMİŞ ÇEREZİ DÜŞÜRÜYOR — istek çerezsiz gidiyor.**
-  Ölçüldü (4A): aynı istek `get()` ile çerezi taşıyor, `getJson()` ile çerez
-  torbası **boş** geliyor ve hata yok. Ayrıca iki yardımcı iki farklı şey
-  yapıyor: `withCookie()` değeri **şifreliyor**, `withUnencryptedCookie()`
-  düz gönderiyor. Çerez okuyan testte `get()` + elle `Accept` başlığı kullan.
-  ⚠️ `postJson`'ın `Accept` başlığını sessizce eklemesiyle (2E) aynı aile:
-  **test yardımcısı, ölçmek istediğin şeyi ortadan kaldırıyor.**
 - **`EncryptCookies` YALNIZCA `web` grubunda çalışıyor.** `api` grubunda çerez
   middleware'i hiç yok. Bir çerez iki grupta da okunacaksa `encryptCookies`
   istisna listesine girmeli; girmezse aynı çerez iki grupta **iki farklı
@@ -408,30 +241,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   çalıştıran biri `search_path`'i değiştirip **bütün markaların** verisine
   ulaşır. Tema bu yüzden **ayar**, şablon değil (4-K5). Marka şablon yazacaksa
   yol Liquid benzeri **kum havuzlu** bir motordur.
-- **Inertia SSR AÇILMAZ (4-K2).** Ayrı Node süreci uzun ömürlü ve tüm markalar
-  için ortaktır; modül seviyesindeki durum istekler arasında paylaşılır
-  (*cross-request state pollution*) — yani **marka sızması**. M-2.4'te
-  pgBouncer'ı reddetme gerekçesinin aynısı. ⚠️ Yerelde görünmez: geliştirme
-  sunucusu aynı anda tek istek işliyor. Ayrıca SSR bozulunca **sessizce**
-  istemci render'ına düşüyor: sayfa çalışır, testler yeşil kalır, **SEO
-  sessizce gider**.
-- **Yeni marka geliştirmede HTTPS'e çıkmaz — ARTIK ÇIKIYOR (4.6Z).**
-  `docker/Caddyfile` joker kullanıyor (`*.localhost`), yani yeni marka için
-  elle ekleme GEREKMİYOR. ⚠️ Joker **bare `localhost`'u kapsamaz** (merkez
-  panel orada) ve tek seviye eşleşir. ⚠️ Belirti hâlâ bilinmeli: alan adı
-  Caddy tarafından tanınmıyorsa bağlantı **TLS el sıkışmasına bile
-  gelmiyor** (`curl` → 000) ve "sunucu kapalı" gibi görünüyor — mağazanın
-  kapalı olmasıyla (503) karıştırma.
-- **`firstOrFail()` OKUMA YOLUNDA veri sorununu 404'e ÇEVİRİR.** Laravel
-  `ModelNotFoundException`'ı 404'e eşliyor; yani "kuralın gösterdiği kategori
-  yok" gibi bir VERİ sorunu ekranda **"sayfa bulunamadı"** diye görünüyor ve
-  gerçek sebep hiç anlaşılmıyor. 4.5H.1'de ısırdı: koleksiyon kuralı var
-  olmayan kategori slug'ına bakıyordu — vitrinde koleksiyon 404 verdi, üstelik
-  panelde üye sayısı aynı sorgudan geldiği için **tek bozuk kural koleksiyon
-  listesinin tamamını** düşürdü. Kural: türetilmiş/başvurulan kayıt okuma
-  yolunda bulunamıyorsa **istisna değil boş sonuç** üret — ama koşulu
-  **sessizce atlama**, hiçbir şeyle eşleştir (atlanırsa `all` eşleşmesi gevşer
-  ve fazla kayıt döner).
 - **Kullanıcının GÖRDÜĞÜ ad ile sistemin SAKLADIĞI değer aynı değilse, serbest
   metin kutusu koymak hatayı GARANTİ eder.** 4.5H.1: kural `slug` saklıyor,
   marka kategoriyi adıyla tanıyor; kutu boş bırakıldığı için "Giyim" yazdı ve
@@ -439,26 +248,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yolunda varlığı doğrulamak. ⚠️ Varlık kontrolü **biçim doğrulayan** sınıfa
   konmaz (o sınıf okuma yolunda da çalışıyor ve veritabanına bakmıyor);
   yazma yoluna ait.
-- **VARSAYILAN GUARD SAYFA KATMANINDA YANLIŞ.** `config/auth.php`'de
-  varsayılan `customer` — yani **sanctum, token**. Sayfalarda kimlik
-  OTURUMDA (`customer-web`); `$istek->user()` yazılırsa sanctum sorulur,
-  `null` döner ve **giriş yapmış müşteri misafir sayılır**. 4.5I'de
-  ölçüldü: sepet müşteriye bağlanmıyor, sipariş `customer_id = null`
-  doğuyordu — geliştirme markasında **24 siparişin hepsi**, ödenmişler
-  dâhil, sahipsizdi ve "Siparişlerim" sayfası hiçbir zaman dolamazdı.
-  ⚠️ API katmanında (`api/*`) varsayılan guard **DOĞRU** — düzeltme tüm
-  vitrine değil sayfa katmanına uygulanır. Ölçen test:
-  `PanelKapsamTest` sayfa dosyalarında `->user()` arıyor.
-- **`actingAs()` VARSAYILAN GUARD'I DA DEĞİŞTİRİYOR — guard hatasını
-  GİZLER.** 4.5I'de iki kez ısırdı: (1) kök sebebi ölçmek için yazdığım
-  test `actingAs` ile **hatalı kodla yeşil geçti**; gerçek `/giris`
-  POST'uyla ölçünce düştü. (2) `GomuluOdemeTest`'te bir güvenlik testi
-  `actingAs($musteri, 'customer')` (TOKEN) kullanıyordu ama ölçtüğü şey
-  bir SAYFA rotasıydı — yıllardır yanlış şeyi ölçüyormuş, düzeltme onu
-  ortaya çıkardı. Kural: kimliğin **hangi guard'dan** çözüldüğünü ölçen
-  testte `actingAs` KULLANILMAZ, gerçek giriş isteği atılır.
-  (`postJson`'ın `Accept` eklemesi ve `getJson`'ın çerezi düşürmesiyle
-  aynı aile: **test yardımcısı ölçmek istediğin şeyi ortadan kaldırıyor**.)
 - **`ConvertEmptyStringsToNull` BOŞ METNİ NULL YAPAR — `string` kuralı
   null'da DÜŞER.** 4.5I.1'de ısırdı: ödeme formunda gizli alanlar boş
   gönderiliyor (**gizlemek göndermemek değildir**), middleware onları
@@ -469,36 +258,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   ama bu **ölçülmeli**. ⚠️ Anahtarı HİÇ göndermeyen test bunu göremez —
   middleware'in dönüştüreceği değer olmuyor; testin gövdesi **tarayıcının
   gönderdiğiyle birebir** olmalı.
-- **VERİTABANI KISITI TEK BAŞINA ARAYÜZ DEĞİLDİR.** `(product_id, options)`
-  benzersizliği doğruydu ama yakalanmayınca panelde ham **500**
-  (*"duplicate key value violates unique constraint"*) görünüyordu. 4.5L'de
-  ısırdı ve en kötü yerinden: eksen tanımlama ekranı olmadığı için her
-  varyantın `options` alanı `[]` oluyordu, yani **her ürünün ikinci
-  varyantı** bu hataya düşüyordu. Kural: kısıtı kaldırma (yarış durumuna
-  karşı son savunma), Domain'e **aynı adı taşıyan bir kontrol** koy ve
-  panelde `CatalogRuleException`'ı **oturum hatasına** çevir — genel
-  işleyici JSON döndürüyor ve o yalnızca `api/*` için doğru.
-- **KİMLİĞİ OKUMAK İLE VERİYİ ÇÖZMEK AYRI ŞEYLER — ikisi de tek kapıdan
-  geçmeli.** 4B'de "sepet kimliğini yalnızca `CartToken` okur" kuralı
-  kondu ve ölçüldü; ama sepeti **çözen** yol serbest kaldı.
-  `StorefrontViewData` (üst bardaki rozet) doğrudan `misafirSepetiBul()`
-  çağırıyordu, sayfa ise `CartResolver` kullanıyordu. 4.5J'de ısırdı ve
-  **iki yönü de sessizdi**: bayat misafir çerezi varken rozet dolu / sepet
-  boş; giriş yapmış müşterinin dolu sepetinde rozet **hiç çıkmıyor**.
-  ⚠️ Yapısal testi yazarken kapsamı **dar** tut: ilk hâli girişteki meşru
-  birleştirmeyi (misafir token'ını bilerek okur) ve **kendi yorum
-  metnini** ihlal sayıyordu — eşleşme çağrının kendisinde olmalı
-  (`->metot(`), ham metinde değil.
-- **SUNUCUDA RENDER EDİLEN YÜZEY SAATİ KENDİ ÇEVİRMELİ.** `app.timezone`
-  UTC (ve öyle KALMALI); Blade `format()` onu olduğu gibi basıyor, yani
-  vitrin müşteriye **üç saat geride** saat gösteriyordu. Panel Inertia
-  olduğu için tesadüfen doğruydu (`new Date(iso).toLocaleString()`
-  tarayıcıda çeviriyor) ve iki yüzeyin farkı "sipariş panele yanlış
-  saatle düşmüş" gibi göründü (4.5M). ⚠️ Çözüm `config/app.php`'yi
-  değiştirmek **DEĞİL**: `now()` sorguya ofissiz metin bağlanıyor ve
-  rezervasyon süreleri kayıyor — kırma denemesiyle ölçüldü, `ZamanDilimiTest`
-  düştü. Doğrusu **gösterim** saat dilimi ayarı + `setTimezone()`; değer
-  beyaz listeden geçmeli, yoksa geçersiz ayar sayfayı 500'e düşürür.
 - **İSTİSNA İŞLEYİCİSİ İÇİNDE `route()` ÇAĞIRMAK İŞLEYİCİYİ PATLATABİLİR.**
   Genel işleyiciler merkez bağlamında da koşuyor ve orada vitrin rotaları
   **tanımlı değil**; `route('vitrin.sepet')` doğrudan çağrılsaydı hatayı
@@ -510,16 +269,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   Her seferinde "bu uç gözden kaçmıştı" denildi. Bir istisna için
   `expectsJson()` dalı yazarken **aynı ekrandan tetiklenebilecek diğer
   istisnaları da** aynı anda tara.
-- **ÇERÇEVEDEN ÇIKIŞ BETİĞİ, İÇİNDE BULUNDUĞU ADRESE GERİ GİDEMEZ.**
-  Sağlayıcı dönüşü `POST` ve referans **gövdede**; `window.top.location =
-  window.location.href` üst pencereyi **referanssız bir GET**'e götürüyor
-  ve müşteri, ödemesi başarılı olmasına rağmen **404** görüyor (4.5R).
-  Doğrusu POST'u **303 ile GET'lenebilir bir sonuç adresine**
-  yönlendirmek; o adres imzalı olmalı, yoksa uuid'i ele geçiren başkasının
-  ödeme durumunu okur. ⚠️ **Sahte sağlayıcı bunu İKİ KEZ gizledi**
-  (1E.7.3 · 4.5R): referansı adres çubuğuna koyduğu için testler `?ref=`
-  ile koşuyor ve betik çalışıyordu. Dönüş akışını sınayan test
-  **sağlayıcının gerçek şekliyle** (POST + gövde) da koşmalı.
 - **AYNI ADRESLİ İKİ ROTADA SON KAYIT KAZANIR — kırma denemesi bunu
   bilmezse yanlış yeri kırar.** 4.6S'de görüntüleme grubuna ikinci bir
   `/urunler/yeni` eklendi ve test **geçmeye devam etti**: yazma grubundaki
@@ -528,29 +277,12 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   `/urunler/yeni` ile `/urunler/{urun:uuid}` aynı gruptayken sıra sayesinde
   **tesadüfen** çalışıyordu; gruplar bölününce form 403 yerine **404**
   vermeye başladı. `whereUuid` ile sıraya bağımlılık kaldırıldı.
-- **`postJson`/`getJson` ÇEREZLERİ VARSAYILAN GÖNDERMEZ.** Laravel'in test
-  istemcisinde `prepareCookiesForJsonRequest()` yalnızca `withCredentials()`
-  çağrıldıysa çerez taşıyor — `getJson`'ın çerezi düşürmesiyle (4A) aynı
-  aile, farklı sebep. 4.6T'de API kupon testinde ısırdı: `postJson` ile
-  gönderilen istek çerezsiz gittiği için sepet hep "bulunamadı" (404)
-  dönüyordu. Çözüm: `->withCredentials()->withUnencryptedCookie(...)`.
 - **HIZ SINIRLAYICI İŞ MANTIĞINDAN ÖNCE ÇALIŞIR — sonuca değil isteğin
   VARLIĞINA bakar.** 4.6T'de ölçüldü: kupon ucuna sepeti olmayan bir
   istemciden 10 istek atıldığında hepsi 404 dönüyor (uygulanacak sepet
   yok) ama 11. istek yine 429. Saldırganın her denemede farklı/geçersiz
   bir hedef kullanması throttle'ı atlatmıyor — bu YAN etki değil, doğru
   davranış: sayaç isteğin başarılı olup olmamasına bakmıyor.
-- **GENİŞ BİR CSP, DİNAMİK İFRAME ADRESİNİ SESSİZCE KIRAR.** Ödeme sayfası
-  kendi iframe'inde iyzico'yu gösteriyor (4.5-K1) ve o adres iyzico'nun API
-  cevabından **dinamik** geliyor — sabit bir alan adı olarak `frame-src`
-  izin listesine yazılamaz. `default-src`/`script-src` içeren bir
-  `Content-Security-Policy` eklenseydi (4.6U), yanlış tahmin edilen bir
-  domain müşterinin ödeme adımının ortasında **sessizce boş bir çerçeve**
-  görmesi demekti. ⚠️ `frame-ancestors` bu riski TAŞIMIYOR: yalnızca
-  BİZİM sayfamızın BAŞKASINCA çerçevelenmesini kapatıyor, bizim
-  başkasını çerçevelememizi etkilemiyor — ikisi ayrı yön. Clickjacking
-  koruması eklenecekse dinamik iframe barındıran bir projede yalnızca
-  `frame-ancestors`/`X-Frame-Options` kullan, `default-src` ekleme.
 - **LARAVEL 11+ ÇERÇEVE CONFIG'İNİ BİRLEŞTİRİYOR — bir varsayılanı
   `config/`'ten SİLMEK onu YOK ETMİYOR.** 4.6V'de ölçüldü ve
   sömürülebilirliği kanıtlandı: `auth.passwords.users` broker'ı
@@ -563,41 +295,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   kararını (burada "iki ayrı jeton tablosu") çerçevenin sessizce
   delebileceğini varsay — kararı ölçen test AYARA değil DAVRANIŞA
   bakmalı.
-- **İSİMSİZ POST ROTASI + `route()` = FORM YANLIŞ ADRESE GİDER.** 4.6V'de
-  ısırdı: sıfırlama formunun `action`'ı `route('vitrin.sifre.sifirla')`
-  yazıyordu, o **GET** rotasının adıydı; POST rotası isimsiz ve başka
-  adresteydi. Müşteri postadaki bağlantıyı açtı, şifreyi yazdı ve **405**
-  aldı. ⚠️ **Yedi testin hiçbiri göremedi**: hepsi doğrudan doğru adrese
-  POST ediyordu (`$this->post('/sifre-sifirla', …)`) — formun NEREYE
-  gittiğini kimse sormamıştı. Kural: bir formu sınayan test **sayfayı
-  render edip `action`'ı okumalı** ve tam oraya göndermeli.
-  ⚠️ Regex'i `method="post"` ile daralt — düzenin başlığındaki arama
-  formu (`method="get"`) sayfada ÖNCE geliyor ve ilk eşleşme odur; yoksa
-  test düzeltilmiş kodda da 405 verir. "Form alanları doğrulamayla hizalı
-  olmalı" tuzağının ADRES tarafı: orada eksik olan ALAN'dı, burada ADRES.
-- **İMZALI ADRES ÜRETEN KOD İSTEK BAĞLAMINDA ÇALIŞMAK ZORUNDA.**
-  `URL::temporarySignedRoute()` MUTLAK adres üretiyor ve kökünü o anki
-  istekten alıyor; istek yokken `APP_URL`'e düşüyor — bu projede
-  `http://localhost`, yani **merkez** alan adı. 4.6W'de ısırdı: doğrulama
-  bağlantısı markanın vitrinine değil merkeze işaret ediyordu ve uç orada
-  tanımlı olmadığı için **404** dönüyordu. ⚠️ Bedeli sessiz: posta gider,
-  müşteri tıklar, sayfayı bulamaz. Bildirimi kuyruk işinden, artisan
-  komutundan ya da `tenants:run` ile tetikleyen kod aynı tuzağa düşer.
-  Ölçen test adresi **modelden değil gerçek HTTP akışından** almalı ve
-  markanın alan adını taşıdığını ayrıca sınamalı.
-  ⚠️ Aynı bağımlılık `sendPasswordResetNotification`'da da var (`route()`).
-- **ÇAPRAZ MARKA TESTİNDE OTURUM TEMİZLENMEZSE YANLIŞ ŞEY ÖLÇÜLÜR.**
-  Test istemcisi çerez takip ediyor; A'da açılan oturum B'ye taşınıyor ve
-  `EnsureSessionTenant` isteği **asıl kontrolden önce** kesiyor. 4.6W'de
-  imzanın markaya bağlılığını ölçen test 403 yerine 302 aldı — koruma
-  çalışıyordu ama ölçülen koruma 4.5D'de zaten ölçülen BAŞKASIYDI.
-  `flushSession()` ile gerçek senaryoya (postadan tıklayan, o markada
-  oturumu olmayan kişi) dön.
-- **`test()` KULLANAN YARDIMCI `tests/Pest.php`'DE OLMAK ZORUNDA.**
-  Statik analiz Pest'in bağlamasını göremiyor ve `phpstan.neon`'daki
-  istisna YALNIZCA o dosya için tanımlı; başka bir test dosyasına
-  yazılırsa Larastan *"call to an undefined method"* veriyor. Yardımcıyı
-  iki dosya kullanmıyor olsa bile kural burada teknik olarak zorunlu.
 - **`pint.json` BOZULUNCA pint çöküyor — belirti dosya boyutu hakkında
   YALAN söylüyor.** `file_get_contents(): Read of 8220 bytes failed with
   errno=35 Resource deadlock avoided` diyor ama `pint.json` **28 bayt**.
@@ -610,35 +307,12 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   sanıldı, çünkü aynı komutta dosya zaten yeniden yazılmıştı. Üç biçim
   (config'li, config'siz, phar'ı /tmp'ye kopyalayarak) ayrı ayrı denendi,
   **üçü de** bozuk dosyayla düştü.
-- **YUMUŞAK SİLME + `unique` = DOMAIN İLE VERİTABANI AYNI KURALI FARKLI
-  ANLAYABİLİR.** `unique` kısıtı `deleted_at`'e bakmaz, Eloquent sorgusu
-  bakar. İkisi hizalanmazsa hata Domain'i **atlayıp** veritabanından
-  geliyor ve yakalanamıyor — panelde ham
-  `UniqueConstraintViolationException`. 4.6X'te ısırdı.
-  ⚠️ Doğru yön ALANIN NE OLDUĞUNA bağlı, tek bir cevabı YOK:
-  · **Dış kimlik** (SKU, barkod, fatura no) → silinmişler DE sayılmalı;
-    kısıt tam kalır, Domain `withTrashed()` ile arar. Kod dışarıda da
-    kullanılıyor (depo, kargo, muhasebe); yeniden kullanılırsa aynı kod
-    iki farklı fiziksel şeye işaret eder.
-  · **İç ayrım** (`(product_id, options)` gibi "hangi birleşim") → kısmi
-    indeks (`WHERE deleted_at IS NULL`), Domain silinmişi görmez. Rezerve
-    edilseydi "Kırmızı / M" bir kez silinince bir daha ASLA açılamazdı.
-  ⚠️ Silinmiş kayıtla çakışmanın MESAJI ayrı olmalı: kayıt katalogda
-  görünmediği için marka o değeri ekranda **arayamaz** ve genel mesajı
-  sistem arızası sanar.
 - **BİR KURALI TEK YOLA YAZMAK YETMEZ — AİLENİN TAMAMINA YAZ.** 4.5L'de
   `(product_id, options)` için Domain kontrolü yazıldı ama YALNIZCA
   `ekle()`'ye; `guncelle()` boş kaldı ve aynı ham hata oradan çıkmaya
   devam etti. 4.6X'te ikisi de kapatıldı. "Tarayıcıya HTML, API'ye JSON"
   tuzağıyla aynı aile: **bir uçta düzeltmek, ailenin düzeldiği anlamına
   gelmiyor.**
-- **DOMAIN KONTROLÜ VERİTABANI KISITINI MASKELER — kısıtı ölçen test
-  DOMAIN'İ ATLAMALI.** 4.6X.1'de ölçüldü: kısıtı geri gevşeten migration
-  değişikliği **hiçbir testi düşürmedi**, çünkü Domain isteği veritabanına
-  hiç ulaştırmıyor. Oysa kısıt Domain'in yedeği değil SON SAVUNMASI —
-  yarış durumunda iki eşzamanlı istek de kontrolü geçebilir, tohumlayıcı
-  ve komut satırı Domain'i hiç kullanmayabilir. Ölçen test servisi değil
-  **doğrudan tabloyu** kullanmalı (`DB::table(...)->insert(...)`).
 - **FLASH MESAJI `api` GRUBUNDA KAYBOLUR — ve TEST BUNU GÖREMEZ.**
   `api` grubunda `StartSession` yok; `->with('mesaj', …)` yazıldığı anda
   kayboluyor. 4.6Y'de ısırdı: ürün sepete geliyordu ama "şunlar
@@ -689,25 +363,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   aynı** özel kontrolü çağırması. ⚠️ Engel varsa ekran SEBEBİ yazmalı:
   farklı engeller farklı çözümler gerektiriyor, tek bir "yapamazsınız"
   mesajı hepsini çıkmaza çevirir.
-- **MÜŞTERİ BAŞINA VERİ EKLERKEN KVKK YOLLARI DA GENİŞLETİLİR.** Yeni bir
-  tablo müşteriye bağlanıyorsa `Anonymizer` ve `DataExporter` aynı blokta
-  güncellenmeli; unutulursa müşteri başına veri tutan ama KVKK'ya girmeyen
-  bir alan doğar ve bu **hata vermez**. ⚠️ İki yolun kararı FARKLI
-  olabilir: 4.6D'de anonimleştirme favoriyi **siliyor** (maskelenecek
-  alanı yok — kişisel veri bağın kendisi), veri dökümü ise silinmiş
-  ürününkini bile **yazıyor** (orada soru "ne gösterelim" değil "elimizde
-  ne var"). ⚠️ Yabancı anahtardaki `cascadeOnDelete` anonimleştirmede
-  DEVREYE GİRMEZ: o yol müşteriyi silmiyor, maskeliyor.
-- **ÜRÜN SAYFASINA EKLENEN HER ŞEY İKİ DÜZENİ DE KAPSAMALI.** Vitrinin iki
-  düzeni var (`sade`, `vitrinli`) ve hangisinin kullanıldığını **marka
-  belirliyor** (tema bir ayar, 4-K5). Yalnızca birine eklenen özellik,
-  öteki düzeni seçmiş markanın müşterisinde **hiç yok**. 4.6A'da ısırdı:
-  varyant seçicisi yalnızca `sade`'ye uygulanmıştı, `vitrinli` kullanan
-  marka (geliştirme markası dâhil) eski düz açılır listeyi görmeye devam
-  ediyordu. ⚠️ Altı testin hiçbiri göremedi çünkü hepsi VARSAYILAN
-  düzende koşuyordu — kapsamı ölçen test düzeni tek tek DEĞİŞTİRMELİ.
-  ⚠️ Çözüm kopyalamak değil ORTAK PARÇA (`partials/`): kopya, aynı
-  hatanın bir sonraki tekrarını hazırlar.
 - **"BİTTİ" KAYDI, BİTTİĞİNİN KANITI DEĞİLDİR.** 4.6A'nın PLAN kaydı
   ayrıntılıydı, dört kırma denemesi yazılıydı ve altı testi yeşildi — blok
   yine de yarım uygulanmıştı. Bir bloğun kapsamını doğrularken kayda
@@ -759,43 +414,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yardımcısında olmalı.
   ⚠️ Ailenin üçüncü yüzü 4D: "kalıp birden çok yerdeyse hedefi konumla daralt".
   Orada KIRMA yanlış yeri kırmıştı, burada İDDİA yanlış yeri okuyordu.
-- **PANEL VE VİTRİN TEMA ANAHTARI AYRIDIR.** Panel bizim arayüzümüz, vitrin
-  markanın; ortak `localStorage` anahtarı birinin tercihini diğerine bulaştırır
-  (`tikmarka-panel-tema` / `tikmarka-tema`).
-- **YATAY MENÜ MADDE SAYISIYLA ÖLÇEKLENMİYOR — ve taşma MASAÜSTÜNDE başlıyor.**
-  4.6AF'de ölçüldü: 14 madde tek satırda 988px, başlığın ihtiyacı 1441px,
-  kapsayıcı 1152px → **289px taşma**, üstelik en geniş ekranda. En çok sahip
-  rolünü vuruyor (bütün maddeleri gören tek rol o). Menü yana taşındı.
-  ⚠️ Belirti kolay kaçıyor: geliştirici genelde kısıtlı bir rolle bakıyor ve
-  eksik maddeler yüzünden menü **sığıyor** görünüyor.
-- **ÇEVİRİSİ OLMAYAN ANAHTAR EKRANA HAM HÂLİYLE YAZILIR — ve bu SESSİZDİR.**
-  `lang/tr/pagination.php` hiç yoktu: marka panelinde sayfalama düğmesinde
-  **`pagination.next`** yazıyordu, dört sayfada birden. 4.6AF.1'de bulundu ve
-  **966 testin hiçbiri görmemişti**; gerçek tarayıcı koşusu gördü.
-  ⚠️ 4.6AA'daki `validation.uploaded` ile aynı aile ve orada da
-  "unutulursa hemen fark edilir" denmişti — fark edilmedi. Çerçevenin
-  hazır bir çeviri anahtarını (doğrulama, sayfalama, parola sıfırlama)
-  ilk kez kullandığında karşılığının `lang/tr/`'de olduğunu **gör**.
-- **YAPISAL TEST "KAP VAR MI"YI ÖLÇER, "EKRANDA NE OLUYOR"U DEĞİL.**
-  4.6AF'nin on bir testi yeşilken 375px'te 14 sayfanın 5'i hâlâ yatay
-  kayıyordu. Sözleşme testleri gerileme koruması; **yerleşimin kendisi
-  gerçek tarayıcıda, gerçek genişlikte gezilerek** doğrulanır. Panel giriş
-  gerektirdiği için bu adım atlanabiliyor — atlanırsa blok yarım kalır
-  ("bitti kaydı bittiğinin kanıtı değildir" kuralının yerleşim biçimi).
-- **ÖLÇEĞİN YOKLUĞU İLE FAZLALIĞI AYNI SONUCU VERİR: hiyerarşi okunmaz.**
-  Panelde 225 kullanım tek boyuttaydı (4.6AG), vitrinde **on iki** farklı
-  boyut ve **altı** yarıçap vardı (4.6AH). Biri her şeyi eşitliyor, öteki
-  hiçbir şeyi. İkisinde de çözüm aynı: sayılı basamak, ve basamağı öğenin
-  **rolü** seçiyor, boyutu değil.
-  ⚠️ `999px` (hap) ölçeğe SOKULMAZ — o bir basamak değil, "tam yuvarlak"
-  demenin yolu; sokulursa rozet boyutuna göre değişir.
-- **`tests/Pest.php`'YE TAŞIMA KURALI YAZILI OLMASINA RAĞMEN İKİ KEZ
-  TEKRARLANDI** (`panelSayfalari()` 4.6AG · `vitrinliMarka()` 4.6AH).
-  Yeni bir test dosyası açarken kullanacağın her yardımcının **nerede
-  tanımlı olduğuna** bak; tek dosyada duruyorsa önce taşı, sonra kullan.
-  ⚠️ Taşırken tam nitelikli ad kullanılıyorsa sınıfın gerçek ad alanını
-  doğrula: `SettingGroup` `App\Domain\Settings` değil **`App\Enums`**
-  altında ve yanlış yazıldığında 14 test birden düşüyor.
 - **OLAYIN YOKLUĞU, O ŞEYİN OLMADIĞI ANLAMINA GELMEZ — parayı olaydan
   sayma.** `EventRecorder` bilerek "işi bozmayan" bir yol: kuyruğa
   atamazsa istisnayı yutuyor (1F-K3). Yani olay kaydı **eksik olabilir**
@@ -836,24 +454,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **zaten depoda duran** bir kusur buldu (`platformTokeni`,
   `AbonelikTest` tek başına koşunca düşüyordu). ⚠️ Belirti dosya yükleme
   sırasına bağlı: tam süitte GÖRÜNMÜYOR.
-- **SİLİNEN KAYDIN SEPETTEKİ İZİ YÖNETİLEBİLİR KALMALI — yoksa sepet
-  KİLİTLENİR.** 4.6AJ'de ölçüldü: varyant yumuşak silinince ilişki `null`
-  dönüyor, ekran `value="{{ $satir->variant?->uuid }}"` ile **boş** alan
-  basıyor ve müşteri satırı **çıkaramıyor**; üstelik `satiriBul()`
-  `whereHas('variant')` ile aradığı için ikinci bir bariyer daha var.
-  Kural 1E.6'nın sepet hâli: **kapatan yol** (sepetten çıkarma) silinmişi
-  görmeli, **açan yol** (sepete ekleme, ödemeye geçme) görmemeli.
-  ⚠️ Strateji "sessizce sil" DEĞİL "işaretle": müşterinin sepetinden bir
-  şeyi habersiz çıkarmak "ürünüm nerede" sorusunu doğurur.
-- **BİR İLİŞKİYE `withTrashed()` EKLEMEK ÖRTÜLÜ BİR KORUMAYI KALDIRIR.**
-  Silinmiş kayıt görünür olunca "satılabilir mi" sorusunu cevaplayan kod
-  ona da `true` diyebilir. 4.6AJ'de `kullanilabilirMi()`'ye açık
-  `trashed()` kontrolü eklendi — ⚠️ ve kırma denemesi **tutmadı**, çünkü
-  ürün silindiğinde koruma başka yerden geliyordu
-  (`product?->status === Active` zaten `false`). Gerçek senaryo **tek
-  varyantın silinmesiydi**: orada ürün hayatta ve kontrol olmasaydı
-  silinmiş varyant satılırdı. Ders: bir korumayı ölçen test, o korumanın
-  **tek başına** geçerli olduğu senaryoyu kurmalı.
 - **DAR İHTİYACA DAR ÇÖZÜM.** Sepette silinmiş ürünün ADI gerekiyordu;
   `ProductVariant::product()` ilişkisine toptan `withTrashed()` eklemek
   silinmiş ürünün vitrinde görünmesi gibi çok daha geniş bir kapıyı
@@ -863,13 +463,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   **403** görür. 4.6AK'de otomatik yenileme sayacı bu yüzden adrese değil
   `sessionStorage`'a kondu. ⚠️ Aynı sebeple imzalı bir adrese analitik
   parametresi, dil seçimi ya da UTM etiketi de eklenemez.
-- **KENDİNİ YENİLEYEN EKRANIN SINIRI VE DEPO KORUMASI OLMALI.** Ödeme
-  kalıcı olarak `pending` kalabiliyor; sınırsız yenileme müşterinin
-  sekmesini sonsuza kadar döndürür. ⚠️ Sayaç `sessionStorage`'daysa
-  **gizli sekmede istisna atabilir** — o durumda sayaç tutulamaz ve sayfa
-  yine sonsuza kadar yenilenir. Depo yoksa otomatik yenileme **hiç
-  başlamamalı**. ⚠️ Terminal durumda sayaç temizlenmeli, yoksa aynı
-  tarayıcı oturumundaki İKİNCİ ödemede yenileme hiç çalışmaz (4.6AK).
 - **`queue:restart` BU KURULUMDA WORKER'I ÖLDÜRÜP ORTADA BIRAKIYOR.**
   Laravel'in "doğru" yolu o (nazikçe çık), ama hiçbir serviste `restart:`
   politikası yok — ölçüldü: `RestartPolicy → no`. Sinyal gidiyor, worker
@@ -887,57 +480,10 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   daha okumaması**; `queue:work` tek bir uzun ömürlü süreç. ⚠️ Bu yüzden
   "worker'ı derlemeden sonra başlatalım" ÇÖZÜM DEĞİL: sorun ilk açılış
   değil, worker'ın saatlerce ayakta kalması.
-- **ÖNERİ/POPÜLERLİK BÖLÜMÜ EŞİKSİZ KURULMAZ.** Az veriyle üretilen liste
-  popülerlik değil **gürültü** ölçüyor: B1'de ölçüldü, markada 20
-  görüntüleme vardı ve eşiksiz bir "en çok tıklanan" bölümü **tek
-  tıklamayı** popüler ilan ederdi. Aynı şekilde katalogun tamamı son 30
-  günde eklendiyse "yeni gelenler" **katalogun kendisidir** ve müşteri
-  aynı ürünleri iki kez görür. Kural: **verisi olmayan bölüm hiç
-  çizilmez** — boş göstermek de yanlış göstermek kadar kötü değil, ama
-  yanlış göstermek en kötüsü.
-- **KİŞİYE ÖZEL LİSTE ORTAK ÖNBELLEĞE KONMAZ.** B1'de kırma denemesiyle
-  ölçüldü: kişisel bölüm `Cache::remember` ile ortak anahtara konsaydı
-  **bir müşterinin önerileri başkasına** gösterilirdi. Bu çok kiracılık
-  sızması değil, **aynı marka içinde müşteriler arası** sızma — kiracı
-  öneki onu engellemiyor.
-- **BÖLÜMLER ARASI TEKRARI ENGELLEMEK BAŞLIĞI YALAN YAPABİLİR.** "Çok
-  satanlar"dan gerçek en çok satanı, başka bölümde geçtiği için çıkarmak
-  o başlığın vaadini bozar (B1). Tekrar bir kusur değil; küçük katalogda
-  rahatsız ediyorsa çözüm eşikleri yükseltmek, listeyi çarpıtmak değil.
-- **BİR ÖZELLİĞİ İKİNCİ DÜZENE TAŞIMAK, DESTEKLEYİCİ İŞARETLERİNİ DE
-  TAŞIMAKTIR.** 4.6A'da varyant seçicisi yalnızca `sade`'deydi; 4.6A.1 onu
-  `vitrinli`'ye taşıdı ama betiğin aradığı `data-fiyat` ve
-  `data-ekle-dugme` işaretlerini taşımadı — kusur 4.6AL'ye kadar **canlı**
-  kaldı (marka-a `vitrinli` kullanıyor). ⚠️ Bedeli fiyatın güncellenmemesi
-  değildi: `data-ekle-dugme` yokken düğme hiç kapanmıyor ve müşteri
-  **boş `variant_uuid`** gönderebiliyordu; üstelik `null` üzerindeki
-  TypeError ondan **sonraki** uyarı mantığını da öldürüyordu.
-- **KANCA LİSTESİNİ ELLE YAZMA, BETİKTEN OKU.** Bir betiğin
-  `document.querySelector('[data-...]')` ile aradığı işaretleri ölçen test,
-  listeyi betikten çıkarmalı; elle yazılırsa betiğe yeni kanca eklenince
-  liste bayat kalır ve test yine yalan söyler (4.6AL).
-- **ÇİZİLEN SAYFAYI OKUYAN İDDİA `<script>` BLOKLARINI AYIKLAMALI.**
-  4.6AL'de üç kırma denemesi tutmadı: sayfadaki betik kancaları **adıyla**
-  arıyor (`querySelector('[data-ekle-dugme]')`), yani aranan dizge
-  öznitelik silinse bile HTML'de duruyordu. ⚠️ 4.6AE'nin kardeşi — orada
-  iddia kuralı ANLATAN yorumu okuyordu, burada kuralı ARAYAN betiği.
 - **DERLENMİŞ BLADE DOSYALARI GERİ SIZABİLİYOR.** 4A'da takipten
   çıkarılmıştı; 4.6AL'de **7 tanesi yeniden takipliydi** ve klasörü ayakta
   tutan `storage/framework/views/.gitignore` **diskte yoktu**. Kontrol:
   `git ls-files storage/framework/views/`.
-- **"HER GÖRSELE `lazy`" YANLIŞ — ekranın üstündekini GECİKTİRİR.** Tarayıcı
-  `lazy` görselde önce yerleşimi hesaplayıp sonra indirmeye başlıyor; yani
-  en çok görülen görselleri yavaşlatmış olursun. Sayfanın **ilk
-  ızgarasının ilk satırı** `eager`, gerisi `lazy` (B2). ⚠️ Her ızgara kendi
-  ilk satırını istekli yüklerse kazancın çoğu gider — istekli sayısı
-  ızgaraya değil SAYFAYA ait bir karardır.
-- **SONSUZ KAYDIRMA SEO'YU ÖLDÜRÜR — bağlantı GERÇEK kalmalı.** Vitrin
-  sunucuda render ediliyor (4-K1) ve tek sebebi arama motorunun sayfayı
-  görebilmesi; ürünler yalnızca JavaScript'le gelseydi ilk sayfadan
-  sonrası taranamaz olurdu. Doğrusu gerçek bir `<a href="?sayfa=2">` ve
-  onu **üstlenen** bir betik (B2): JS kapalıysa tıklanıyor, motor
-  tarayabiliyor.
-  ⚠️ `withQueryString()` unutulursa arama sayfa 2'de kayboluyor.
 - **`restart` BİRİM BAĞLAMASINI UYGULAMAZ — `up -d` GEREKİR.** B6'da ısırdı:
   Caddy'ye günlük birimi eklendi, `restart caddy` yapıldı, Caddy dosyayı
   yazdı ama **konteynerin kendi katmanına** — birime değil; toplayıcı boş
@@ -950,26 +496,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   yerden başlıyor. B6'da test yardımcısı `grafana` bloğunu keserken
   `loki`de bitirdi ve **doğru yapılandırmayı yanlış sandı**. Yapı ayrıştıran
   yerde `strpos`/`substr` kullan (ASCII iskelet), `mb_` ile karıştırma.
-- **`Log::build()` `tap`'İ UYGULAMAZ.** Yapılandırmadan gelmeyen bir kanal
-  ürettiği için `tap` hiç devreye girmiyor. B6'da bir kırma denemesi bu
-  yüzden tutmadı: test, işleyicinin biçimlendiriciyi ezip ezmediğini
-  sınadığını sanıyordu ama işleyici **hiç yüklü değildi**. Bir tap'i ölçen
-  test kanalı `Log::channel('<ad>')` ile, yani uygulamanın kendi çözdüğü
-  yoldan almalı.
-- **YAZMA SAYACI "GİTTİ" DER, "NE GİTTİ" DEMEZ.** B6.1'de iki kez ısırdı.
-  Önce *"hata yok + okuma konumu ilerledi"* delil sanıldı ve kullanıcıya
-  "çalışıyor" denildi — ikisi de **gönderilecek satır olmadığında da
-  doğru**; gerçek durum `sent_entries_total = 0`'dı. Sonra sayaç 302
-  gösterince "tamam" denildi, ama veriye bakınca iki kusur çıktı (test
-  kirliliği · süreç ayrımı yok). Kural: **bir boru hattını, taşıdığı şeyi
-  GÖRMEDEN doğrulama.** Salt-okunur bir jeton bunun için vardır.
-- **`app` · `worker` · `scheduler` AYNI GÜNLÜK DOSYASINA YAZIYOR.** Satırda
-  süreci ayırt eden alan yoksa *"kuyruk işçisi öldü"* alarmı YAZILAMAZ —
-  ve worker'ın `restart` politikası olmadığı için çökerse işler Redis'te
-  sessizce birikir. Ayrım `SUREC` ortam değişkeniyle compose'da yazılı;
-  `runningInConsole()` yetmiyor (worker ile scheduler'ın ikisi de konsol).
-  ⚠️ Değer `config()` üzerinden okunur, `env()` ile DEĞİL: `config:cache`
-  sonrası `env()` null döner ve etiket sessizce kaybolur.
 - **`git checkout` İZLENMEYEN DOSYAYI GERİ ALMAZ — SESSİZCE HİÇBİR ŞEY
   YAPMAZ.** B5'te ısırdı: o oturumda yeni yazılan (henüz commit'lenmemiş)
   bir middleware'e kırma denemesi uygulandı, `git checkout` ile geri
@@ -978,28 +504,6 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   üretti. ⚠️ 4.6X.1/4.6Y'deki tuzağın TERS YÜZÜ: orada `checkout`
   fazlasını geri almıştı, burada hiçbir şeyi. Her iki durumun da çözümü
   aynı: `cp <dosya> /tmp/x.bak` ile yedekle, `cp` ile geri al.
-- **GÜNLÜK SATIRI BAĞLAMSIZSA TEŞHİS EDİLEMEZ — ve bu hata vermez.**
-  B5'te ölçüldü: `[iyzico] email hatalı format` satırı hangi markaya,
-  hangi müşteriye, hangi isteğe ait olduğunu **söylemiyordu**; hata
-  günlükten teşhis edilemedi, 4.5C'de gerçek istek atılarak bulundu.
-  ⚠️ Bağlam **Monolog işleyicisiyle** eklenir, middleware'le DEĞİL:
-  middleware'in kiracı başlatılmadan önce mi sonra mı koştuğu sıraya
-  bağlı (4H) — işleyici satır yazılırken çalıştığı için kiracı o an zaten
-  çözülmüş. ⚠️ Kimlik `hasUser()` ile okunur, `user()` ile DEĞİL:
-  ikincisi veritabanına gidiyor ve hatanın sebebi genelde veritabanının
-  kendisi. ⚠️ **E-posta yazılmaz** — günlük dosyası `Anonymizer` ve
-  `DataExporter`'ın göremediği bir yer.
-  ⚠️ Bağlamı satırın SONUNA koymak işe yaramıyor: ölçüldü, tek hata
-  girdisi **10.351 karakter** ve bağlam son 100 karakterindeydi.
-- **BLADE `@context`'İ KENDİ YÖNERGESİ SANIYOR — JSON-LD BLADE'DE ÜRETİLMEZ.**
-  Derleyici `@` ile başlayan her adı yönerge diye deniyor; JSON-LD'nin
-  `"@context"` anahtarı derlemede `<?php $__contextArgs = []; …` oluyor.
-  ⚠️ Belirti tamamen sessiz: sayfa açılıyor, hata çıkmıyor, üretilen yapısal
-  veri **geçersiz**. `@section('ad', ifade)` tuzağıyla aynı aile. Üretimi
-  PHP sınıfına taşı (B3 · `ProductStructuredData`).
-- **`public/robots.txt` ÇOK KİRACILIKTA YANLIŞ.** Statik dosya markaya göre
-  değişemiyor: her marka aynı `Sitemap:` satırını görüyordu (B3). `robots.txt`
-  ve `sitemap.xml` kiracı rotasıdır.
 - **AYRILMIŞ ALAN ADINA POSTA GÖNDERMEK GERÇEK BİR BEDEL.** `.localhost`
   `.test` `.invalid` `.example` `.local` (RFC 6761) ve `example.com/.net/.org`
   (RFC 2606) tanımı gereği çözülmüyor; her deneme gönderen hesapta bir iade
@@ -1010,51 +514,9 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   uzantısında ve elemeden geçiyordu; ikinci düzey adlar ayrıca yazılır.
   ⚠️ DNS sorgusu YOK: liste statik (4.5C'nin "ödeme akışında ağa çıkılmaz"
   kararı).
-- **AYNI DEĞERİ TAŞIYAN FIXTURE, İKİ FORMÜLÜ AYIRT EDEMEZ.** `seciciUrunu()`
-  bütün varyantları aynı fiyatta açıyor; "tüm varyantların min'i" ile
-  "satılabilir varyantların min'i" aynı sayı çıkıyor ve fiyatı yanlış
-  kaynaktan alan kırma denemesi **hiçbir testi düşürmüyor** (B3). İki yolu
-  ayıran testte fixture'ın o iki yolda **farklı** sonuç vermesini sağla.
 - **TOPLU E-POSTA DEĞİŞTİRMEDEN ÖNCE KİMİN OKUDUĞUNU ARA.** B4'te fixture
   adresleri toptan çevrildi ve **25 test kırıldı**: sahip adresi
   (`sahip@'.$alanAdi`) çağıranlar tarafından da türetiliyordu.
-- **`limit()` İLE LİSTELEMEK SESSİZ BİR KESİNTİDİR.** Ana sayfa `limit(24)`
-  ile çiziliyordu: 25. ürün hiç görünmüyordu ve bunu söyleyen bir şey de
-  yoktu (B2). Sayfalanabilir bir liste `paginate()` ister; `limit()`
-  yalnızca gerçekten "ilk N" istendiğinde doğrudur.
-
-## Yapı
-
-```
-app/Platform/   merkez şema (Tenant)          app/Models/    marka şeması modelleri
-app/Tenancy/    kiracılık KOMUTLARI           app/Http/      Platform · (Panel · Storefront)
-app/Domain/     iş mantığı — kiracıdan habersiz
-```
-
-⚠️ Kiracılık **tek klasörde toplanmıyor** — `app/Tenancy/` yalnızca komutları
-tutuyor (142 satır). Kiracılığa dokunan yerlerin tamamı:
-`config/tenancy.php` (paket ayarı, tohumlayıcı sınıfı) · `routes/tenant.php`
-(kapı görevlisi middleware zinciri) · `bootstrap/app.php` (takma adlar,
-istisna eşlemeleri) · `tests/Pest.php` (kiracı kurulumu ve temizlik).
-Bir kiracılık davranışı ararken bu beşine bak.
-
-`app/Domain/` içindeki hiçbir dosya `Tenancy` sınıflarını import etmez ve
-"hangi kiracıdayım" diye sormaz (M-2.7). **Ölçüldü:** `app/Domain/` içinde
-`App\Tenancy`, `tenant(`, `tenancy(` geçişi sıfır.
-
-**İş kuralı controller'a yazılmaz.** Kural: bir kontrol, HTTP dışından
-(artisan komutu · kuyruk işi · tohumlayıcı) atlanabiliyorsa `app/Domain/`'e
-girer. Controller yalnızca çevirir: isteği al, servisi çağır, cevabı biçimle.
-
-Testler: `tests/Feature/` → `RefreshDatabase` var. `tests/Tenancy/` → **yok**
-(transaction, şema oluşturmayı bozuyor); temizlik `tests/Pest.php`'de.
-
-## Çalışma biçimi
-
-- Belgeler ve kod yorumları **Türkçe**, tanımlayıcılar İngilizce.
-- Bir madde bitince: `lint` + `analyse` + `test` üçü de yeşil olmadan commit yok.
-- Plan canlıdır: gerçek planla çelişirse **plan güncellenir**, gerekçesiyle.
-- Commit mesajlarına co-author/imza satırı **eklenmez**.
 - **Her blok KIRMA DENEMESİNDEN geçer.** Testler yeşil olduğu için değil,
   **ölçtüklerini kanıtladıkları için** güvenilir. Yöntem: bloğun her
   kararını tek tek boz, testin düştüğünü gör, `cp` ile geri al.
@@ -1068,7 +530,6 @@ Testler: `tests/Feature/` → `RefreshDatabase` var. `tests/Tenancy/` → **yok*
   gerekiyorsa bu dosya (tuzak) güncellenir. Oturum kapandığında
   kaybolan hiçbir şey olmamalı — devralan kişi/ajan `PLAN.md` ve
   `CLAUDE.md` ile tam bağlamı kurabilmeli.
-
 - **SÜİT KOŞARKEN KAYNAK DOSYA DÜZENLENMEZ — koşunun sonucu yalan olur.**
   Testler dosyayı **koştukları anda** okuyor. A2'de `CLAUDE.md` süit arka
   planda koşarken düzenlendi; yerel koşu **eski sayıyı** yeşil gördü,
@@ -1117,10 +578,15 @@ Bu proje **tek bir sohbete bağlı değil**; bağlam depoda tutuluyor:
 CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
 .claude/rules/     YOLA BAĞLI tuzaklar — yalnızca eşleşen dosyaya
                    dokunulduğunda yükleniyor:
-                     tasarim.md  resources/css · *.blade.php · *.vue
-                     panel.md    resources/js · app/Http/Panel
-                     gozlem.md   app/Logging · config/logging.php
-                   ⚠️ Toplam 171 tuzak; sayımı ölçen test:
+                     test.md       tests/
+                     vitrin.md     resources/views/storefront · app/Http/Storefront
+                     veri.md       database/ · app/Models
+                     kiracilik.md  app/Tenancy · app/Platform · routes/tenant.php
+                     odeme.md      app/Domain/Payment · …/Payment*
+                     tasarim.md    resources/css · *.blade.php · *.vue
+                     panel.md      resources/js · app/Http/Panel
+                     gozlem.md     app/Logging · config/logging.php
+                   ⚠️ Toplam 174 tuzak, 72'si burada; sayımı ölçen test:
                       tests/Feature/TuzakSayimiTest.php
 PLAN.md            36 bitmiş blok, her biri gerekçesi ve kırma
                    denemeleriyle · en üstte "şu an neredeyiz"

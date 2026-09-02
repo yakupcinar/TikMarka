@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ── şu an: A2 BİTTİ — sırada A3 (/kontrol + sinayici) ──────┐
+┌─ YOL HARİTASI ─ şu an: A1.1 BİTTİ — sırada A3 (/kontrol + sinayici) ─────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7657,6 +7657,78 @@ engelleyip engellemediği hiç ölçülmemişti. Eklendi (geçici biçimsiz dosy
 ⚠️ Hook'lar **çalışma alanı güveni** istiyor; ilk oturumda onay çıkar.
 
 **Sırada A3:** `/kontrol` skill'i + `sinayici` alt-ajanı.
+
+---
+
+### A1.1 — bölme tamamlandı ✅  *(ajan altyapısı)*
+
+**Sebep:** A1'de yalnızca üç "güvenli" dilim taşınmıştı ve öz review
+kazancın **%14'te kaldığını** gösterdi — 1.318 → 1.136 satır, hedef 200.
+Bölmenin gerekçesi olan problem büyük ölçüde duruyordu.
+
+#### Sonuç
+
+```
+CLAUDE.md   1.136 → 602 satır   ·  145 → 72 tuzak
+                                    (ilk hâlinden %54 azalma)
+
+.claude/rules/
+  vitrin.md      18   resources/views/storefront · app/Http/Storefront
+  test.md        16   tests/
+  veri.md        13   database/ · app/Models
+  kiracilik.md    9   app/Tenancy · app/Platform · routes/tenant.php
+  odeme.md        7   app/Domain/Payment · …/Payment*
+  tasarim.md      4   (+18 A1'den)
+  gozlem.md       4   (+3 A1'den)
+  panel.md        2   (+8 A1'den)
+                ───
+                174 tuzak toplam · içerik hash'i BİREBİR aynı
+```
+
+#### ⚠️ Otomatik sınıflandırma YİNE karıştırdı — ve aynı yerlerde
+
+A1'de %9 hata ölçülmüştü; bu turda listeler okununca aynı iki desen çıktı:
+
+| Yanlış düşen | Nereye | Neden yanlış |
+|---|---|---|
+| *"Kırma denemesi tutmuyorsa testi suçla"* · *"Yazılı kural üç kez tutmadıysa test yaz"* · *"Kırma denemesinde değişikliğin uygulandığını doğrula"* | `test` | **Meta kurallar** — her dosyada geçerli, teste özgü değil |
+| *"Her cevap JSON"* · *"`$errors` yalnızca `web` grubunda"* · *"`EncryptCookies` yalnızca `web`"* · *"Hız sınırlayıcı iş mantığından önce"* | `test`/`odeme`/`vitrin` | **Rota/middleware** kuralları; konu kelimesi yanılttı |
+| *"Bağlı yapılandırma değişince restart"* | `kiracilik` | Docker işletimi |
+| *"Test veritabanında şema silinip kayıt kalırsa"* · *"Süit koşarken dosya düzenlenmez"* | `test` | **Komut koşarken** ısırıyor, dosya okunurken değil |
+
+Son satır bölmenin ana ilkesi: **yola bağlı kural, dosya OKUNDUĞUNDA
+yükleniyor.** Bir tuzak komut çalıştırırken ısırıyorsa `CLAUDE.md`'de
+kalmalı — yoksa hiç yüklenmez ve sessizce kaybolur.
+
+#### CLAUDE.md'de bilerek kalan 72 tuzak
+
+Üç grup:
+1. **Meta kurallar** — kırma denemesi disiplini, "bir kuralı tek yola
+   yazmak yetmez", "bitti kaydı bittiğinin kanıtı değildir"
+2. **Komut anında ısıranlar** — `git checkout`, `pint.json` errno=35,
+   test veritabanı temizliği, worker restart, "yerel lint ≠ CI"
+3. **Karar anında ısıranlar** — SVG kabul edilmez, Blade render edilmez
+   (RCE), Inertia SSR açılmaz, `$fillable` sınırı
+
+#### Kırma denemeleri — 4/4 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | `veri.md` deseni `app/**`e genişletildi (kazanç yok) | 1 düştü |
+| 2 | taşıma sırasında bir tuzak düştü | 1 düştü |
+| 3 | tuzak kopyalandı (iki yerde) | 2 düştü |
+| 4 | bir kural dosyasının `paths`'i silindi | 2 düştü |
+
+Ölçüm testine beş yeni pozitif ve üç yeni **negatif** durum eklendi:
+`app/Domain/Order/**`, `app/Console/**` ve `bootstrap/app.php` hâlâ
+hiçbir kural yüklemiyor.
+
+**Test:** `tests/Feature/TuzakSayimiTest.php` — 5 test, 33 iddia.
+
+**⚠️ Hâlâ doğrulanmadı:** hook'ların Claude Code tarafından gerçekten
+çağrıldığı. Betikler 15 vakada doğru davranıyor ama uçtan uca deneme
+başka bir katman tarafından kesildi. Bir sonraki oturumda çalışma alanı
+güveni onaylanınca sınanmalı.
 
 ---
 

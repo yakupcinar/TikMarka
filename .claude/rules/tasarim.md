@@ -126,3 +126,27 @@ sayısını ölçen test: `tests/Feature/TuzakSayimiTest.php`.
   dili); 4.6AH'de gölge dağıtılsaydı o karar kaybolurdu ve kimse fark
   etmezdi. Gölge yalnızca **gerçekten yükseltilmiş** yüzeye (sticky bar,
   özet paneli, açılır liste). Korunacak kararın kendi testi olmalı.
+- **PANEL VE VİTRİN TEMA ANAHTARI AYRIDIR.** Panel bizim arayüzümüz, vitrin
+  markanın; ortak `localStorage` anahtarı birinin tercihini diğerine bulaştırır
+  (`tikmarka-panel-tema` / `tikmarka-tema`).
+- **YATAY MENÜ MADDE SAYISIYLA ÖLÇEKLENMİYOR — ve taşma MASAÜSTÜNDE başlıyor.**
+  4.6AF'de ölçüldü: 14 madde tek satırda 988px, başlığın ihtiyacı 1441px,
+  kapsayıcı 1152px → **289px taşma**, üstelik en geniş ekranda. En çok sahip
+  rolünü vuruyor (bütün maddeleri gören tek rol o). Menü yana taşındı.
+  ⚠️ Belirti kolay kaçıyor: geliştirici genelde kısıtlı bir rolle bakıyor ve
+  eksik maddeler yüzünden menü **sığıyor** görünüyor.
+- **ÇEVİRİSİ OLMAYAN ANAHTAR EKRANA HAM HÂLİYLE YAZILIR — ve bu SESSİZDİR.**
+  `lang/tr/pagination.php` hiç yoktu: marka panelinde sayfalama düğmesinde
+  **`pagination.next`** yazıyordu, dört sayfada birden. 4.6AF.1'de bulundu ve
+  **966 testin hiçbiri görmemişti**; gerçek tarayıcı koşusu gördü.
+  ⚠️ 4.6AA'daki `validation.uploaded` ile aynı aile ve orada da
+  "unutulursa hemen fark edilir" denmişti — fark edilmedi. Çerçevenin
+  hazır bir çeviri anahtarını (doğrulama, sayfalama, parola sıfırlama)
+  ilk kez kullandığında karşılığının `lang/tr/`'de olduğunu **gör**.
+- **ÖLÇEĞİN YOKLUĞU İLE FAZLALIĞI AYNI SONUCU VERİR: hiyerarşi okunmaz.**
+  Panelde 225 kullanım tek boyuttaydı (4.6AG), vitrinde **on iki** farklı
+  boyut ve **altı** yarıçap vardı (4.6AH). Biri her şeyi eşitliyor, öteki
+  hiçbir şeyi. İkisinde de çözüm aynı: sayılı basamak, ve basamağı öğenin
+  **rolü** seçiyor, boyutu değil.
+  ⚠️ `999px` (hap) ölçeğe SOKULMAZ — o bir basamak değil, "tam yuvarlak"
+  demenin yolu; sokulursa rozet boyutuna göre değişir.
