@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ─ şu an: A1.1 BİTTİ — sırada A3 (/kontrol + sinayici) ─────┐
+┌─ YOL HARİTASI ── şu an: A3 BİTTİ — sırada A4 (/blok + /kirma) ───────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7729,6 +7729,70 @@ hiçbir kural yüklemiyor.
 çağrıldığı. Betikler 15 vakada doğru davranıyor ama uçtan uca deneme
 başka bir katman tarafından kesildi. Bir sonraki oturumda çalışma alanı
 güveni onaylanınca sınanmalı.
+
+---
+
+### A3 — `/kontrol` skill'i ve `sinayici` ajanı ✅  *(ajan altyapısı)*
+
+Kaynakların karar kuralı: *"Skill = ajanın nasıl yapacağını bilmesini
+istediğin şey · Subagent = devretmek istediğin şey."* İkisi de burada.
+
+#### `make kontrol` bu işi EKSİK yapıyordu
+
+```
+kontrol: lint analiz test        ← Makefile'ın tamamı
+```
+
+Eksikleri, hepsi bu oturumda ölçüldü:
+
+| Eksik | Bedeli |
+|---|---|
+| `pint.json` onarımı yok | `errno=35` bozulması sık; belirti **dosya boyutu hakkında yalan söylüyor** (`filesize()` 28, içerik boş) |
+| Test veritabanı temizliği yok | Yarıda kesilen koşu **142 kırmızı** ürettiriyor; belirti veri hatası gibi görünüyor |
+| CI eşitliği yok | `public/build` yerindeyken geçen test CI'da düşüyor — bir kez yaşandı |
+| `composer test` kullanıyor | **300 sn zaman aşımı**, süit ~450 sn. Bu oturumda iki kez kesildi |
+| Çıkış kodu kontrolü yok | `pint \| tail` boş çıktı verince "geçti" sanılıyor |
+
+`/kontrol` skill'i bu altı adımı sırayla yazıyor. **466 kelime** (sınır
+1.500 — uzun skill bağlam baskısında kırpılıyor).
+
+#### `sinayici` ajanı — neden ajan
+
+Kaynakların ölçütü *"uzun/gürültülü çıktı → özet"*. Bu iş tam o:
+**~450 saniye ve binlerce satır** çıktı, sonucu üç satır.
+
+| Karar | Gerekçe |
+|---|---|
+| `tools: Bash, Read` | ⚠️ `tools` yazılmazsa ajan **bütün araçları miras alıyor**, Edit ve Write dâhil |
+| **Kod düzeltmesi yasak** | Düşen testte doğru cevap çoğu zaman *"test yanlış şeyi ölçüyor"* ve o yargı tam bağlam ister — ajanda yok. 27 kırma denemesinin 6'sı bu yüzden testi değiştirdi |
+| `model: haiku` | İş mekanik: komut koştur, çıktı özetle |
+| `skills: [kontrol]` | ⚠️ Bu alan olmadan ajan skill'i **görmüyor**; taze bağlamla başlayıp ritüeli kendi bildiği gibi koşturur ve adımları atlar |
+| "Koşamadıysa açıkça yaz" | Bu projede en pahalı hata **koşmayan bir şeyi koşmuş sanmak** — bu oturumda iki kez oldu |
+
+#### Kırma denemeleri — 5/5 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | skill sadeleştirildi, `pint.json` onarımı silindi | 1 düştü |
+| 2 | `build` geri koyma adımı düştü | 1 düştü |
+| 3 | `composer test`e geri dönüldü | 1 düştü |
+| 4 | ajan skill'i önyüklemiyor | 1 düştü |
+| 5 | ajana `Edit`/`Write` verildi | 1 düştü |
+
+⚠️ Test **yapıyla yetinmiyor**: "dosya var" demek içindeki adımların doğru
+olduğunu göstermez. İçerik yedi kritik adım için tek tek sınanıyor.
+
+#### ⚠️ UÇTAN UCA DOĞRULANMADI — açıkça kayda geçiyor
+
+`sinayici` ajanı **hiç çağrılmadı**; yapısı doğru ama Claude Code
+tarafından gerçekten koşturulduğu görülmedi. Aynı durum A2'deki hook'lar
+için de geçerli.
+
+Bu, bu oturumda iki kez düşülen hatanın aynısı (*"boru hattını taşıdığı
+şeyi görmeden doğrulama"*) ve bilerek açık bırakılıyor: doğrulaması
+kullanıcının ajanı çağırmasını gerektiriyor.
+
+**Test:** `tests/Feature/AjanKurulumuTest.php` — 5 test.
 
 ---
 

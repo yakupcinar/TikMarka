@@ -4068,3 +4068,34 @@ A1.1 · bölme tamamlandı                            (ajan altyapısı)  ✅
   ⚠ HÂLÂ DOĞRULANMADI: hook'ların Claude Code tarafından çağrıldığı.
     Betikler 15 vakada doğru davranıyor ama uçtan uca deneme başka bir
     katman tarafından kesildi.
+
+────────────────────────────────────────────────────────────────────────
+A3 · /kontrol skill'i ve sinayici ajanı            (ajan altyapısı)  ✅
+────────────────────────────────────────────────────────────────────────
+
+  make kontrol BU İŞİ EKSİK YAPIYORDU (kontrol: lint analiz test)
+    pint.json onarımı yok    → errno=35, boyut hakkında YALAN söylüyor
+    test DB temizliği yok    → yarıda kesilen koşu, 142 kırmızı
+    CI eşitliği yok          → public/build yerindeyken geçen test CI'da
+                               düşüyor
+    composer test            → 300 sn zaman aşımı, süit ~450 sn
+    çıkış kodu kontrolü yok  → boş çıktı "geçti" sanılıyor
+
+  /kontrol skill'i altı adımı sırayla yazıyor · 466 kelime (sınır 1500)
+
+  sinayici AJANI — ölçüt "uzun/gürültülü çıktı → özet"
+    ~450 sn ve binlerce satır  →  üç satır rapor
+    tools: Bash, Read     ⚠ yazılmazsa BÜTÜN araçları miras alıyor
+    kod düzeltmesi YASAK  düşen testte doğru cevap çoğu zaman "test
+                          yanlış şeyi ölçüyor" ve o yargı bağlam ister
+    skills: [kontrol]     ⚠ olmadan ajan skill'i GÖRMÜYOR
+    model: haiku          iş mekanik
+
+  KIRMA DENEMELERİ 5/5 · test YAPIYLA YETİNMİYOR, yedi kritik adımı
+  tek tek arıyor
+
+  ⚠ UÇTAN UCA DOĞRULANMADI: sinayici hiç çağrılmadı, hook'lar da
+    çağrıldığı görülmedi. "Boru hattını taşıdığı şeyi görmeden
+    doğrulama" kuralının bilerek açık bırakılmış hâli.
+
+  Test: tests/Feature/AjanKurulumuTest.php — 5 test · süit 1076 yeşil

@@ -588,6 +588,11 @@ CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
                      gozlem.md     app/Logging · config/logging.php
                    ⚠️ Toplam 174 tuzak, 72'si burada; sayımı ölçen test:
                       tests/Feature/TuzakSayimiTest.php
+.claude/skills/    ritüeller — `/kontrol` tam doğrulama (make kontrol
+                   BUNU EKSİK YAPIYOR: pint.json onarımı, test DB
+                   temizliği, CI eşitliği ve zaman aşımı)
+.claude/agents/    `sinayici` — doğrulamayı koşturur, YALNIZCA özet döner
+                   (süit ~450 sn ve binlerce satır çıktı)
 PLAN.md            36 bitmiş blok, her biri gerekçesi ve kırma
                    denemeleriyle · en üstte "şu an neredeyiz"
 docs/summary.md    blok blok özet — hızlı bağlam
