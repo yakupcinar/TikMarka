@@ -80,3 +80,6 @@ password.md
 # Loglar
 npm-debug.log
 yarn-error.log
+
+# Gözetimsiz koşu günlükleri — makineye özel, depoda durmaz
+.claude/kosu/
