@@ -126,3 +126,77 @@ it('★★★ SINAYICI KOD DUZELTEMEZ — arac listesi Edit/Write TASIMIYOR', fu
     expect('düzeltme yasağı yazılı: '.(str_contains($govde, 'Kod düzeltmezsin') ? 'evet' : 'HAYIR'))
         ->toBe('düzeltme yasağı yazılı: evet');
 });
+
+it('★★★ HER SKILL description ve KELIME SINIRI kurallarina uyuyor', function () {
+    /*
+    | ⚠️ `description` olmadan Claude skill'i ne zaman kullanacağını
+    | bilemiyor — dosya durur, hiç çağrılmaz.
+    | ⚠️ 1.500 kelime üstü skill bağlam baskısında KIRPILIYOR; kırpılan
+    | kısım sessizce yok sayılıyor.
+    */
+    $skiller = glob(base_path('.claude/skills/*/SKILL.md')) ?: [];
+
+    expect($skiller)->toHaveCount(3);
+
+    foreach ($skiller as $yol) {
+        $ad = basename(dirname($yol));
+
+        [$fm, $govde] = markdownAyristir($yol);
+
+        expect($ad.' description: '.(($fm['description'] ?? '') !== '' ? 'var' : 'YOK'))
+            ->toBe($ad.' description: var');
+
+        $kelime = count(preg_split('/\s+/', trim($govde)) ?: []);
+
+        expect($ad.' kelime sınırı: '.($kelime < 1500 ? 'tamam' : "AŞILDI ({$kelime})"))
+            ->toBe($ad.' kelime sınırı: tamam');
+    }
+});
+
+it('★★★ KIRMA SKILLI "TESTI SUCLA" KATALOGUNU tasiyor', function () {
+    /*
+    | ★ Bu skill'in ASIL değeri sıra değil, deneme tutmadığında ne
+    | yapılacağı. Bu oturumda 27 denemenin 6'sı tutmadı ve HER BİRİNDE
+    | suçlu koddu değil iddiaydı. Katalog o altı vakadan doğdu.
+    |
+    | ⚠️ Katalog silinip skill "boz, koştur, geri al"a indirgenirse
+    | ritüel kalır ama ÖĞRENİLEN ŞEY gider.
+    */
+    [, $govde] = markdownAyristir(base_path('.claude/skills/kirma/SKILL.md'));
+
+    $vakalar = [
+        'yorum okuma' => 'Yorumları ayıkla',
+        'script okuma' => '`<script>` bloklarını ayıkla',
+        'fixture ayırt edemiyor' => "Fixture'ı farklılaştır",
+        'çok argümanlı olumsuz iddia' => 'çok argümanlı',
+        'PHP öncelik hatası' => 'karşılaştırmadan **önce** bağlanıyor',
+        'is_executable yalanı' => 'fileperms',
+        'git checkout yasağı' => '`git checkout` KULLANMA',
+        'değişikliğin uygulandığını doğrula' => 'UYGULANDIĞINI doğrula',
+    ];
+
+    foreach ($vakalar as $ad => $aranan) {
+        expect($ad.': '.(str_contains($govde, $aranan) ? 'var' : 'YOK'))
+            ->toBe($ad.': var');
+    }
+});
+
+it('★★★ BLOK SKILLI DOKUZ ADIMI ve DURDURMA KOSULUNU tasiyor', function () {
+    /*
+    | ⚠️ Durdurma koşulu kritik: blok "testler yeşil" olunca DEĞİL,
+    | "kırma denemeleri kırmızı" olunca bitiyor. Yeşile kadar koşan bir
+    | döngü, bu projede ölçülmüş en sık hatayı üretir.
+    */
+    [, $govde] = markdownAyristir(base_path('.claude/skills/blok/SKILL.md'));
+
+    $adimlar = ['ÖLÇ', 'KARAR VER', 'UYGULA', 'TEST YAZ', 'KIR',
+        'GERÇEK İSTEKLE DOĞRULA', 'KONTROL', 'BELGELE', 'COMMIT'];
+
+    foreach ($adimlar as $adim) {
+        expect($adim.': '.(str_contains($govde, $adim) ? 'var' : 'YOK'))
+            ->toBe($adim.': var');
+    }
+
+    expect('durdurma koşulu: '.(str_contains($govde, 'kırma denemeleri kırmızı olunca') ? 'var' : 'YOK'))
+        ->toBe('durdurma koşulu: var');
+});

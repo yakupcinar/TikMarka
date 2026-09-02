@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-08-31**
 
 ```
-┌─ YOL HARİTASI ── şu an: A3 BİTTİ — sırada A4 (/blok + /kirma) ───────────┐
+┌─ YOL HARİTASI ─── şu an: A4 BİTTİ — sırada A5 (denetçi ajanlar) ─────────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7793,6 +7793,75 @@ Bu, bu oturumda iki kez düşülen hatanın aynısı (*"boru hattını taşıdı
 kullanıcının ajanı çağırmasını gerektiriyor.
 
 **Test:** `tests/Feature/AjanKurulumuTest.php` — 5 test.
+
+---
+
+### A4 — `/blok` ve `/kirma` skill'leri ✅  *(ajan altyapısı)*
+
+36 blokta uygulanan ritüel ve kırma denemesi disiplini yazıya döküldü.
+`CLAUDE.md`'nin "Çalışma biçimi" bölümü bunları **anlatıyordu** ama
+**nasıl yapılacağını** yazmıyordu — ve anlatan kuralın unutulduğu bu
+oturumda üç kez ölçüldü.
+
+#### `/kirma` — asıl değeri sıra değil, KATALOG
+
+Sıra basit (yedekle · boz · **uygulandığını doğrula** · koştur · geri al).
+Değerli kısım **deneme tutmadığında ne yapılacağı**: bu oturumda 27
+denemenin **6'sı** tutmadı ve her birinde suçlu koddu değil **iddiaydı**.
+
+| Belirti | Gerçek sebep |
+|---|---|
+| İddia kaynak dosyayı okuyor | Aranan metin **yorumda** da geçiyor |
+| Aynısı, sayfa HTML'i | Metin `<script>` bloğunda |
+| İki formül aynı sonucu veriyor | **Fixture ikisini ayırt edemiyor** |
+| Koruma kaldırıldı, test yeşil | Koruyan şey **başka bir kontrol**dü |
+| Olumsuz iddia hiç düşmüyor | `->not->toContain(a, b)` çok argümanlı |
+| İddia her koşulda aynı | PHP'de birleştirme karşılaştırmadan **önce** bağlanıyor |
+| Ayar doğru, davranış ölçülmemiş | Test nesneyi **elle kuruyor** (`Log::build()` `tap`'i uygulamıyor) |
+| İzin kontrolü hiç düşmüyor | `is_executable()` konteynerde root olarak yalan söylüyor |
+
+#### `/blok` — dokuz adım ve DURDURMA KOŞULU
+
+**6. adım — gerçek istekle doğrula.** Süitin göremedikleri tabloya
+döküldü: `Accept` başlığı olmayan istemcinin 500 alması (**425 testin
+hiçbiri** yakalamadı), CSRF, formda eksik alan, ekranda ham çeviri
+anahtarı. Dördü de `postJson`/tam-veri fixture'ının **ölçülmek isteneni
+ortadan kaldırmasından** doğdu.
+
+**Durdurma koşulu.** Blok *"testler yeşil"* olunca değil, **"kırma
+denemeleri kırmızı"** olunca bitiyor. Bu, kullanıcının verdiği rehberdeki
+*self-healing* döngüsünün **tersi**: yeşile kadar koşan bir döngü tam da
+yukarıdaki sekiz vakayı üretir.
+
+#### Kırma denemeleri — 5/5 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | `kirma` "boz-koştur-geri al"a indirgendi (katalog silindi) | 1 düştü |
+| 2 | "değişikliğin uygulandığını doğrula" adımı düştü | 1 düştü |
+| 3 | durdurma koşulu "testler yeşil" yapıldı | 1 düştü |
+| 4 | "gerçek istekle doğrula" adımı silindi | 1 düştü |
+| 5 | bir skill 1.500 kelimeyi aştı | 1 düştü |
+
+Birincisi en önemlisi: skill sıraya indirgenirse ritüel kalır ama
+**öğrenilen şey gider**.
+
+#### ✓ Kısmi uçtan uca doğrulama
+
+A3'te açık bırakılan sorunun yarısı cevaplandı: `sinayici` ajanı ve üç
+skill **Claude Code tarafından görülüyor** — oturuma kayıtlı olarak
+düştüler. Eksik kalan: gerçekten **çağrıldıklarında** doğru davrandıkları.
+
+#### ⚠️ Blok sırasında disk doldu
+
+Commit anında `ENOSPC` alındı ve **hiçbir komut çalışmaz** hâle geldi —
+araç kendi çıktı dosyasını bile yazamıyor. Sebep uzun oturumun biriktirdiği
+süit çıktıları ve Docker imajları. Kayıp olmadı (dosyalar diskteydi), ama
+belirti yanıltıcı: "araç bozuldu" gibi görünüyor.
+
+**Test:** `tests/Feature/AjanKurulumuTest.php` — 8 test.
+
+**Sırada A5:** `/belge`, `/gunluk`, `olcumcu` ve iddia/kanıt denetçileri.
 
 ---
 

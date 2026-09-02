@@ -4099,3 +4099,34 @@ A3 · /kontrol skill'i ve sinayici ajanı            (ajan altyapısı)  ✅
     doğrulama" kuralının bilerek açık bırakılmış hâli.
 
   Test: tests/Feature/AjanKurulumuTest.php — 5 test · süit 1076 yeşil
+
+────────────────────────────────────────────────────────────────────────
+A4 · /blok ve /kirma skill'leri                    (ajan altyapısı)  ✅
+────────────────────────────────────────────────────────────────────────
+
+  36 blokta uygulanan ritüel yazıya döküldü. CLAUDE.md bunları
+  ANLATIYORDU ama NASIL yapılacağını yazmıyordu.
+
+  /kirma · ASIL DEĞERİ SIRA DEĞİL, KATALOG
+    27 denemenin 6'sı tutmadı ve HER BİRİNDE suçlu iddiaydı.
+    Sekiz belirti: yorum okuma · script okuma · fixture ayırt edemiyor ·
+    koruyan şey başka kontrol · çok argümanlı olumsuz iddia · PHP
+    öncelik hatası · nesneyi elle kurma · is_executable yalanı
+
+  /blok · DOKUZ ADIM, İKİSİ VURGULU
+    6. adım GERÇEK İSTEKLE DOĞRULA — süitin göremedikleri tabloda
+       (Accept başlığı 500'ü 425 testin hiçbirinde yakalanmamıştı)
+    DURDURMA KOŞULU — "testler yeşil" DEĞİL "kırma denemeleri kırmızı"
+       ⚠ rehberdeki self-healing döngüsünün TERSİ
+
+  KIRMA DENEMELERİ 5/5 · birincisi kritik: skill sıraya indirgenirse
+  ritüel kalır ama ÖĞRENİLEN ŞEY gider
+
+  ✓ KISMİ UÇTAN UCA: sinayici ve üç skill Claude Code tarafından
+    GÖRÜLÜYOR. Eksik: çağrıldıklarında doğru davrandıkları.
+
+  ⚠ BLOK SIRASINDA DİSK DOLDU: ENOSPC sonrası hiçbir komut çalışmadı
+    (araç kendi çıktı dosyasını açamıyor). Kayıp yok ama belirti
+    "araç bozuldu" gibi görünüyor. Tuzak olarak yazıldı.
+
+  Test: tests/Feature/AjanKurulumuTest.php — 8 test · süit 1079 yeşil

@@ -530,6 +530,12 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   gerekiyorsa bu dosya (tuzak) güncellenir. Oturum kapandığında
   kaybolan hiçbir şey olmamalı — devralan kişi/ajan `PLAN.md` ve
   `CLAUDE.md` ile tam bağlamı kurabilmeli.
+- **UZUN OTURUMDA DİSK DOLABİLİR — belirti "araç bozuldu" gibi görünür.**
+  A4'te yaşandı: `ENOSPC` alındıktan sonra **hiçbir komut çalışmadı**,
+  çünkü araç kendi çıktı dosyasını bile açamıyor. Sebep biriken süit
+  çıktıları ve Docker imajları. Kayıp yok (dosyalar diskte), ama teşhis
+  edilmezse "ortam bozuldu" sanılıyor. `df -h /` ile bak;
+  `docker system prune -a --volumes` ve geçici klasör temizliği yer açar.
 - **SÜİT KOŞARKEN KAYNAK DOSYA DÜZENLENMEZ — koşunun sonucu yalan olur.**
   Testler dosyayı **koştukları anda** okuyor. A2'de `CLAUDE.md` süit arka
   planda koşarken düzenlendi; yerel koşu **eski sayıyı** yeşil gördü,
@@ -588,9 +594,14 @@ CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
                      gozlem.md     app/Logging · config/logging.php
                    ⚠️ Toplam 174 tuzak, 72'si burada; sayımı ölçen test:
                       tests/Feature/TuzakSayimiTest.php
-.claude/skills/    ritüeller — `/kontrol` tam doğrulama (make kontrol
-                   BUNU EKSİK YAPIYOR: pint.json onarımı, test DB
-                   temizliği, CI eşitliği ve zaman aşımı)
+.claude/skills/    ritüeller:
+                     /blok     bir bloğun dokuz adımı · durdurma koşulu
+                               "testler yeşil" DEĞİL "kırma denemesi kırmızı"
+                     /kirma    kırma denemesi + deneme tutmadığında
+                               "testi suçla" kataloğu (8 vaka)
+                     /kontrol  tam doğrulama — `make kontrol` BUNU EKSİK
+                               YAPIYOR (pint.json onarımı, test DB
+                               temizliği, CI eşitliği, zaman aşımı)
 .claude/agents/    `sinayici` — doğrulamayı koşturur, YALNIZCA özet döner
                    (süit ~450 sn ve binlerce satır çıktı)
 PLAN.md            36 bitmiş blok, her biri gerekçesi ve kırma
