@@ -55,7 +55,7 @@ it('★★★ TUZAKLARIN TOPLAMI DEGISMEDI — bolme kayipsiz', function () {
     | Beklentiyi DÜŞÜRMEK bir tuzağın sessizce kaybolduğu anlamına gelir;
     | artırmak yeni tuzak eklendiği. İkisi de commit mesajında görünmeli.
     */
-    expect($hepsi)->toHaveCount(176);
+    expect($hepsi)->toHaveCount(177);
 });
 
 it('★★★ HICBIR TUZAK IKI YERDE DEGIL — kopya degil TASIMA', function () {

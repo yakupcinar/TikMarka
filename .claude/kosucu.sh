@@ -143,10 +143,12 @@ for gorev in "${GOREVLER[@]}"; do
 
   # ⚠️ `acceptEdits`: dosya düzenlemeyi onaylıyor, tehlikeli araçları
   # YASAK_ARAC kapatıyor. `bypassPermissions` bilerek kullanılmıyor.
+  # ⚠️ `< /dev/null` ŞART: stdin bağlıyken headless oturum 3 saniye veri
+  # bekliyor ve günlüğe uyarı basıyor. Ölçüldü (ilk deneme koşusu).
   if claude -p "$gorev" \
       --permission-mode acceptEdits \
       "${yasak_bayrak[@]}" \
-      > "$gunluk" 2>&1; then
+      < /dev/null > "$gunluk" 2>&1; then
     yaz "   ✓ bitti · günlük: ${gunluk#"$KOK"/}"
   else
     yaz "   ✗ ÇIKIŞ KODU HATA · günlük: ${gunluk#"$KOK"/}"

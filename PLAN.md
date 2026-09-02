@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-09-02**
 
 ```
-┌─ YOL HARİTASI ─ şu an: A5 BİTTİ — sırada FAZ 5 (kargo · e-fatura) ──────┐
+┌─ YOL HARİTASI ─ şu an: A6 BİTTİ — sırada FAZ 5 (kargo · e-fatura) ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -41,7 +41,7 @@
 │  6 · DAĞITIM       yayın · yedekleme · izleme                  │
 │                                                                │
 │  Kural: bir blok bitmeden sonrakine geçilmez.                  │
-│  1085 test · lint · analyse · CI hepsi yeşil                   │
+│  1091 test · lint · analyse · CI hepsi yeşil                   │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -7793,6 +7793,94 @@ Bu, bu oturumda iki kez düşülen hatanın aynısı (*"boru hattını taşıdı
 kullanıcının ajanı çağırmasını gerektiriyor.
 
 **Test:** `tests/Feature/AjanKurulumuTest.php` — 5 test.
+
+---
+
+### A6 — Gözetimsiz koşucu ✅  *(ajan altyapısı)*
+
+A3–A5 ritüeli yazdı; bu blok onu **kimse bakmıyorken** koşturmanın yolunu
+açtı. Mekanizma `claude -p`: görevi alır, yapar, **çıkar**.
+
+#### Neden ayrı oturumlar
+
+Koşucu her görevi **ayrı** bir headless oturumda koşturuyor. Sebep iki
+ölçülmüş sorun: uzun oturumda bağlam baskısıyla skill'ler kırpılıyor ve
+disk doluyor (A4'te `ENOSPC` sonrası hiçbir komut çalışmadı). Ayrı koşu
+her görevden sonra temiz bir durak veriyor.
+
+#### Koşu öncesi dört denetim — dördü de yaşanmış bir kayıptan
+
+| Denetim | Nereden |
+|---|---|
+| disk eşiği | A4 · ENOSPC sonrası araç kendi çıktı dosyasını açamıyor |
+| docker daemon | disk dolunca daemon ölüyor, ölü daemon'la görev "bitti" der |
+| koşan süit | iki süit aynı test veritabanında çöküyor |
+| kirli ağaç | yarım kalan kırma denemesi göreve karışır (B5) |
+
+Koşu **sonrasında** ngrok tüneli kapatılıyor: açık tünel makineyi internete
+açıyor ve kapatmak yalnızca *yazılı kural*dı.
+
+#### ✓ ÖLÇÜLDÜ: hook'lar `-p` modunda DA yükleniyor
+
+Açık soruydu — yardım metni *"`--print` modunda çalışma alanı güven
+diyaloğu atlanıyor"* diyor, ve hook'lar güven istiyor. Headless oturuma
+`git checkout PLAN.md` denettirildi:
+
+> `git checkout PLAN.md` **engellendi** — komut hook kilidine takıldı
+> ("requires approval"). Engeli aşmaya çalışmadım; değişikliği `Edit` ile
+> geri aldım.
+
+Yani üç kilit (checkout engeli · süit kilidi · pint kapısı) gözetimsiz
+koşuda da tutuyor. ⚠️ **`--bare` kullanılmaz** — hook'ları atlıyor ve
+koşucunun bütün güvenlik hikâyesini siler; test bunu ölçüyor.
+
+#### Deneme koşusu: iki gerçek bulgu
+
+**1 · ngrok tüneli GERÇEKTEN açıktı.** Denetim yanlış alarm vermedi;
+önceki oturumdan kalan tünel kapatıldı (`Exited (0)`). Makine o süre
+boyunca internete açıkmış.
+
+**2 · Denetim kendi tasarım hatamı yakaladı.** Görev listesi depoda
+izlendiği için listeyi düzenlemek ağacı kirletiyor ve koşucu **kendini**
+engelliyordu. Denetim doğruydu, izleme yanlıştı: liste makineye özel bir
+GİRDİ, artık izlenmiyor (`gorevler.ornek.txt` depoda kalıyor).
+
+Görev tam istendiği gibi yapıldı: tek satır değişti, commit edilmedi.
+
+#### ⚠️ İki taşınabilirlik hatası — biri sinsi
+
+`timeout` macOS'ta **yok**: docker denetimi daemon sapasağlamken **her
+koşuyu** durduruyordu ve hata mesajı `2>/dev/null`'a gittiği için
+görünmüyordu. `mapfile` bash 4+; macOS'ta `/bin/bash` **3.2.57** ve dizi
+sessizce boş kalıyor. İkisi de CLAUDE.md'ye yazıldı (177).
+
+#### Kırma denemeleri — 4/4 düştü
+
+| # | Deneme | Sonuç |
+|---|---|---|
+| 1 | `--bare` eklendi (hook'ları atlar) | 1 düştü |
+| 2 | disk denetimi kaldırıldı | 1 düştü |
+| 3 | tünel kapatma sökeldi | 1 düştü |
+| 4 | çalıştırma biti kaldırıldı | 1 düştü |
+
+⚠️ Dördüncüsü ayrıca `fileperms() & 0111` seçimini doğruluyor:
+`is_executable()` konteynerde root olarak **yalan söylüyor** (A2).
+
+#### Kalan açıklar — gözetimsiz koşu için
+
+Kilitlenmemiş üç şey var, ikisi ciddi:
+- **Push kapısı yok** — koşucu `git push`'u kapatıyor ama görev içindeki
+  oturum başka yoldan itebilir.
+- **Testi zayıflatarak yeşile ulaşma** — en sinsisi. `/kirma` "testi
+  suçla" diyor; gözetimsiz döngüde bu "iddiayı sil" olabilir.
+  `IddiaDenetimiTest` kalıpları tutuyor ama **iddia sayısının düşmesini**
+  ölçmüyor.
+- Yarım kalan kırma denemesi: kirli ağaç denetimi bunu **sonraki** görevde
+  yakalıyor, o görevin içinde değil.
+
+**Test:** `tests/Feature/KosucuTest.php` — 6 test.
+
+**Sırada:** Faz 5 — kargo · e-fatura.
 
 ---
 

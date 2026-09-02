@@ -4166,3 +4166,37 @@ A5 · İddia denetimi · olcumcu · /belge                (ajan altyapısı) ✅
   kataloğu yazan blok, kataloğun kendi vakasına iki kez düştü.
 
   Testler: IddiaDenetimiTest (4) · AjanKurulumuTest (10) · süit 1085
+
+────────────────────────────────────────────────────────────────────────
+A6 · Gözetimsiz koşucu                                (ajan altyapısı) ✅
+────────────────────────────────────────────────────────────────────────
+
+  A3–A5 ritüeli yazdı; A6 onu KİMSE BAKMIYORKEN koşturuyor.
+  Mekanizma `claude -p`: görevi alır, yapar, çıkar. Her görev AYRI
+  oturumda — uzun oturumda skill'ler kırpılıyor ve disk doluyor.
+
+  KOŞU ÖNCESİ DÖRT DENETİM · dördü de yaşanmış kayıptan
+    disk eşiği · docker daemon · koşan süit · kirli ağaç
+  KOŞU SONRASI: ngrok tüneli kapatılıyor (açık tünel = internete açık)
+
+  ✓ ÖLÇÜLDÜ: HOOK'LAR -p MODUNDA DA YÜKLENİYOR
+    Açık soruydu (yardım "güven diyaloğu atlanıyor" diyor). Headless
+    oturuma git checkout denettirildi: KİLİDE TAKILDI, oturum engeli
+    aşmaya çalışmadı. Üç kilit gözetimsiz koşuda da tutuyor.
+    ⚠ --bare KULLANILMAZ: hook'ları atlıyor, testi bunu ölçüyor.
+
+  DENEME KOŞUSU İKİ GERÇEK BULGU
+    1) ngrok tüneli GERÇEKTEN açıktı (önceki oturumdan) — kapatıldı
+    2) denetim kendi tasarım hatamı yakaladı: görev listesi izlenirken
+       koşucu KENDİNİ engelliyordu → liste artık izlenmiyor
+
+  ⚠ İKİ TAŞINABİLİRLİK HATASI: macOS'ta timeout YOK (docker denetimi
+    daemon sağlamken her koşuyu durduruyordu, hata /dev/null'a gidiyordu)
+    ve bash 3.2'de mapfile YOK. İkisi de CLAUDE.md'ye yazıldı (177).
+
+  KIRMA DENEMELERİ 4/4 · dördüncüsü fileperms & 0111 seçimini doğruluyor
+
+  KALAN AÇIK: gözetimsiz döngüde testi ZAYIFLATARAK yeşile ulaşma.
+  IddiaDenetimiTest kalıpları tutuyor, iddia SAYISININ düşmesini değil.
+
+  Test: tests/Feature/KosucuTest.php — 6 test · süit 1091

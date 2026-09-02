@@ -530,6 +530,16 @@ Bunların hepsi **hata vermeden yanlış sonuç** üretir. Projede en az bir kez
   gerekiyorsa bu dosya (tuzak) güncellenir. Oturum kapandığında
   kaybolan hiçbir şey olmamalı — devralan kişi/ajan `PLAN.md` ve
   `CLAUDE.md` ile tam bağlamı kurabilmeli.
+- **HOST BETİKLERİ GNU ARAÇLARI VARSAYAMAZ — macOS'ta `timeout` YOK,
+  `mapfile` YOK.** A6'da ısırdı ve belirtisi sinsiydi: koşucunun docker
+  denetimi `timeout 20 docker version` yazıyordu, komut bulunamadığı için
+  çıkış kodu sıfırdan farklı oluyor ve betik **daemon sapasağlamken** her
+  koşuyu "docker cevap vermiyor" diyerek durduruyordu. Hata mesajı
+  `2>/dev/null`'a gittiği için görünmüyordu. `mapfile` ise bash 4+ —
+  macOS'ta `/bin/bash` **3.2.57** ve dizi sessizce boş kalıyor.
+  ⚠️ Konteynerdeki komutlar bu tuzağa girmiyor (orada GNU var); tuzak
+  **host'ta koşan** betikler için. Ölçmenin yolu `bash --version` ve
+  `which timeout`.
 - **`mb_strtolower('İ')` İKİ KOD NOKTASI ÜRETİYOR — karşılaştırma sessizce
   başarısız.** Türkçe büyük İ küçültülünce `i` değil `i` + U+0307
   (birleşen nokta) oluyor; yani `mb_strtolower('İki')` metni `'iki'`
@@ -599,7 +609,7 @@ CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
                      tasarim.md    resources/css · *.blade.php · *.vue
                      panel.md      resources/js · app/Http/Panel
                      gozlem.md     app/Logging · config/logging.php
-                   ⚠️ Toplam 176 tuzak, 74'ü burada; sayımı ölçen test:
+                   ⚠️ Toplam 177 tuzak, 75'i burada; sayımı ölçen test:
                       tests/Feature/TuzakSayimiTest.php
 .claude/skills/    ritüeller:
                      /blok     bir bloğun dokuz adımı · durdurma koşulu
@@ -616,14 +626,22 @@ CLAUDE.md          bu dosya — her zaman geçerli tuzaklar
                    `olcumcu`  — değişen uçlara GERÇEK curl atar; süitin
                    göremediği aileyi ölçer (Accept · CSRF · eksik form
                    alanı · çevrilmemiş anahtar). İkisi de kod düzeltmez.
-PLAN.md            37 bitmiş blok, her biri gerekçesi ve kırma
+.claude/kosucu.sh  GÖZETİMSİZ koşucu — görev listesini sırayla
+                   headless `claude -p` oturumlarına veriyor. Koşu öncesi
+                   dört denetim (disk · docker · koşan süit · kirli ağaç),
+                   sonrasında ngrok tüneli kapanıyor.
+                   ⚠️ ÖLÇÜLDÜ: hook'lar `-p` modunda DA yükleniyor —
+                      kilitler gözetimsiz koşuda da tutuyor.
+                   ⚠️ `--bare` KULLANILMAZ: hook'ları atlıyor.
+                   Görev listesi izlenmiyor; örneği gorevler.ornek.txt.
+PLAN.md            38 bitmiş blok, her biri gerekçesi ve kırma
                    denemeleriyle · en üstte "şu an neredeyiz"
 docs/summary.md    blok blok özet — hızlı bağlam
 docs/mimari.md     kuşbakışı · docs/mimari-ogretici.md sıfırdan anlatım
 docs/pre-setup.md  M-1…M-4 mimari kararları ve NEDEN'leri
-tests/             1085 test — her biri bir kararı ölçüyor, yorumlar
+tests/             1091 test — her biri bir kararı ölçüyor, yorumlar
                    kararın gerekçesini taşıyor
-git log            211 commit, mesajlar kararı ve ölçümü anlatıyor
+git log            222 commit, mesajlar kararı ve ölçümü anlatıyor
 ```
 
 ⚠️ Bir karara katılmıyorsan önce gerekçesini ara: büyük ihtimalle

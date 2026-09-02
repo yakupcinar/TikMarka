@@ -1073,6 +1073,15 @@ function bolumUrunleri(int $adet, ?string $onek = null): Collection
  */
 function yorumsuz(string $yol): string
 {
+    if (str_ends_with($yol, '.sh')) {
+        /*
+        | Kabuk yorumu `#` ile başlıyor ama `#!` yorum DEĞİL (yorumlayıcı
+        | satırı) ve dizge içindeki `#` de yorum değil — o yüzden yalnızca
+        | satır başındaki `#` ayıklanıyor.
+        */
+        return (string) preg_replace('/^\s*#(?!!).*$/m', '', (string) file_get_contents($yol));
+    }
+
     $blade = str_ends_with($yol, '.blade.php');
 
     if ($blade || ! str_ends_with($yol, '.php')) {
