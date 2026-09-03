@@ -88,3 +88,7 @@ yarn-error.log
 # ⚠️ İzlenirse listeyi düzenlemek ağacı kirletiyor ve koşucunun kendi
 # "temiz ağaç" denetimi koşuyu engelliyor. Ölçüldü.
 .claude/gorevler.txt
+
+# Kişisel proje ayarı — autoMode izinleri ve ortam bilgisi (ngrok host
+# adı, hassas veri konumları) burada; depoya girmez.
+.claude/settings.local.json

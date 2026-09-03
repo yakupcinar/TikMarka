@@ -5,7 +5,7 @@
 > Son güncelleme: **2026-09-02**
 
 ```
-┌─ YOL HARİTASI ─ şu an: A6 BİTTİ — sırada FAZ 5 (kargo · e-fatura) ──────┐
+┌─ YOL HARİTASI ─ şu an: A7 BİTTİ — sırada FAZ 5 (kargo · e-fatura) ──────┐
 │                                                                │
 │  0 · TEMEL      ✅ git → docker → test → KİRACILIK → ci        │
 │                    ╰ çıktı: iki kiracı, verileri karışmıyor    │
@@ -7793,6 +7793,66 @@ Bu, bu oturumda iki kez düşülen hatanın aynısı (*"boru hattını taşıdı
 kullanıcının ajanı çağırmasını gerektiriyor.
 
 **Test:** `tests/Feature/AjanKurulumuTest.php` — 5 test.
+
+---
+
+### A7 — Ayar yeri ve `ritual` eklentisi ✅  *(ajan altyapısı)*
+
+Soru şuydu: bu kurulum yeni bir projeye gelir mi? **Ölçüldü — gelmiyor.**
+Skill'ler, ajanlar, hook'lar ve kurallar bu deponun `.claude/`'ında; yeni
+projede hiçbiri yok. Ama hepsi de projeye bağlı değil:
+
+| | Projeye özel satır | Karar |
+|---|---|---|
+| `/belge` | 0 / 59 | eklentiye |
+| `/kirma` | 1 / 66 | eklentiye |
+| `/blok` | 3 / 94 | eklentiye |
+| `/kontrol` | **14 / 97** | **projede kalır** — yığına bağlı |
+
+#### Ayarlar: kullanıcı genelinden proje yereline
+
+`~/.claude/settings.json` içinde bu projeye ait izinler duruyordu
+(`Bash(curl:*marka-a.localhost*)`, `make kontrol`, worker/scheduler
+restart) ve **her projede** geçerliydi. Yanında 23 satırlık `environment`
+bloğu vardı: ngrok host adı, hassas veri konumları, tenant şemaları.
+
+Hepsi `.claude/settings.local.json`'a taşındı — `settings.json`'a değil,
+çünkü o **depoya commit ediliyor** ve blok ngrok adresi ile hassas veri
+konumlarını içeriyor. Yerel dosya `.gitignore`'a eklendi. Kullanıcı
+genelinde artık yalnızca `theme` ve `statusLine` var.
+
+#### `ritual` eklentisi
+
+`~/.claude/skills/ritual` — üç skill + `sinayici` ajanı + `git checkout`
+kilidi. Yığından bağımsız; doğrulama komutlarını projenin **kendi**
+`/kontrol` skill'i sağlıyor. Ajanın yönergesi bunu açıkça söylüyor:
+projede `kontrol` yoksa **komut uydurmayacak**, durup söyleyecek —
+"tahmin edilen komutla koşan doğrulama, koşmamış doğrulamadan daha kötü,
+çünkü koşmuş sanılır."
+
+#### ✓ Uçtan uca ölçüldü — `.claude`'ı OLMAYAN depoda
+
+Boş bir git deposu açıldı ve headless oturum koşturuldu. Sonuç: üç skill
+`ritual:blok · ritual:kirma · ritual:belge` olarak, ajan
+`ritual:sinayici` olarak göründü; `git checkout dosya.txt` **hook'a
+takıldı** ve oturum engeli aşmaya çalışmadı.
+
+#### ⚠️ Manifest hataları SESSİZ
+
+İki şey ölçülerek bulundu, ikisi de uyarı vermiyor:
+- **Ajanlar OTOMATİK keşfediliyor.** `"agents": [...]` yazmak keşfi
+  **kapatıyor** — envanter `Agents (0)` diyordu, hata yoktu. Anahtar
+  kaldırılınca ajan göründü.
+- **Geçersiz manifest eklentiyi YOK EDİYOR.** `"agents"` dizge olarak
+  yazılınca `plugin details` *"not found"* dedi — bozuk değil, **yok**.
+
+#### ⚠️ Kabul edilen çoğaltma
+
+Ritüeller hem depoda hem eklentide duruyor. Proje kopyası kazanıyor
+(daha özel kapsam) ve **bilerek** öyle bırakıldı: bu depo kendi kendine
+yeter olmalı, taze bir klon eklentiye muhtaç kalmamalı. Bedeli ayrışma
+riski ve bunu **ölçen test yazılamıyor** — testler konteynerde koşuyor,
+`~/.claude` orada yok. Ritüel değişirse eklenti elle güncellenir.
 
 ---
 

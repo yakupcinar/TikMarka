@@ -4200,3 +4200,35 @@ A6 · Gözetimsiz koşucu                                (ajan altyapısı) ✅
   IddiaDenetimiTest kalıpları tutuyor, iddia SAYISININ düşmesini değil.
 
   Test: tests/Feature/KosucuTest.php — 6 test · süit 1091
+
+────────────────────────────────────────────────────────────────────────
+A7 · Ayar yeri ve ritual eklentisi                    (ajan altyapısı) ✅
+────────────────────────────────────────────────────────────────────────
+
+  Soru: bu kurulum yeni projeye gelir mi? ÖLÇÜLDÜ — gelmiyor, hepsi bu
+  deponun .claude/'ında. Ama hepsi projeye bağlı da değil:
+  /belge 0, /kirma 1, /blok 3 projeye özel satır → eklentiye
+  /kontrol 14 → projede kalır (yığına bağlı)
+
+  AYARLAR PROJE YERELİNE
+    ~/.claude/settings.json'da bu projeye ait izinler vardı ve HER
+    projede geçerliydi; yanında ngrok host adı ve hassas veri
+    konumlarını içeren 23 satırlık environment bloğu.
+    → .claude/settings.local.json (gitignore'da; settings.json depoya
+      commit edildiği için oraya DEĞİL). Genelde theme + statusLine kaldı.
+
+  ritual EKLENTİSİ · üç skill + sinayici + git checkout kilidi
+    Ajan, projede /kontrol yoksa KOMUT UYDURMUYOR: durup söylüyor.
+
+  ✓ UÇTAN UCA: .claude'ı OLMAYAN boş depoda headless oturum koşturuldu.
+    ritual:blok/kirma/belge ve ritual:sinayici göründü, git checkout
+    HOOK'A TAKILDI.
+
+  ⚠ İKİ SESSİZ MANİFEST TUZAĞI
+    "agents" anahtarını yazmak OTOMATİK KEŞFİ KAPATIYOR (envanter 0
+    diyordu, hata yoktu) · geçersiz manifest eklentiyi YOK EDİYOR
+    ("not found", bozuk değil yok)
+
+  ⚠ KABUL EDİLEN ÇOĞALTMA: ritüeller hem depoda hem eklentide. Proje
+    kopyası kazanıyor; depo kendi kendine yetsin diye bilerek. Ayrışmayı
+    ölçen test YAZILAMIYOR (testler konteynerde, ~/.claude orada yok).
